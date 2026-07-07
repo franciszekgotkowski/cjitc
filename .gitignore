@@ -1,0 +1,7 @@
+build
+.zed
+.idea
+.cache
+.vscode
+.tasks.lua
+cmake-build*
