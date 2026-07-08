@@ -1,4 +1,4 @@
-add_library(cjitc STATIC )
+add_library(cjitc STATIC)
 
 target_compile_options(cjitc PRIVATE
     ${COMMON_FLAGS}
@@ -8,10 +8,15 @@ target_compile_options(cjitc PRIVATE
 
 target_sources(cjitc PRIVATE
     src/main.c
+    src/allocator_interface.c
+    src/arena_allocator.c
+    src/platform/memory_linux.c
+    #src/heap_with_lifetimes_allocator.c
 )
 
 target_include_directories(cjitc PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/headers
+        ${CMAKE_CURRENT_SOURCE_DIR}/headers/export/cjitc_lib
+        ${CMAKE_CURRENT_SOURCE_DIR}/headers/internal
 )
 
 target_link_directories(cjitc PRIVATE
