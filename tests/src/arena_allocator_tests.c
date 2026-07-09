@@ -6,14 +6,14 @@
 #include <cjitc_lib/allocator_errors.h>
 #include <cjitc_lib/arena_allocator.h>
 
-static int32_t InitializeArena(void **state) {
+static int32_t InitializeAllocatorAndSetupFunctions(void **state) {
     ArenaAllocatorMetadata *mem = malloc(sizeof(ArenaAllocatorMetadata));
     *mem = ArenaAllocator_Initialize();
     *state = mem;
     return 0;
 }
 
-static int32_t DeinitializeArena(void **state) {
+static int32_t DeinitializeAllocator(void **state) {
     ArenaAllocator_Deinitialize(*state);
     return 0;
 }
@@ -122,18 +122,18 @@ int32_t arenaAllocatorTests() {
         cmocka_unit_test(InitializingArenaTest),
         cmocka_unit_test_setup_teardown(
             FillWholeAllocationPageTest,
-            InitializeArena,
-            DeinitializeArena
+            InitializeAllocatorAndSetupFunctions,
+            DeinitializeAllocator
         ),
         cmocka_unit_test_setup_teardown(
             GetManyAllocationPagesTest,
-            InitializeArena,
-            DeinitializeArena
+            InitializeAllocatorAndSetupFunctions,
+            DeinitializeAllocator
         ),
         cmocka_unit_test_setup_teardown(
             AlwaysAllocateNewPageTest,
-            InitializeArena,
-            DeinitializeArena
+            InitializeAllocatorAndSetupFunctions,
+            DeinitializeAllocator
         ),
     };
 

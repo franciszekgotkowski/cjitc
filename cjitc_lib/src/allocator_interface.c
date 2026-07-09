@@ -13,15 +13,23 @@ void setupAllocatorFunctions(
     PrototypeAlloc *Alloc,
     PrototypeDeallocLifetime *DeallocLifetime
 ) {
-    assert(ptr_InitializeAllocator);
-    assert(ptr_DeinitializeAllocator);
-    assert(ptr_InitializeAllocator);
-    assert(ptr_DeallocLifetime);
+    assert(InitializeAllocator);
+    assert(DeinitializeAllocator);
+    assert(InitializeAllocator);
+    assert(DeallocLifetime);
 
     ptr_InitializeAllocator = InitializeAllocator;
     ptr_DeinitializeAllocator = DeinitializeAllocator;
     ptr_Alloc = Alloc;
     ptr_DeallocLifetime = DeallocLifetime;
+}
+
+void clearDefaultAllocator(
+) {
+    ptr_InitializeAllocator = NULL;
+    ptr_DeinitializeAllocator = NULL;
+    ptr_Alloc = NULL;
+    ptr_DeallocLifetime = NULL;
 }
 
 void setupDefaultAllocator() {

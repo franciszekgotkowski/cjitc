@@ -5,16 +5,21 @@
 #include <cjitc_lib/range.h>
 
 #include <cmocka.h>
+#include <cjitc_lib/allocator_interface.h>
 
-static int32_t InitializeArena(void **state) {
+static int32_t InitializeAllocatorAndSetupFunctions(void **state) {
+
+    setupDefaultAllocator();
+
     ArenaWithLifetimesAllocator *mem = malloc(sizeof(ArenaWithLifetimesAllocator));
     *mem = ArenaWithLifetimesAllocator_Initialize();
     *state = mem;
     return 0;
 }
 
-static int32_t DeinitializeArena(void **state) {
+static int32_t DeinitializeAllocatorAndClerFunctions(void **state) {
     ArenaWithLifetimesAllocator_Denitialize(*state);
+    clearDefaultAllocator();
     return 0;
 }
 
@@ -32,11 +37,11 @@ static void InitializeWithoutLifetimesTest(void **state) {
 int32_t arenaWithLifetimesAllocatorTests() {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(InitializeWithoutLifetimesTest),
-        // cmocka_unit_test_setup_teardown(
-        //     ,
-        //     InitializeArena,
-        //     DeinitializeArena
-        // ),
+        cmocka_unit_test_setup_teardown(
+            InitializeWithoutLifetimesTest,
+            InitializeAllocatorAndSetupFunctions,
+            DeinitializeAllocatorAndClerFunctions
+        ),
     };
 
     return cmocka_run_group_tests_name("Arena with lifetimes allocator tests", tests, NULL, NULL);

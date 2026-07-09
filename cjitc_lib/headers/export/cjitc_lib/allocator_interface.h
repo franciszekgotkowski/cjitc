@@ -2,8 +2,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <arena_with_lifetimes_allocator.h>
-#include <allocator_errors.h>
+#include "arena_with_lifetimes_allocator.h"
+#include "allocator_errors.h"
 
 typedef ArenaWithLifetimesAllocator cjitc_allocator ;
 
@@ -53,6 +53,7 @@ void setupAllocatorFunctions(
 
 // This will run setupAllocatorFunctions with arena_allocator provided by this library
 void setupDefaultAllocator();
+void clearDefaultAllocator();
 
 PrototypeInitializeAllocator InitializeAllocator;
 PrototypeDeinitializeAllocator DeinitializeAllocator;
