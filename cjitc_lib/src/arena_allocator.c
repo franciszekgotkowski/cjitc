@@ -46,15 +46,15 @@ static size_t getNewAllocationSize(
 void* ArenaAllocator_Alloc(
     ArenaAllocatorMetadata* arena,
     size_t size,
-    ArenaAllocatorError* err
+    AllocatorError* err
 ) {
     assert(arena);
     assert(err);
-    assert(arena->amountOfPageAllocations < MAX_AMOUNT_OF_PAGE_ALLOCATIONS);
+    assert(arena->amountOfPageAllocations <= MAX_AMOUNT_OF_PAGE_ALLOCATIONS);
     assert(arena->amountOfPageAllocations >= 1);
 
     if (
-        arena->amountOfPageAllocations == MAX_AMOUNT_OF_PAGE_ALLOCATIONS-1
+        arena->amountOfPageAllocations == MAX_AMOUNT_OF_PAGE_ALLOCATIONS
     ) {
         if (
             arena->stackTop + size > 
@@ -68,8 +68,8 @@ void* ArenaAllocator_Alloc(
 
     if (
         arena->stackTop + size >
-        arena->pageAllocationMetadata[arena->amountOfPageAllocations].ptr + 
-        arena->pageAllocationMetadata[arena->amountOfPageAllocations].size 
+        arena->pageAllocationMetadata[arena->amountOfPageAllocations-1].ptr +
+        arena->pageAllocationMetadata[arena->amountOfPageAllocations-1].size
     ) {
         arena->amountOfPageAllocations++;
         size_t allocationSize = getNewAllocationSize(size);
@@ -82,5 +82,6 @@ void* ArenaAllocator_Alloc(
         arena->stackTop += size;
     }
 
+    *err = OK;
     return arena->stackTop - size;
 }

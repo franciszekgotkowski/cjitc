@@ -2,39 +2,140 @@
 #include <libs/cmocka.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <cjitc_lib/range.h>
+#include <cjitc_lib/allocator_errors.h>
 #include <cjitc_lib/arena_allocator.h>
 
-static void t1(void **state) {
-	assert_int_equal(1, 1);
-	assert_int_equal(1, 2);
+static int32_t InitializeArena(void **state) {
+    ArenaAllocatorMetadata *mem = malloc(sizeof(ArenaAllocatorMetadata));
+    *mem = ArenaAllocator_Initialize();
+    *state = mem;
+    return 0;
 }
 
-static void t2(void **state) {
-	ArenaAllocatorMetadata* arena = *state;
-	assert_non_null(arena);
+static int32_t DeinitializeArena(void **state) {
+    ArenaAllocator_Deinitialize(*state);
+    return 0;
 }
 
-static int32_t InitializeArena(void** state) {
-	ArenaAllocatorMetadata* mem = malloc(sizeof(ArenaAllocatorMetadata));
-	*mem = ArenaAllocator_Initialize();
-	*state = mem;
-	return 0;
+static void InitializingArenaTest(void **state) {
+    ArenaAllocatorMetadata arena = ArenaAllocator_Initialize();
+
+    assert_int_equal(arena.amountOfPageAllocations, 1);
+    assert_non_null(arena.stackTop);
+    assert_ptr_equal(arena.stackTop, arena.pageAllocationMetadata[0].ptr);
+
+    for range(i, arena.pageAllocationMetadata[0].size) {
+        *((char *) arena.stackTop + i) = (char) 0;
+    }
+
+    ArenaAllocator_Deinitialize(&arena);
 }
 
-static int32_t DeinitializeArena(void** state) {
-	ArenaAllocator_Deinitialize(*state);
-	return 0;
+static void FillWholeAllocationPageTest(void **state) {
+    ArenaAllocatorMetadata *arena = *state;
+
+    AllocatorError err;
+    for range(i, DEFAULT_PAGE_ALLOCATION_SIZE) {
+        err = UNKNOWN;
+        ArenaAllocator_Alloc(
+            arena,
+            sizeof(char),
+            &err
+        );
+        assert_int_equal(err, OK);
+    }
+
+    arena->stackTop = arena->pageAllocationMetadata[0].ptr;
+    for range(i, DEFAULT_PAGE_ALLOCATION_SIZE/sizeof(int32_t)) {
+        err = UNKNOWN;
+        ArenaAllocator_Alloc(
+            arena,
+            sizeof(int32_t),
+            &err
+        );
+        assert_int_equal(err, OK);
+    }
+}
+
+static void GetManyAllocationPagesTest(void **state) {
+    ArenaAllocatorMetadata *arena = *state;
+    AllocatorError err;
+
+    for range(i, DEFAULT_PAGE_ALLOCATION_SIZE*MAX_AMOUNT_OF_PAGE_ALLOCATIONS + 1) {
+        err = UNKNOWN;
+        ArenaAllocator_Alloc(
+            arena,
+            sizeof(char),
+            &err
+        );
+        if (i < DEFAULT_PAGE_ALLOCATION_SIZE*MAX_AMOUNT_OF_PAGE_ALLOCATIONS) {
+            assert_int_equal(err, OK);
+        } else {
+            assert_int_equal(err, OUT_OF_SPACE);
+            assert_int_equal(arena->amountOfPageAllocations, MAX_AMOUNT_OF_PAGE_ALLOCATIONS);
+        }
+    }
+
+    ArenaAllocator_Deinitialize(arena);
+    *arena = ArenaAllocator_Initialize();
+
+    for range(i, DEFAULT_PAGE_ALLOCATION_SIZE*MAX_AMOUNT_OF_PAGE_ALLOCATIONS + 1) {
+        err = UNKNOWN;
+        ArenaAllocator_Alloc(
+            arena,
+            sizeof(int32_t),
+            &err
+        );
+        if (i < DEFAULT_PAGE_ALLOCATION_SIZE*MAX_AMOUNT_OF_PAGE_ALLOCATIONS/sizeof(int32_t)) {
+            assert_int_equal(err, OK);
+        } else {
+            assert_int_equal(err, OUT_OF_SPACE);
+            assert_int_equal(arena->amountOfPageAllocations, MAX_AMOUNT_OF_PAGE_ALLOCATIONS);
+        }
+    }
+}
+
+static void AlwaysAllocateNewPageTest(void **state) {
+    ArenaAllocatorMetadata *arena = *state;
+    AllocatorError err;
+
+    for range(i, DEFAULT_PAGE_ALLOCATION_SIZE*MAX_AMOUNT_OF_PAGE_ALLOCATIONS + 1) {
+        err = UNKNOWN;
+        ArenaAllocator_Alloc(
+            arena,
+            DEFAULT_PAGE_ALLOCATION_SIZE,
+            &err
+        );
+        if (i < MAX_AMOUNT_OF_PAGE_ALLOCATIONS) {
+            assert_int_equal(err, OK);
+        } else {
+            assert_int_equal(err, OUT_OF_SPACE);
+            assert_int_equal(arena->amountOfPageAllocations, MAX_AMOUNT_OF_PAGE_ALLOCATIONS);
+        }
+    }
+
 }
 
 int32_t arenaAllocatorTests() {
-	const struct CMUnitTest tests[]= {
-		cmocka_unit_test(t1),
-		cmocka_unit_test_setup_teardown(
-			t2,
-			InitializeArena,
-			DeinitializeArena
-		)
-	};
+    const struct CMUnitTest tests[] = {
+        cmocka_unit_test(InitializingArenaTest),
+        cmocka_unit_test_setup_teardown(
+            FillWholeAllocationPageTest,
+            InitializeArena,
+            DeinitializeArena
+        ),
+        cmocka_unit_test_setup_teardown(
+            GetManyAllocationPagesTest,
+            InitializeArena,
+            DeinitializeArena
+        ),
+        cmocka_unit_test_setup_teardown(
+            AlwaysAllocateNewPageTest,
+            InitializeArena,
+            DeinitializeArena
+        ),
+    };
 
-	return cmocka_run_group_tests_name("Arena allocator tests", tests, NULL, NULL);
+    return cmocka_run_group_tests_name("Arena allocator tests", tests, NULL, NULL);
 }

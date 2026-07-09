@@ -2,16 +2,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include "allocator_errors.h"
 
-#define MAX_AMOUNT_OF_PAGE_ALLOCATIONS 255
+#ifndef KB
+    #define KB 1024
+#endif
+
+
+#define MAX_AMOUNT_OF_PAGE_ALLOCATIONS 256
 #define DEFAULT_PAGE_ALLOCATION_SIZE (32*KB)
-
-typedef enum {
-    OK,
-    OUT_OF_SPACE,
-
-    AMOUNT_OF_ARENA_ALLOCATOR_ERRORS
-} ArenaAllocatorError;
 
 typedef struct {
     size_t size;
@@ -33,5 +32,5 @@ void ArenaAllocator_Deinitialize(
 void* ArenaAllocator_Alloc(
     ArenaAllocatorMetadata* arena,
     size_t size,
-    ArenaAllocatorError* err
+    AllocatorError* err
 );

@@ -1,16 +1,17 @@
 #include <allocator_interface.h>
+#include <arena_with_lifetimes_allocator.h>
 #include <assert.h>
 
-PrototypeInitializeAllocator* ptr_InitializeAllocator = NULL;
-PrototypeDeinitializeAllocator* ptr_DeinitializeAllocator = NULL;
-PrototypeAlloc* ptr_Alloc = NULL;
-PrototypeDeallocLifetime* ptr_DeallocLifetime = NULL;
+PrototypeInitializeAllocator *ptr_InitializeAllocator = NULL;
+PrototypeDeinitializeAllocator *ptr_DeinitializeAllocator = NULL;
+PrototypeAlloc *ptr_Alloc = NULL;
+PrototypeDeallocLifetime *ptr_DeallocLifetime = NULL;
 
 void setupAllocatorFunctions(
-    PrototypeInitializeAllocator* InitializeAllocator,
-    PrototypeDeinitializeAllocator* DeinitializeAllocator,
-    PrototypeAlloc* Alloc,
-    PrototypeDeallocLifetime* DeallocLifetime
+    PrototypeInitializeAllocator *InitializeAllocator,
+    PrototypeDeinitializeAllocator *DeinitializeAllocator,
+    PrototypeAlloc *Alloc,
+    PrototypeDeallocLifetime *DeallocLifetime
 ) {
     assert(ptr_InitializeAllocator);
     assert(ptr_DeinitializeAllocator);
@@ -23,51 +24,59 @@ void setupAllocatorFunctions(
     ptr_DeallocLifetime = DeallocLifetime;
 }
 
+void setupDefaultAllocator() {
+    setupAllocatorFunctions(
+        &ArenaWithLifetimesAllocator_Initialize,
+        &ArenaWithLifetimesAllocator_Denitialize,
+        &ArenaWithLifetimesAllocator_Alloc,
+        &ArenaWithLifetimesAllocator_DeallocLifetime
+    );
+}
+
 cjitc_allocator InitializeAllocator() {
     assert(ptr_InitializeAllocator);
     return ptr_InitializeAllocator();
 }
 
 void DeinitializeAllocator(
-	cjitc_allocator* allocator,
-	AllocatorError* err
+    cjitc_allocator *allocator
 ) {
     assert(ptr_DeinitializeAllocator);
-    assert(err);
 
-    return ptr_DeinitializeAllocator(allocator, err);
+    return ptr_DeinitializeAllocator(allocator);
 }
 
-void* Alloc(
-	size_t size,
-	int32_t lifetime,
-	cjitc_allocator* allocator,
-	AllocatorError* err
+void *Alloc(
+    size_t size,
+    int32_t *lifetime,
+    cjitc_allocator *allocator,
+    AllocatorError *err
 ) {
     assert(ptr_Alloc);
     assert(err);
-    assert(lifetime >= -1);
+    assert(*lifetime >= -1);
+    assert(lifetime);
 
     return ptr_Alloc(
-    	size,
-     	lifetime,
-      	allocator,
-       	err
+        size,
+        lifetime,
+        allocator,
+        err
     );
 }
 
 void DeallocLifetime(
-	uint32_t lifetime,
-	cjitc_allocator* allocator,
-	AllocatorError* err
+    uint32_t lifetime,
+    cjitc_allocator *allocator,
+    AllocatorError *err
 ) {
     assert(ptr_DeallocLifetime);
     assert(err);
     assert(lifetime >= -1);
 
     return ptr_DeallocLifetime(
-    	lifetime,
-    	allocator,
-    	err
+        lifetime,
+        allocator,
+        err
     );
 }

@@ -8,11 +8,13 @@ target_compile_options(cjitc PRIVATE
 
 target_sources(cjitc PRIVATE
     src/main.c
-    src/allocator_interface.c
-    # src/multi_arena_allocator.c
-    src/arena_allocator.c
+    src/allocator_interface.c src/arena_allocator.c
+    src/arena_with_lifetimes_allocator.c
     src/platform/memory_linux.c
     #src/heap_with_lifetimes_allocator.c
+
+    headers/export/cjitc_lib/arena_allocator.h
+    headers/export/cjitc_lib/arena_with_lifetimes_allocator.h
 )
 
 target_include_directories(cjitc PRIVATE

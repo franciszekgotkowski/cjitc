@@ -1,4 +1,5 @@
-add_executable(tests)
+add_executable(tests
+        src/arena_with_lifetimes_tests.c)
 
 target_sources(tests PRIVATE
 	src/main.c
