@@ -2,6 +2,7 @@ add_executable(tests)
 
 target_sources(tests PRIVATE
 	src/main.c
+	src/arena_allocator_tests.c
 )
 
 target_compile_options(tests PRIVATE
@@ -11,7 +12,9 @@ target_compile_options(tests PRIVATE
 
 
 target_include_directories(tests PRIVATE
-	${CMAKE_CURRENT_SOURCE_DIR}/headers
+    ${CMAKE_CURRENT_SOURCE_DIR}/headers
+	${CMAKE_SOURCE_DIR}/cjitc_lib/headers/export
+	${CMAKE_SOURCE_DIR}/cjitc_exe/headers/export
 )
 
 # target_link_directories(tests PRIVATE
@@ -22,6 +25,7 @@ add_subdirectory(cmocka)
 
 target_link_libraries(tests PRIVATE
 	cmocka
+	cjitc
 )
 
 

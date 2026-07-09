@@ -1,0 +1,10 @@
+#pragma once
+
+typedef enum {
+	OK,
+	LIFETIME_IS_INACTIVE,
+	OUT_OF_LIFETIMES,
+	OUT_OF_ALLOCATION_SPACE,
+
+	AMOUNT_OF_ALLOCATION_ERRORS
+} AllocatorError ;

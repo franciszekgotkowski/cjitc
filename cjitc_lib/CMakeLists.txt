@@ -9,6 +9,7 @@ target_compile_options(cjitc PRIVATE
 target_sources(cjitc PRIVATE
     src/main.c
     src/allocator_interface.c
+    # src/multi_arena_allocator.c
     src/arena_allocator.c
     src/platform/memory_linux.c
     #src/heap_with_lifetimes_allocator.c

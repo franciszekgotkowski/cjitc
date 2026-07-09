@@ -2,11 +2,9 @@
 
 #include <stddef.h>
 
-#define KB ((u64)1024)
-#define MB ((u64)KB*1024)
-#define GB ((u64)MB*1024)
-
-#define BASE_POOL_ADDRESS 0x600000000000
+#define KB ((size_t)1024)
+#define MB ((size_t)KB*1024)
+#define GB ((size_t)MB*1024)
 
 // allocates memory via system calls
 void* mem_alloc(size_t size);

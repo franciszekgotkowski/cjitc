@@ -1,15 +1,86 @@
+#include <memory_allocations.h>
+#include <range.h>
 #include <arena_allocator.h>
-
-#include <stdint.h>
+#include <assert.h>
 #include <stddef.h>
 
-#define MAX_AMOUNT_OF_ARENA_LIFETIMES 255
-#define MAX_AMOUNT_OF_ARENA_ALLOCATIONS 65535
+ArenaAllocatorMetadata ArenaAllocator_Initialize() {
+    ArenaAllocatorMetadata ret = (ArenaAllocatorMetadata) {
+        .pageAllocationMetadata = {},
+        .amountOfPageAllocations = 1
+    };
 
-void* HeapWithLifetimesAllocator_Initialize();
-void HeapWithLifetimesAllocator_Denitialize(void* allocator);
-void* HeapWithLifetimesAllocator_Alloc(size_t size, int32_t lifetime, void* allocator);
-// void HeapWithLifetimesAllocator_Dealloc(void* ptr, void* allocator);
-void HeapWithLifetimesAllocator_DeallocLifetime(uint32_t lifetime, void* allocator);
+    ret.pageAllocationMetadata[0] = (PageAllocationMetadata){
+        .ptr = mem_alloc(DEFAULT_PAGE_ALLOCATION_SIZE),
+        .size = DEFAULT_PAGE_ALLOCATION_SIZE
+    };
 
+    ret.stackTop = ret.pageAllocationMetadata[0].ptr;
 
+    return ret;
+}
+
+void ArenaAllocator_Deinitialize(
+    ArenaAllocatorMetadata* arena
+) {
+    assert(arena);
+
+    for range(i, arena->amountOfPageAllocations) {
+        mem_dealloc(
+            arena->pageAllocationMetadata[i].ptr,
+            arena->pageAllocationMetadata[i].size
+        );
+    }
+}
+
+static size_t getNewAllocationSize(
+    size_t size
+) {
+    if (size % DEFAULT_PAGE_ALLOCATION_SIZE == 0) {
+        return size;
+    } else {
+        return DEFAULT_PAGE_ALLOCATION_SIZE * (1 + size / DEFAULT_PAGE_ALLOCATION_SIZE);
+    }
+}
+
+void* ArenaAllocator_Alloc(
+    ArenaAllocatorMetadata* arena,
+    size_t size,
+    ArenaAllocatorError* err
+) {
+    assert(arena);
+    assert(err);
+    assert(arena->amountOfPageAllocations < MAX_AMOUNT_OF_PAGE_ALLOCATIONS);
+    assert(arena->amountOfPageAllocations >= 1);
+
+    if (
+        arena->amountOfPageAllocations == MAX_AMOUNT_OF_PAGE_ALLOCATIONS-1
+    ) {
+        if (
+            arena->stackTop + size > 
+            arena->pageAllocationMetadata[arena->amountOfPageAllocations-1].ptr + 
+            arena->pageAllocationMetadata[arena->amountOfPageAllocations-1].size
+        ) {
+            *err = OUT_OF_SPACE;
+            return NULL;
+        }
+    }
+
+    if (
+        arena->stackTop + size >
+        arena->pageAllocationMetadata[arena->amountOfPageAllocations].ptr + 
+        arena->pageAllocationMetadata[arena->amountOfPageAllocations].size 
+    ) {
+        arena->amountOfPageAllocations++;
+        size_t allocationSize = getNewAllocationSize(size);
+        arena->pageAllocationMetadata[arena->amountOfPageAllocations-1] = (PageAllocationMetadata) {
+            .size = allocationSize,
+            .ptr = mem_alloc(allocationSize)
+        };
+        arena->stackTop = arena->pageAllocationMetadata[arena->amountOfPageAllocations-1].ptr + size;
+    } else {
+        arena->stackTop += size;
+    }
+
+    return arena->stackTop - size;
+}
