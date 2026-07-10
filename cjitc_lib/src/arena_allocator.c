@@ -1,6 +1,6 @@
-#include <memory_allocations.h>
-#include <range.h>
-#include <arena_allocator.h>
+#include "memory_allocations.h"
+#include "range.h"
+#include "arena_allocator.h"
 #include <assert.h>
 #include <stddef.h>
 
@@ -57,8 +57,8 @@ void* ArenaAllocator_Alloc(
         arena->amountOfPageAllocations == MAX_AMOUNT_OF_PAGE_ALLOCATIONS
     ) {
         if (
-            arena->stackTop + size > 
-            arena->pageAllocationMetadata[arena->amountOfPageAllocations-1].ptr + 
+            arena->stackTop + size >
+            arena->pageAllocationMetadata[arena->amountOfPageAllocations-1].ptr +
             arena->pageAllocationMetadata[arena->amountOfPageAllocations-1].size
         ) {
             *err = OUT_OF_SPACE;

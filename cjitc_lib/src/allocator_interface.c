@@ -1,5 +1,5 @@
-#include <allocator_interface.h>
-#include <arena_with_lifetimes_allocator.h>
+#include "allocator_interface.h"
+#include "arena_with_lifetimes_allocator.h"
 #include <assert.h>
 
 PrototypeInitializeAllocator *ptr_InitializeAllocator = NULL;

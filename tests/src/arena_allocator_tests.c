@@ -1,10 +1,11 @@
-#include <arena_allocator_tests.h>
-#include <libs/cmocka.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <cjitc_lib/range.h>
-#include <cjitc_lib/allocator_errors.h>
-#include <cjitc_lib/arena_allocator.h>
+
+#include <range.h>
+#include <allocator_errors.h>
+#include <arena_allocator.h>
+
+#include "arena_allocator_tests.h"
+#include "cmocka.h"
 
 static int32_t InitializeAllocatorAndSetupFunctions(void **state) {
     ArenaAllocatorMetadata *mem = malloc(sizeof(ArenaAllocatorMetadata));

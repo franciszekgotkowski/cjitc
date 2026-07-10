@@ -2,9 +2,9 @@
 #include <stddef.h>
 #include <windows.h>
 #include <stdio.h>
-
-#include <memory_allocations.h>
 #include <assert.h>
+
+#include "../memory_allocations.h"
 
 // inline void* mem_alloc(u64 size) {
 inline void* mem_alloc_on_address(size_t size, void* address) {

@@ -1,4 +1,5 @@
-#include <arena_with_lifetimes_allocator.h>
+#include "arena_with_lifetimes_allocator.h"
+#include "allocator_errors.h"
 #include <assert.h>
 
 ArenaWithLifetimesAllocator ArenaWithLifetimesAllocator_Initialize() {
@@ -49,7 +50,9 @@ static int32_t getNewLifetime(
 	int32_t inactiveLifetime;
 	for (inactiveLifetime = alloc->firstUnusedLifetime; alloc->isLifetimeActive[inactiveLifetime] == true; inactiveLifetime++) {}
 	alloc->firstUnusedLifetime = inactiveLifetime;
+	alloc->amountOfActiveLifetimes++;
 
+	*err = OK;
 	return ourLifetime;
 }
 
@@ -64,7 +67,7 @@ void* ArenaWithLifetimesAllocator_Alloc(
 	assert(allocator);
 	assert(err);
 
-	AllocatorError e;
+	AllocatorError e = UNKNOWN;
 
 	int32_t ourLifetime;
 	if ( *lifetime == -1) {
@@ -77,6 +80,7 @@ void* ArenaWithLifetimesAllocator_Alloc(
 			return NULL;
 		}
 		allocator->arenas[ourLifetime] = ArenaAllocator_Initialize();
+
 	} else {
 
 		if (allocator->isLifetimeActive[*lifetime] == false) {

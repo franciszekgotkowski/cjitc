@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#include <arena_allocator_tests.h>
-#include <arena_with_lifetimes_tests.h>
+#include "arena_allocator_tests.h"
+#include "arena_with_lifetimes_tests.h"
 
 int main(void) {
 	int32_t success = 0;
