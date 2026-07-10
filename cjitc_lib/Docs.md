@@ -34,7 +34,7 @@ Code generation from IR. CodeGen will have multiple backends - first asm and the
 ### Custom allocators
 User provided allocators need to follow interface provided in allocator_interface.h
 
-Before using library custom allocator should be setup with  setupAllocatorFunctions() function. It also can be cleared with clearAllocatorFunctions() function.
+Before using library, custom allocator should be setup with  setupAllocatorFunctions() function and by typedefing cjitc_allocator. Functions can also be cleared with clearAllocatorFunctions() function.
 
 cjitc provides default allocator - multiarena or arena with lifetimes allocator (it manages multiple arenas which are lifetimes in this case). It can be setup with setupDefaultAllocator() function.
 

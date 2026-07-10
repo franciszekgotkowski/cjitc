@@ -5,7 +5,11 @@
 #include "arena_with_lifetimes_allocator.h"
 #include "allocator_errors.h"
 
+// IF YOU WANT TO USE CUSTOM ALLOCATOR CHANGE THIS TYPEDEF
 typedef ArenaWithLifetimesAllocator cjitc_allocator ;
+
+
+
 
 // Function will return allocator struct that will manage the memory.
 // Struct has to have size defined at compiletime
