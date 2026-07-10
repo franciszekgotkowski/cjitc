@@ -37,10 +37,25 @@ typedef void* PrototypeAlloc(
 //	OK	-	if everything went fine
 //	LIFETIME_IS_INACTIVE	-	if lifetime selected by user is inactive
 typedef void PrototypeDeallocLifetime(
-	uint32_t lifetime,
+	int32_t lifetime,
 	cjitc_allocator* allocator,
 	AllocatorError* err
 );
+
+// lifetime should always be a valid lifetime (between 0 and max amount of lifetimes -1)
+typedef bool PrototypeIsLifetimeActive(
+	ArenaWithLifetimesAllocator* allocator,
+	int32_t lifetime
+);
+
+typedef int32_t PrototypeAmountOfActiveLifetimes(
+	ArenaWithLifetimesAllocator* allocator
+);
+
+typedef int32_t PrototypeFirstUnusedLifetime(
+	ArenaWithLifetimesAllocator* allocator
+);
+
 
 // Before using library this function must be ran
 // It will set up allocator functions which will be used by the library
@@ -48,14 +63,20 @@ void setupAllocatorFunctions(
     PrototypeInitializeAllocator* InitializeAllocator,
     PrototypeDeinitializeAllocator* DeinitializeAllocator,
     PrototypeAlloc* Alloc,
-    PrototypeDeallocLifetime* DeallocLifetime
+    PrototypeDeallocLifetime* DeallocLifetime,
+    PrototypeIsLifetimeActive* IsLifetimeActive,
+    PrototypeAmountOfActiveLifetimes* AmountOfActiveLifetimes,
+    PrototypeFirstUnusedLifetime* FirstUnusedLifetime
 );
 
 // This will run setupAllocatorFunctions with arena_allocator provided by this library
 void setupDefaultAllocator();
-void clearDefaultAllocator();
+void clearAllocatorFunctions();
 
 PrototypeInitializeAllocator InitializeAllocator;
 PrototypeDeinitializeAllocator DeinitializeAllocator;
 PrototypeAlloc Alloc;
 PrototypeDeallocLifetime DeallocLifetime;
+PrototypeIsLifetimeActive IsLifetimeActive;
+PrototypeAmountOfActiveLifetimes AmountOfActiveLifetimes;
+PrototypeFirstUnusedLifetime FirstUnusedLifetime;

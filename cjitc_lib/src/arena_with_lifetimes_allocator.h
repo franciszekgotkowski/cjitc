@@ -20,18 +20,30 @@ ArenaWithLifetimesAllocator ArenaWithLifetimesAllocator_Initialize();
 void ArenaWithLifetimesAllocator_Denitialize(
 	ArenaWithLifetimesAllocator* allocator
 );
+
 void* ArenaWithLifetimesAllocator_Alloc(
 	size_t size,
 	int32_t* lifetime,
 	ArenaWithLifetimesAllocator* allocator,
 	AllocatorError* err
 );
+
 void ArenaWithLifetimesAllocator_DeallocLifetime(
-	uint32_t lifetime,
+	int32_t lifetime,
 	ArenaWithLifetimesAllocator* allocator,
 	AllocatorError* err
 );
 
+bool ArenaWithLifetimesAllocator_isLifetimeActive(
+	ArenaWithLifetimesAllocator* allocator,
+	int32_t lifetime
+);
 
+int32_t ArenaWithLifetimesAllocator_amountOfActiveLifetimes(
+	ArenaWithLifetimesAllocator* allocator
+);
 
+int32_t ArenaWithLifetimesAllocator_firstUnusedLifetime(
+	ArenaWithLifetimesAllocator* allocator
+);
 

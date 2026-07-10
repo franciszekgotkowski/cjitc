@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <arena_with_lifetimes_allocator.h>
 #include <range.h>
 #include <allocator_interface.h>
 
@@ -10,30 +9,33 @@
 #include "allocator_errors.h"
 #include "cmocka.h"
 
+void (*SetupFunction)() = &setupDefaultAllocator;
+
 static int32_t InitializeAllocatorAndSetupFunctions(void **state) {
 
-	setupDefaultAllocator();
+	SetupFunction();
 
 	ArenaWithLifetimesAllocator *mem = malloc(sizeof(ArenaWithLifetimesAllocator));
-	*mem = ArenaWithLifetimesAllocator_Initialize();
+	*mem = InitializeAllocator();
 	*state = mem;
 	return 0;
 }
 
 static int32_t DeinitializeAllocatorAndClerFunctions(void **state) {
-	ArenaWithLifetimesAllocator_Denitialize(*state);
-	clearDefaultAllocator();
+	DeinitializeAllocator(*state);
+	clearAllocatorFunctions();
 	return 0;
 }
 
 static void InitializeWithoutLifetimesTest(void **state) {
-	ArenaWithLifetimesAllocator alloc = ArenaWithLifetimesAllocator_Initialize();
+	SetupFunction();
+	ArenaWithLifetimesAllocator alloc = InitializeAllocator();
 
-	assert_int_equal(alloc.amountOfActiveLifetimes, 0);
-	assert_int_equal(alloc.firstUnusedLifetime, 0);
+	assert_int_equal(AmountOfActiveLifetimes(&alloc), 0);
+	assert_int_equal(FirstUnusedLifetime(&alloc), 0);
 
 	for range(i , MAX_AMOUNT_OF_ARENA_LIFETIMES) {
-	assert_true(alloc.isLifetimeActive[i] == false);
+	assert_true(IsLifetimeActive(&alloc, i) == false);
 }
 }
 
@@ -44,7 +46,7 @@ static void OpenAllLifetimesTest(void **state) {
 
 	for range(i, MAX_AMOUNT_OF_ARENA_LIFETIMES) {
 	int32_t lifetime = -1;
-	ArenaWithLifetimesAllocator_Alloc(
+	Alloc(
 		1,
 		&lifetime,
 		alloc,
@@ -55,7 +57,7 @@ static void OpenAllLifetimesTest(void **state) {
 }
 
 for range(i, MAX_AMOUNT_OF_ARENA_LIFETIMES) {
-ArenaWithLifetimesAllocator_Alloc(
+Alloc(
 	1,
 	&i,
 	alloc,
@@ -72,7 +74,7 @@ static void OpenIncativeLifetimesTest(void **state) {
 	for range(i, MAX_AMOUNT_OF_ARENA_LIFETIMES) {
 	AllocatorError err = UNKNOWN;
 	int32_t lifetime = -1;
-	ArenaWithLifetimesAllocator_Alloc(
+	Alloc(
 		1,
 		&lifetime,
 		alloc,
@@ -80,10 +82,10 @@ static void OpenIncativeLifetimesTest(void **state) {
 	);
 	assert_int_equal(lifetime, i);
 	assert_int_equal(err, OK);
-	assert_int_equal(alloc->amountOfActiveLifetimes, i+1);
+	assert_int_equal(AmountOfActiveLifetimes(alloc), i+1);
 
 	for range(j, MAX_AMOUNT_OF_ARENA_LIFETIMES) {
-	ArenaWithLifetimesAllocator_Alloc(
+	Alloc(
 		1,
 		&j,
 		alloc,
@@ -106,7 +108,7 @@ static void OpenTooManyLifetimesTest(void **state) {
 
 		int32_t lifetime = -1;
 
-		ArenaWithLifetimesAllocator_Alloc(
+		Alloc(
 			1,
 			&lifetime,
 			alloc,
@@ -119,6 +121,72 @@ static void OpenTooManyLifetimesTest(void **state) {
 			assert_int_equal(err, OUT_OF_LIFETIMES);
 		}
 
+	}
+}
+
+static void OpenAndDeleteLifetimesTest(void **state) {
+	ArenaWithLifetimesAllocator* alloc = *state;
+
+	for range(i, MAX_AMOUNT_OF_ARENA_LIFETIMES ) {
+		AllocatorError err = UNKNOWN;
+
+		int32_t lifetime = -1;
+
+		assert_int_equal(AmountOfActiveLifetimes(alloc), i);
+		Alloc(
+			1,
+			&lifetime,
+			alloc,
+			&err
+		);
+		assert_int_equal(err, OK);
+		assert_int_equal(lifetime, i);
+		assert_int_equal(AmountOfActiveLifetimes(alloc), i+1);
+		DeallocLifetime(
+			i,
+			alloc,
+			&err
+		);
+		assert_int_equal(AmountOfActiveLifetimes(alloc), i);
+		assert_int_equal(err, OK);
+		lifetime = -1;
+		Alloc(
+			1,
+			&lifetime,
+			alloc,
+			&err
+		);
+		assert_int_equal(AmountOfActiveLifetimes(alloc), i+1);
+		assert_int_equal(err, OK);
+		assert_int_equal(lifetime, i);
+
+	}
+	assert_int_equal(AmountOfActiveLifetimes(alloc), MAX_AMOUNT_OF_PAGE_ALLOCATIONS);
+}
+
+static void DeleteInactiveLifetimesTest(void **state) {
+	ArenaWithLifetimesAllocator* alloc = *state;
+
+	AllocatorError err = UNKNOWN;
+	for range(i, MAX_AMOUNT_OF_ARENA_LIFETIMES ) {
+		assert_int_equal(
+			AmountOfActiveLifetimes(
+				alloc
+			),
+			0
+		);
+		DeallocLifetime(
+			i,
+			alloc,
+			&err
+		);
+		assert_int_equal(err, LIFETIME_IS_INACTIVE);
+		assert_int_equal(
+			AmountOfActiveLifetimes(
+				alloc
+			),
+			0
+		);
 	}
 }
 
@@ -137,6 +205,16 @@ int32_t arenaWithLifetimesAllocatorTests() {
 		),
 		cmocka_unit_test_setup_teardown(
 			OpenTooManyLifetimesTest,
+			InitializeAllocatorAndSetupFunctions,
+			DeinitializeAllocatorAndClerFunctions
+		),
+		cmocka_unit_test_setup_teardown(
+			OpenAndDeleteLifetimesTest,
+			InitializeAllocatorAndSetupFunctions,
+			DeinitializeAllocatorAndClerFunctions
+		),
+		cmocka_unit_test_setup_teardown(
+			DeleteInactiveLifetimesTest,
 			InitializeAllocatorAndSetupFunctions,
 			DeinitializeAllocatorAndClerFunctions
 		)

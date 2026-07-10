@@ -1,6 +1,7 @@
 #include "arena_with_lifetimes_allocator.h"
 #include "allocator_errors.h"
 #include <assert.h>
+#include <stdint.h>
 
 ArenaWithLifetimesAllocator ArenaWithLifetimesAllocator_Initialize() {
     ArenaWithLifetimesAllocator arenaWithLifetimesAllocator = (ArenaWithLifetimesAllocator) {
@@ -108,7 +109,7 @@ void* ArenaWithLifetimesAllocator_Alloc(
 }
 
 void ArenaWithLifetimesAllocator_DeallocLifetime(
-	uint32_t lifetime,
+	int32_t lifetime,
 	ArenaWithLifetimesAllocator* allocator,
 	AllocatorError* err
 ) {
@@ -133,6 +134,28 @@ void ArenaWithLifetimesAllocator_DeallocLifetime(
 	*err = OK;
 }
 
+bool ArenaWithLifetimesAllocator_isLifetimeActive(
+	ArenaWithLifetimesAllocator* allocator,
+	int32_t lifetime
+) {
+	assert(allocator);
+	assert(lifetime >= 0 && lifetime < MAX_AMOUNT_OF_ARENA_LIFETIMES);
 
+	return allocator->isLifetimeActive[lifetime];
+}
 
+int32_t ArenaWithLifetimesAllocator_amountOfActiveLifetimes(
+	ArenaWithLifetimesAllocator* allocator
+) {
+	assert(allocator);
+
+	return allocator->amountOfActiveLifetimes;
+}
+int32_t ArenaWithLifetimesAllocator_firstUnusedLifetime(
+	ArenaWithLifetimesAllocator* allocator
+){
+	assert(allocator);
+
+	return allocator->firstUnusedLifetime;
+}
 
