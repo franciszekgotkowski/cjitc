@@ -34,13 +34,11 @@ Code generation from IR. CodeGen will have multiple backends - first asm and the
 ### Custom allocators
 User provided allocators need to follow interface provided in allocator_interface.h
 
-Before using library custom allocator should be setup with setupAllocatorFunctions() function. It also can be cleared withclearAllocatorFunctions() function.
+Before using library custom allocator should be setup with  setupAllocatorFunctions() function. It also can be cleared with clearAllocatorFunctions() function.
 
-cjitc provides default allocator - multi arena or arena with lifetimes allocator. It needs to be setup with setupDefaultAllocator() function.
+cjitc provides default allocator - multiarena or arena with lifetimes allocator (it manages multiple arenas which are lifetimes in this case). It can be setup with setupDefaultAllocator() function.
 
 #### Testing your allocator
 Custom allocators can be tested!
 
-arena_with_lifetimes_tests.c file contains test suite for the default allocator, but it is trivially easy to inject other allocators. Just change SetupFunction pointer to your setupAllocator function and tests will run with your allocator.
-
-If you want to keep arena_with_lifetimes_tests.c file you can just copy it, change name of the function that runs tests and add it to main.c file
+arena_with_lifetimes_tests.c file contains test suite for the default allocator, but it is trivially easy to inject other allocators. Just change SetupFunction pointer to your setupAllocator function and tests will run with your allocator
