@@ -6,7 +6,7 @@
 #include "allocator_errors.h"
 
 // IF YOU WANT TO USE CUSTOM ALLOCATOR CHANGE THIS TYPEDEF
-typedef ArenaWithLifetimesAllocator cjitc_allocator ;
+typedef ArenaWithLifetimesAllocator cjitc_allocator;
 
 
 

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <sys/mman.h>
 
-#include "../memory_allocations.h"
+#include "../allocator/memory_allocations.h"
 #include <stddef.h>
 #include <assert.h>
 

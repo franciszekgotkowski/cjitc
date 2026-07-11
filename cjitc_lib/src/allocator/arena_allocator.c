@@ -1,5 +1,5 @@
 #include "memory_allocations.h"
-#include "range.h"
+#include "../range.h"
 #include "arena_allocator.h"
 #include <assert.h>
 #include <stddef.h>
@@ -61,7 +61,7 @@ void* ArenaAllocator_Alloc(
             arena->pageAllocationMetadata[arena->amountOfPageAllocations-1].ptr +
             arena->pageAllocationMetadata[arena->amountOfPageAllocations-1].size
         ) {
-            *err = OUT_OF_SPACE;
+            *err = ALLOCATOR_OUT_OF_SPACE;
             return NULL;
         }
     }
@@ -82,6 +82,6 @@ void* ArenaAllocator_Alloc(
         arena->stackTop += size;
     }
 
-    *err = OK;
+    *err = ALLOCATOR_OK;
     return arena->stackTop - size;
 }

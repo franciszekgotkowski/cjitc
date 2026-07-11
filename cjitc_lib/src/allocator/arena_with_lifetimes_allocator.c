@@ -41,7 +41,7 @@ static int32_t getNewLifetime(
 	assert(err);
 
 	if (alloc->amountOfActiveLifetimes == MAX_AMOUNT_OF_ARENA_LIFETIMES) {
-		*err = OUT_OF_LIFETIMES;
+		*err = ALLOCATOR_OUT_OF_LIFETIMES;
 		return -1;
 	}
 
@@ -53,7 +53,7 @@ static int32_t getNewLifetime(
 	alloc->firstUnusedLifetime = inactiveLifetime;
 	alloc->amountOfActiveLifetimes++;
 
-	*err = OK;
+	*err = ALLOCATOR_OK;
 	return ourLifetime;
 }
 
@@ -68,15 +68,15 @@ void* ArenaWithLifetimesAllocator_Alloc(
 	assert(allocator);
 	assert(err);
 
-	AllocatorError e = UNKNOWN;
+	AllocatorError e = ALLOCATOR_UNKNOWN;
 
 	int32_t ourLifetime;
 	if ( *lifetime == -1) {
 		ourLifetime = getNewLifetime(
 			allocator, &e
 		);
-		if (e != OK) {
-			assert(e == OUT_OF_LIFETIMES);
+		if (e != ALLOCATOR_OK) {
+			assert(e == ALLOCATOR_OUT_OF_LIFETIMES);
 			*err = e;
 			return NULL;
 		}
@@ -85,7 +85,7 @@ void* ArenaWithLifetimesAllocator_Alloc(
 	} else {
 
 		if (allocator->isLifetimeActive[*lifetime] == false) {
-			*err = LIFETIME_IS_INACTIVE;
+			*err = ALLOCATOR_LIFETIME_IS_INACTIVE;
 			return NULL;
 		}
 
@@ -98,13 +98,13 @@ void* ArenaWithLifetimesAllocator_Alloc(
 		&e
 	);
 
-	if (e != OK) {
+	if (e != ALLOCATOR_OK) {
 		*err = e;
 		return NULL;
 	}
 	*lifetime = ourLifetime;
 
-	*err = OK;
+	*err = ALLOCATOR_OK;
 	return ptr;
 }
 
@@ -118,7 +118,7 @@ void ArenaWithLifetimesAllocator_DeallocLifetime(
 	assert(err);
 
 	if (allocator->isLifetimeActive[lifetime] == false) {
-		*err = LIFETIME_IS_INACTIVE;
+		*err = ALLOCATOR_LIFETIME_IS_INACTIVE;
 		return;
 	}
 
@@ -131,7 +131,7 @@ void ArenaWithLifetimesAllocator_DeallocLifetime(
 	ArenaAllocator_Deinitialize(
 		&allocator->arenas[lifetime]
 	);
-	*err = OK;
+	*err = ALLOCATOR_OK;
 }
 
 bool ArenaWithLifetimesAllocator_isLifetimeActive(

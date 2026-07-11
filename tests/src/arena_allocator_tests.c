@@ -1,8 +1,8 @@
 #include <stdlib.h>
 
 #include <range.h>
-#include <allocator_errors.h>
-#include <arena_allocator.h>
+#include <allocator/allocator_errors.h>
+#include <allocator/arena_allocator.h>
 
 #include "arena_allocator_tests.h"
 #include "cmocka.h"
@@ -38,24 +38,24 @@ static void FillWholeAllocationPageTest(void **state) {
 
     AllocatorError err;
     for range(i, DEFAULT_PAGE_ALLOCATION_SIZE) {
-        err = UNKNOWN;
+        err = ALLOCATOR_UNKNOWN;
         ArenaAllocator_Alloc(
             arena,
             sizeof(char),
             &err
         );
-        assert_int_equal(err, OK);
+        assert_int_equal(err, ALLOCATOR_OK);
     }
 
     arena->stackTop = arena->pageAllocationMetadata[0].ptr;
     for range(i, DEFAULT_PAGE_ALLOCATION_SIZE/sizeof(int32_t)) {
-        err = UNKNOWN;
+        err = ALLOCATOR_UNKNOWN;
         ArenaAllocator_Alloc(
             arena,
             sizeof(int32_t),
             &err
         );
-        assert_int_equal(err, OK);
+        assert_int_equal(err, ALLOCATOR_OK);
     }
 }
 
@@ -64,16 +64,16 @@ static void GetManyAllocationPagesTest(void **state) {
     AllocatorError err;
 
     for range(i, DEFAULT_PAGE_ALLOCATION_SIZE*MAX_AMOUNT_OF_PAGE_ALLOCATIONS + 1) {
-        err = UNKNOWN;
+        err = ALLOCATOR_UNKNOWN;
         ArenaAllocator_Alloc(
             arena,
             sizeof(char),
             &err
         );
         if (i < DEFAULT_PAGE_ALLOCATION_SIZE*MAX_AMOUNT_OF_PAGE_ALLOCATIONS) {
-            assert_int_equal(err, OK);
+            assert_int_equal(err, ALLOCATOR_OK);
         } else {
-            assert_int_equal(err, OUT_OF_SPACE);
+            assert_int_equal(err, ALLOCATOR_OUT_OF_SPACE);
             assert_int_equal(arena->amountOfPageAllocations, MAX_AMOUNT_OF_PAGE_ALLOCATIONS);
         }
     }
@@ -82,16 +82,16 @@ static void GetManyAllocationPagesTest(void **state) {
     *arena = ArenaAllocator_Initialize();
 
     for range(i, DEFAULT_PAGE_ALLOCATION_SIZE*MAX_AMOUNT_OF_PAGE_ALLOCATIONS + 1) {
-        err = UNKNOWN;
+        err = ALLOCATOR_UNKNOWN;
         ArenaAllocator_Alloc(
             arena,
             sizeof(int32_t),
             &err
         );
         if (i < DEFAULT_PAGE_ALLOCATION_SIZE*MAX_AMOUNT_OF_PAGE_ALLOCATIONS/sizeof(int32_t)) {
-            assert_int_equal(err, OK);
+            assert_int_equal(err, ALLOCATOR_OK);
         } else {
-            assert_int_equal(err, OUT_OF_SPACE);
+            assert_int_equal(err, ALLOCATOR_OUT_OF_SPACE);
             assert_int_equal(arena->amountOfPageAllocations, MAX_AMOUNT_OF_PAGE_ALLOCATIONS);
         }
     }
@@ -102,16 +102,16 @@ static void AlwaysAllocateNewPageTest(void **state) {
     AllocatorError err;
 
     for range(i, DEFAULT_PAGE_ALLOCATION_SIZE*MAX_AMOUNT_OF_PAGE_ALLOCATIONS + 1) {
-        err = UNKNOWN;
+        err = ALLOCATOR_UNKNOWN;
         ArenaAllocator_Alloc(
             arena,
             DEFAULT_PAGE_ALLOCATION_SIZE,
             &err
         );
         if (i < MAX_AMOUNT_OF_PAGE_ALLOCATIONS) {
-            assert_int_equal(err, OK);
+            assert_int_equal(err, ALLOCATOR_OK);
         } else {
-            assert_int_equal(err, OUT_OF_SPACE);
+            assert_int_equal(err, ALLOCATOR_OUT_OF_SPACE);
             assert_int_equal(arena->amountOfPageAllocations, MAX_AMOUNT_OF_PAGE_ALLOCATIONS);
         }
     }

@@ -3,11 +3,20 @@
 #include <stdlib.h>
 
 #include <range.h>
-#include <allocator_interface.h>
+#include <allocator/allocator_interface.h>
+#include <allocator/allocator_errors.h>
 
 #include "arena_with_lifetimes_tests.h"
-#include "allocator_errors.h"
 #include "cmocka.h"
+
+// #define SETUP_ALLOCATOR_FUNCTION &setupDefaultAllocator;
+
+// #ifndef SETUP_ALLOCATOR_FUNCTION
+// 	#error "SETUP_ALLOCATOR_FUNCTION is not defined!"
+// #endif
+// #ifdef SETUP_ALLOCATOR_FUNCTION
+// 	void (*SetupFunction)() = SETUP_ALLOCATOR_FUNCTION
+// #endif
 
 void (*SetupFunction)() = &setupDefaultAllocator;
 
@@ -42,7 +51,7 @@ static void InitializeWithoutLifetimesTest(void **state) {
 static void OpenAllLifetimesTest(void **state) {
 	ArenaWithLifetimesAllocator* alloc = *state;
 
-	AllocatorError err = UNKNOWN;
+	AllocatorError err = ALLOCATOR_UNKNOWN;
 
 	for range(i, MAX_AMOUNT_OF_ARENA_LIFETIMES) {
 	int32_t lifetime = -1;
@@ -53,7 +62,7 @@ static void OpenAllLifetimesTest(void **state) {
 		&err
 	);
 	assert_int_equal(lifetime, i);
-	assert_int_equal(err, OK);
+	assert_int_equal(err, ALLOCATOR_OK);
 }
 
 for range(i, MAX_AMOUNT_OF_ARENA_LIFETIMES) {
@@ -63,7 +72,7 @@ Alloc(
 	alloc,
 	&err
 );
-assert_int_equal(err, OK);
+assert_int_equal(err, ALLOCATOR_OK);
 }
 }
 
@@ -72,7 +81,7 @@ static void OpenIncativeLifetimesTest(void **state) {
 
 
 	for range(i, MAX_AMOUNT_OF_ARENA_LIFETIMES) {
-	AllocatorError err = UNKNOWN;
+	AllocatorError err = ALLOCATOR_UNKNOWN;
 	int32_t lifetime = -1;
 	Alloc(
 		1,
@@ -81,7 +90,7 @@ static void OpenIncativeLifetimesTest(void **state) {
 		&err
 	);
 	assert_int_equal(lifetime, i);
-	assert_int_equal(err, OK);
+	assert_int_equal(err, ALLOCATOR_OK);
 	assert_int_equal(AmountOfActiveLifetimes(alloc), i+1);
 
 	for range(j, MAX_AMOUNT_OF_ARENA_LIFETIMES) {
@@ -92,9 +101,9 @@ static void OpenIncativeLifetimesTest(void **state) {
 		&err
 	);
 	if (j <= i) {
-		assert_int_equal(err, OK);
+		assert_int_equal(err, ALLOCATOR_OK);
 	} else {
-		assert_int_equal(err, LIFETIME_IS_INACTIVE);
+		assert_int_equal(err, ALLOCATOR_LIFETIME_IS_INACTIVE);
 	}
 }
 }
@@ -104,7 +113,7 @@ static void OpenTooManyLifetimesTest(void **state) {
 	ArenaWithLifetimesAllocator* alloc = *state;
 
 	for range(i, MAX_AMOUNT_OF_ARENA_LIFETIMES * 2 ) {
-		AllocatorError err = UNKNOWN;
+		AllocatorError err = ALLOCATOR_UNKNOWN;
 
 		int32_t lifetime = -1;
 
@@ -116,9 +125,9 @@ static void OpenTooManyLifetimesTest(void **state) {
 		);
 
 		if (i < MAX_AMOUNT_OF_ARENA_LIFETIMES) {
-			assert_int_equal(err, OK);
+			assert_int_equal(err, ALLOCATOR_OK);
 		} else {
-			assert_int_equal(err, OUT_OF_LIFETIMES);
+			assert_int_equal(err, ALLOCATOR_OUT_OF_LIFETIMES);
 		}
 
 	}
@@ -128,7 +137,7 @@ static void OpenAndDeleteLifetimesTest(void **state) {
 	ArenaWithLifetimesAllocator* alloc = *state;
 
 	for range(i, MAX_AMOUNT_OF_ARENA_LIFETIMES ) {
-		AllocatorError err = UNKNOWN;
+		AllocatorError err = ALLOCATOR_UNKNOWN;
 
 		int32_t lifetime = -1;
 
@@ -139,7 +148,7 @@ static void OpenAndDeleteLifetimesTest(void **state) {
 			alloc,
 			&err
 		);
-		assert_int_equal(err, OK);
+		assert_int_equal(err, ALLOCATOR_OK);
 		assert_int_equal(lifetime, i);
 		assert_int_equal(AmountOfActiveLifetimes(alloc), i+1);
 		DeallocLifetime(
@@ -148,7 +157,7 @@ static void OpenAndDeleteLifetimesTest(void **state) {
 			&err
 		);
 		assert_int_equal(AmountOfActiveLifetimes(alloc), i);
-		assert_int_equal(err, OK);
+		assert_int_equal(err, ALLOCATOR_OK);
 		lifetime = -1;
 		Alloc(
 			1,
@@ -157,7 +166,7 @@ static void OpenAndDeleteLifetimesTest(void **state) {
 			&err
 		);
 		assert_int_equal(AmountOfActiveLifetimes(alloc), i+1);
-		assert_int_equal(err, OK);
+		assert_int_equal(err, ALLOCATOR_OK);
 		assert_int_equal(lifetime, i);
 
 	}
@@ -167,7 +176,7 @@ static void OpenAndDeleteLifetimesTest(void **state) {
 static void DeleteInactiveLifetimesTest(void **state) {
 	ArenaWithLifetimesAllocator* alloc = *state;
 
-	AllocatorError err = UNKNOWN;
+	AllocatorError err = ALLOCATOR_UNKNOWN;
 	for range(i, MAX_AMOUNT_OF_ARENA_LIFETIMES ) {
 		assert_int_equal(
 			AmountOfActiveLifetimes(
@@ -180,7 +189,7 @@ static void DeleteInactiveLifetimesTest(void **state) {
 			alloc,
 			&err
 		);
-		assert_int_equal(err, LIFETIME_IS_INACTIVE);
+		assert_int_equal(err, ALLOCATOR_LIFETIME_IS_INACTIVE);
 		assert_int_equal(
 			AmountOfActiveLifetimes(
 				alloc

@@ -8,8 +8,10 @@ target_compile_options(cjitc PRIVATE
 
 target_sources(cjitc PRIVATE
 				src/main.c
-				src/allocator_interface.c src/arena_allocator.c
-				src/arena_with_lifetimes_allocator.c
+				src/allocator/allocator_interface.c
+				src/allocator/arena_allocator.c
+				src/allocator/arena_with_lifetimes_allocator.c
+				src/tokeniser/tokeniser.c
 				src/platform/memory_linux.c
 				#src/heap_with_lifetimes_allocator.c
 
