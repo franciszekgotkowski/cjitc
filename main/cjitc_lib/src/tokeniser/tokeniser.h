@@ -24,3 +24,4 @@ Tokeniser Tokeniser_Initialize(
 	cjitc_allocator* allocator,
 	TokeniserError* err
 );
+
