@@ -275,7 +275,7 @@ func main() {
 		fmt.Println(t3.ToString())
 	}
 	fmt.Println(t3.Execute(true))
-	s, _ = TranslateToInfix(string(code3))
+	s, _ = TranslateToInfix(string(code2))
 	fmt.Println(s)
 
 	code4 := []rune("-ab*ca")
@@ -283,28 +283,33 @@ func main() {
 	if t4 != nil {
 		fmt.Println(t4.ToString())
 	}
+	fmt.Println()
 
 	code5 := []rune("--aa-a")
 	t5 := ParseCode(code5)
 	if t5 != nil {
 		fmt.Println(t5.ToString())
 	}
+	fmt.Println()
 
 	code6 := []rune("")
 	t6 := ParseCode(code6)
 	if t6 != nil {
 		fmt.Println(t6.ToString())
 	}
+	fmt.Println()
 
 	code7 := []rune("---")
 	t7 := ParseCode(code7)
 	if t7 != nil {
 		fmt.Println(t7.ToString())
 	}
+	fmt.Println()
 
 	code8 := []rune("asd-f")
 	t8 := ParseCode(code8)
 	if t8 != nil {
 		fmt.Println(t8.ToString())
 	}
+	fmt.Println()
 }
