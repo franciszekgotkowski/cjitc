@@ -168,6 +168,47 @@ func rec(r []rune) {
 	}
 }
 
+func (token Token) Execute(b bool) rune {
+	var s string
+
+	if token.T == NONTERMINAL {
+		return token.V
+	} else {
+		switch token.T {
+		case ADD:
+			r := token.A.Execute(true) + token.B.Execute(true)
+			if b {
+				s = fmt.Sprintf("%d + %d = %d", token.A.Execute(false), token.B.Execute(false), token.A.Execute(false)+token.B.Execute(false))
+				fmt.Println(s)
+			}
+			return r
+		case SUB:
+			r := token.A.Execute(true) - token.B.Execute(true)
+			if b {
+				s = fmt.Sprintf("%d - %d = %d", token.A.Execute(false), token.B.Execute(false), token.A.Execute(false)-token.B.Execute(false))
+				fmt.Println(s)
+			}
+			return r
+		case MUL:
+			r := token.A.Execute(true) * token.B.Execute(true)
+			if b {
+				s = fmt.Sprintf("%d * %d = %d", token.A.Execute(false), token.B.Execute(false), token.A.Execute(false)*token.B.Execute(false))
+				fmt.Println(s)
+			}
+			return r
+		case DIV:
+			r := token.A.Execute(true) / token.B.Execute(true)
+			if b {
+				s = fmt.Sprintf("%d / %d = %d", token.A.Execute(false), token.B.Execute(false), token.A.Execute(false)/token.B.Execute(false))
+				fmt.Println(s)
+			}
+			return r
+		default:
+			panic("INVALID TERMINAL")
+		}
+	}
+}
+
 func main() {
 
 	code1 := []rune("+ab")
@@ -175,18 +216,21 @@ func main() {
 	if t1 != nil {
 		fmt.Println(t1.ToString())
 	}
+	fmt.Println(t1.Execute(true))
 
 	code2 := []rune("+b-ca")
 	t2 := ParseCode(code2)
 	if t2 != nil {
 		fmt.Println(t2.ToString())
 	}
+	fmt.Println(t2.Execute(true))
 
 	code3 := []rune("+-ab*ca")
 	t3 := ParseCode(code3)
 	if t3 != nil {
 		fmt.Println(t3.ToString())
 	}
+	fmt.Println(t3.Execute(true))
 
 	code4 := []rune("-ab*ca")
 	t4 := ParseCode(code4)
