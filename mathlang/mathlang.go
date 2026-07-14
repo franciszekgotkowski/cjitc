@@ -61,6 +61,21 @@ func IdentifyTerminalType(r rune) terminalType {
 	}
 }
 
+func (t terminalType) ToRune() rune {
+	switch t {
+	case ADD:
+		return '+'
+	case SUB:
+		return '-'
+	case MUL:
+		return '*'
+	case DIV:
+		return '/'
+	default:
+		return ' '
+	}
+}
+
 type Token struct {
 	T terminalType `json:"terminal type"`
 	V rune         `json:"rune"`
@@ -209,6 +224,31 @@ func (token Token) Execute(b bool) rune {
 	}
 }
 
+func TranslateToInfix(s string) (string, error) {
+	var root *Token = ParseCode([]rune(s))
+	var inf []rune = make([]rune, len(s))
+	if root == nil {
+		return "", fmt.Errorf("Cound not parse string")
+	}
+
+	toInfix(root, inf, 0)
+	return string(inf), nil
+}
+
+func toInfix(token *Token, r []rune, idx uint32) {
+	var myIdx uint32 = idx
+	var ru rune = token.V
+	if token.T != NONTERMINAL {
+		myIdx = idx + 1
+		r[myIdx] = rune(IdentifyTerminalType(token.V))
+		toInfix(token.A, r, myIdx-1)
+		toInfix(token.B, r, myIdx+1)
+		ru = token.T.ToRune()
+	}
+	r[myIdx] = ru
+	// fmt.Println("infix: ", string(r))
+}
+
 func main() {
 
 	code1 := []rune("+ab")
@@ -217,6 +257,8 @@ func main() {
 		fmt.Println(t1.ToString())
 	}
 	fmt.Println(t1.Execute(true))
+	s, _ := TranslateToInfix(string(code1))
+	fmt.Println(s)
 
 	code2 := []rune("+b-ca")
 	t2 := ParseCode(code2)
@@ -224,6 +266,8 @@ func main() {
 		fmt.Println(t2.ToString())
 	}
 	fmt.Println(t2.Execute(true))
+	s, _ = TranslateToInfix(string(code2))
+	fmt.Println(s)
 
 	code3 := []rune("+-ab*ca")
 	t3 := ParseCode(code3)
@@ -231,6 +275,8 @@ func main() {
 		fmt.Println(t3.ToString())
 	}
 	fmt.Println(t3.Execute(true))
+	s, _ = TranslateToInfix(string(code3))
+	fmt.Println(s)
 
 	code4 := []rune("-ab*ca")
 	t4 := ParseCode(code4)
