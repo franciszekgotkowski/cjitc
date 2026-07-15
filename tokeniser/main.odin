@@ -2,6 +2,7 @@ package main
 
 import "core:fmt"
 import "core:slice"
+import "core:unicode/utf8"
 
 TokenType :: enum u32 {
 	KEYWORD,
@@ -64,45 +65,86 @@ Token :: struct {
 	type:    TokenType,
 	keyword: Keyword,
 	lexeme:  []rune,
-	id:      u32,
+	id:      int,
 }
 
-// TokeniseRunes :: proc(code: []rune, keywords: ^Trie, keyword: Keyword) -> [dynamic]Token {
-// 	assert(code != nil)
-// 	tokens: [dynamic]Token = {}
-// 	defer delete(tokens)
+Tokenise :: proc(code: []rune, trie: ^Trie) -> [dynamic]Token {
 
-// 	lexeme: [dynamic]rune
-// 	defer delete(lexeme)
+	tokens: [dynamic]Token = {}
+	tip: int = 0
 
-// 	tip: ^TrieNode = &keywords.root
-// 	i := 0
-// 	for i < len(code) {
-// 		exists, idx := TrieNode_ChildExists(tip, code[i])
-// 		if exists {
-// 			tip = &tip.children[idx]
-// 			append(&lexeme, code[i])
-// 			if tip.isWord {
-// 				t: Token = {
-// 					type =
-// 				}
-// 				append(&tokens, )
-// 			}
-// 		}
-// 	}
+	tokenise_step :: proc(
+		code: []rune,
+		node: ^TrieNode,
+		trie: ^Trie,
+		tip: ^int,
+		length: u32,
+	) -> (
+		int,
+		Keyword,
+		[]rune,
+	) {
+		assert(code != nil)
+		assert(len(code) > 0)
+		assert(node != nil)
+		assert(trie != nil)
+		assert(tip != nil)
 
-// 	return tokens
-// }
 
-// TokeniseString :: proc(str: string, keywords: ^Trie, keyword: Keyword) -> [dynamic]Token {
-// 	assert(keywords != nil)
-// 	return TokeniseRunes(utf8.string_to_runes(str), keywords, keyword)
-// }
+		lexeme: []rune
 
-// Tokenise :: proc {
-// 	TokeniseRunes,
-// 	TokeniseString,
-// }
+
+		if node.isWord {
+			return int(length + 1), node.keyword, nil
+		} else {
+			if len(code) == 1 {
+				return -1, Keyword(-1), nil
+			}
+		}
+
+		lexemeLen: int
+		keyword: Keyword
+		for v, i in node.children {
+			if v.value == code[0] {
+				tip^ += 1
+				lexemeLen, keyword, _ = tokenise_step(
+					code[1:],
+					&node.children[i],
+					trie,
+					tip,
+					length + 1,
+				)
+				if lexemeLen != -1 {
+					if &trie.root == node {
+						lexemeLen -= 1
+						lexeme = code[:lexemeLen]
+						return lexemeLen, keyword, lexeme
+					} else {
+						return lexemeLen, keyword, nil
+					}
+				}
+			}
+		}
+
+
+		return -1, Keyword(-1), nil
+	}
+
+	for tip < len(code) {
+		cutcode := code[tip:]
+		lenght, keyword, r := tokenise_step(cutcode, &trie.root, trie, &tip, 0)
+		if lenght != -1 {
+			append(
+				&tokens,
+				Token{type = .KEYWORD, keyword = keyword, lexeme = r, id = len(tokens)},
+			)
+		} else {
+			tip += 1
+		}
+	}
+
+	return tokens
+}
 
 main :: proc() {
 	code: string = "int a = 0 ; int b = 1 ; if ( a < b ) { a = 8 ; } else { b = 1 ; }"
@@ -114,7 +156,14 @@ main :: proc() {
 	err := Trie_AppendAll(&trie, keys)
 	assert(err == .OK)
 
-	// Tokenise(code, &trie)
+	c := "int if ;"
+
+	tokens := Tokenise(utf8.string_to_runes(c), &trie)
+	fmt.printfln("amount of tokens: %v", len(tokens))
+	for i in 0 ..< len(tokens) {
+		fmt.printf("token: \"%s\", keyword: %v\n", tokens[i].lexeme, tokens[i].keyword)
+	}
+
 
 	Trie_Print(&trie)
 }
