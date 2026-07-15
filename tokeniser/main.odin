@@ -98,7 +98,17 @@ Tokenise :: proc(code: []rune, trie: ^Trie) -> [dynamic]Token {
 			return int(length + 1), node.keyword, nil
 		} else {
 			if len(code) == 1 {
-				return -1, Keyword(-1), nil
+				if length != 0 {
+					return -1, Keyword(-1), nil
+				} else {
+					for v, i in node.children {
+						if v.value == code[0] {
+							tip^ += 1
+							return 1, v.keyword, code[:]
+						}
+					}
+					return -1, Keyword(-1), nil
+				}
 			}
 		}
 
@@ -156,14 +166,20 @@ main :: proc() {
 	err := Trie_AppendAll(&trie, keys)
 	assert(err == .OK)
 
-	c := "int if ;"
+	Trie_Print(&trie)
+
+	c := ";;i;nintt(if ;"
 
 	tokens := Tokenise(utf8.string_to_runes(c), &trie)
-	fmt.printfln("amount of tokens: %v", len(tokens))
+	fmt.printfln("\namount of tokens: %v", len(tokens))
 	for i in 0 ..< len(tokens) {
 		fmt.printf("token: \"%s\", keyword: %v\n", tokens[i].lexeme, tokens[i].keyword)
 	}
 
+	tokens = Tokenise(utf8.string_to_runes(code), &trie)
+	fmt.printfln("\namount of tokens: %v", len(tokens))
+	for i in 0 ..< len(tokens) {
+		fmt.printf("token: \"%s\", keyword: %v\n", tokens[i].lexeme, tokens[i].keyword)
+	}
 
-	Trie_Print(&trie)
 }
