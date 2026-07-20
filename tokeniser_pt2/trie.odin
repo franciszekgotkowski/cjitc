@@ -112,8 +112,8 @@ IsDigit :: proc(r: rune) -> bool {
 	return false
 }
 
-IsSkipRun :: proc(r: rune) -> bool {
-	for v, _ in SkipRune {
+IsOmitable :: proc(r: rune) -> bool {
+	for v, _ in Omitable {
 		if r == v {
 			return true
 		}

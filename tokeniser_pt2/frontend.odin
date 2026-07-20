@@ -6,14 +6,6 @@ import "core:unicode/utf8"
 
 main :: proc() {
 
-	// r: [][]rune = {
-	// 	utf8.string_to_runes("kot"),
-	// 	utf8.string_to_runes("koń"),
-	// 	utf8.string_to_runes("kolega"),
-	// 	utf8.string_to_runes("mamut"),
-	// 	utf8.string_to_runes("mama"),
-	// 	utf8.string_to_runes("malkontent"),
-	// }
 	trie := Trie_Initialize()
 
 	t: [dynamic]Token = {}
@@ -49,6 +41,14 @@ main :: proc() {
 	for v, i in t {
 		Trie_AppendWord(&trie, v.lexeme, v.type, v.kind)
 	}
-	json, _ := json.marshal(trie.root, {pretty = true, use_enum_names = true})
+	// json, _ := json.marshal(trie.root, {pretty = true, use_enum_names = true})
+	// fmt.printfln("%s", json)
+
+	code: []rune = utf8.string_to_runes("x=a+b;ifa<=b{x=a;}")
+	tokens := Tokenise(code, &trie)
+	defer delete(tokens)
+	json, _ := json.marshal(tokens, {pretty = true, use_enum_names = true})
 	fmt.printfln("%s", json)
+
+
 }

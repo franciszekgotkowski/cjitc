@@ -21,13 +21,10 @@ package main
 // if a >= b {...}
 // if a == b {...}
 
-Literal :: enum {
-	INT,
-	FLOAT,
-}
-
 Digit: []rune : {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
-SkipRune: []rune : {' ', '\n', '\t', '\r', '\\', '\b', '\f'}
+Omitable: []rune : {' ', '\n', '\t', '\r', '\\', '\b', '\f'}
+LiteralTextSeparator: rune : '"'
+LiteralCharSeparator: rune : '\''
 
 TokenType :: enum {
 	KEYWORD,
@@ -53,6 +50,8 @@ Operator :: enum {
 	EQUAL,
 	EQUAL_EQUAL,
 	DOT,
+	PLUS,
+	MINUS,
 }
 
 Delimiter :: enum {
@@ -62,6 +61,12 @@ Delimiter :: enum {
 	BRACE_OPEN,
 	BRACE_CLOSE,
 	COMMA,
+}
+
+Literal :: enum {
+	DECIMAL,
+	TEXT,
+	CHARACTER,
 }
 
 KeywordValues: [Keyword]string = {
@@ -80,6 +85,8 @@ OperatorValues: [Operator]string = {
 	.EQUAL       = "=",
 	.EQUAL_EQUAL = "==",
 	.DOT         = ".",
+	.PLUS        = "+",
+	.MINUS       = "-",
 }
 
 DelimiterValues: [Delimiter]string = {
