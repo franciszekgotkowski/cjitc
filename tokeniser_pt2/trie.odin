@@ -10,9 +10,11 @@ TrieError :: enum {
 }
 
 TrieNode :: struct {
-	isWord:   bool `json:"is word"`,
-	value:    rune `json:"value"`,
-	children: [dynamic]TrieNode `json:"children"`,
+	isWord:    bool `json:"is word"`,
+	value:     rune `json:"value"`,
+	tokenType: TokenType `json:"token type"`,
+	tokenKind: TokenKind `json:"token kind"`,
+	children:  [dynamic]TrieNode `json:"children"`,
 }
 
 TrieNode_Contains :: proc(node: ^TrieNode, r: rune) -> (bool, int) {
@@ -27,10 +29,22 @@ TrieNode_Contains :: proc(node: ^TrieNode, r: rune) -> (bool, int) {
 	return false, -1
 }
 
-TrieNode_AppendChild :: proc(node: ^TrieNode, isWord: bool, val: rune) -> (int, TrieError) {
+TrieNode_AppendChild :: proc(
+	node: ^TrieNode,
+	isWord: bool,
+	val: rune,
+	type: TokenType,
+	kind: TokenKind,
+) -> (
+	int,
+	TrieError,
+) {
 	assert(node != nil)
 
-	_, err := append(&node.children, TrieNode{isWord = isWord, children = {}, value = val})
+	_, err := append(
+		&node.children,
+		TrieNode{isWord = isWord, children = {}, value = val, tokenType = type, tokenKind = kind},
+	)
 
 	if err != runtime.Allocator_Error.None {
 		return len(node.children) - 1, .ALLOCATION_ERROR
@@ -56,10 +70,18 @@ Trie :: struct {
 }
 
 Trie_Initialize :: proc() -> Trie {
-	return Trie{0, TrieNode{false, 0, {}}}
+	return Trie {
+		size = 0,
+		root = TrieNode {
+			isWord = false,
+			tokenType = .KEYWORD,
+			tokenKind = Keyword(.INT),
+			children = {}
+		}
+	}
 }
 
-Trie_AppendWord :: proc(trie: ^Trie, word: []rune) -> TrieError {
+Trie_AppendWord :: proc(trie: ^Trie, word: []rune, type: TokenType, kind: TokenKind) -> TrieError {
 	currentNode := &trie.root
 
 	for i in 0 ..< len(word) {
@@ -67,7 +89,7 @@ Trie_AppendWord :: proc(trie: ^Trie, word: []rune) -> TrieError {
 		if exists {
 			currentNode = &currentNode.children[idx]
 		} else {
-			idx, err := TrieNode_AppendChild(currentNode, i == len(word) - 1, word[i])
+			idx, err := TrieNode_AppendChild(currentNode, i == len(word) - 1, word[i], type, kind)
 			currentNode = &currentNode.children[idx]
 
 			trie.size += 1
@@ -79,4 +101,22 @@ Trie_AppendWord :: proc(trie: ^Trie, word: []rune) -> TrieError {
 	}
 
 	return .OK
+}
+
+IsDigit :: proc(r: rune) -> bool {
+	for v, _ in Digit {
+		if r == v {
+			return true
+		}
+	}
+	return false
+}
+
+IsSkipRun :: proc(r: rune) -> bool {
+	for v, _ in SkipRune {
+		if r == v {
+			return true
+		}
+	}
+	return false
 }

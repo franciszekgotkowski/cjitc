@@ -27,13 +27,14 @@ Literal :: enum {
 }
 
 Digit: []rune : {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
-Ignore: []rune : {' ', '\n', '\t', '\r', '\\', '\b', '\f'}
+SkipRune: []rune : {' ', '\n', '\t', '\r', '\\', '\b', '\f'}
 
 TokenType :: enum {
 	KEYWORD,
 	LITERAL,
 	OPERATOR,
 	DELIMITER,
+	IDENTIFIER,
 }
 
 Keyword :: enum {
@@ -63,31 +64,31 @@ Delimiter :: enum {
 	COMMA,
 }
 
-KeywordValues: [Keyword]string : {
-	.INT = "int",
+KeywordValues: [Keyword]string = {
+	.INT      = "int",
 	.FUNCTION = "function",
-	.DECLARE = "declare",
-	.RETURN = "return",
-	.IF = "if",
+	.DECLARE  = "declare",
+	.RETURN   = "return",
+	.IF       = "if",
 }
 
-OperatorValues: [Operator]string : {
-	.LESS = "<",
-	.MORE = ">",
-	.LESS_EQUAL = "<=",
-	.MORE_EQUAL = ">=",
-	.EQUAL = "=",
+OperatorValues: [Operator]string = {
+	.LESS        = "<",
+	.MORE        = ">",
+	.LESS_EQUAL  = "<=",
+	.MORE_EQUAL  = ">=",
+	.EQUAL       = "=",
 	.EQUAL_EQUAL = "==",
-	.DOT = ".",
+	.DOT         = ".",
 }
 
-DelimiterValues: [Delimiter]string : {
-	.SEMICOLUMN = ";",
-	.PAREN_OPEN = "(",
+DelimiterValues: [Delimiter]string = {
+	.SEMICOLUMN  = ";",
+	.PAREN_OPEN  = "(",
 	.PAREN_CLOSE = ")",
-	.BRACE_OPEN = "{",
+	.BRACE_OPEN  = "{",
 	.BRACE_CLOSE = "}",
-	.COMMA = ",",
+	.COMMA       = ",",
 }
 
 TokenKind :: union {
