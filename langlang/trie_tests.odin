@@ -102,18 +102,28 @@ TrieNode_Delete_test :: proc(t: ^testing.T) {
 }
 
 @(test)
-test :: proc(t: ^testing.T) {
-	dyn: [dynamic]int
-	append(&dyn, 1)
-	append(&dyn, 2)
-	append(&dyn, 3)
-	append(&dyn, 4)
-	testing.expect(t, len(dyn) == 4)
-	delete(dyn)
-	clear(&dyn)
-	testing.expect(t, len(dyn) == 0)
-	append(&dyn, 5)
-	append(&dyn, 6)
-	testing.expect(t, len(dyn) == 2)
+Trie_AppendWord_test :: proc(t: ^testing.T) {
+	trie := Prepare_Trie_test()
+	defer Trie_Delete(&trie)
+
+	words: [][]rune = {
+		utf8.string_to_runes("float"),
+		utf8.string_to_runes("int"),
+		utf8.string_to_runes("decide"),
+		utf8.string_to_runes("()"),
+		utf8.string_to_runes("function"),
+		utf8.string_to_runes("functional"),
+	}
+	defer {
+		for _, i in words {
+			delete(words[i])
+		}
+	}
+	errs: []TrieError = {.OK, .ALREADY_EXISTS, .OK, .OK, .ALREADY_EXISTS, .OK}
+
+	for v, i in words {
+		err := Trie_AppendWord(&trie, words[i])
+		testing.expect(t, err == errs[i], "")
+	}
 
 }

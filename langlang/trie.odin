@@ -63,6 +63,10 @@ TrieNode_AppendChild :: proc(
 	}
 }
 
+// Fetches pointer to a child node that has r value
+// Can return errors:
+// .OK 							if everything went fine
+// .CHILD_DOES_NOT_EXIST		if such child does not exist
 TrieNode_FetchChild :: proc(node: ^TrieNode, r: rune) -> (^TrieNode, TrieError) {
 	assert(node != nil)
 
@@ -74,6 +78,7 @@ TrieNode_FetchChild :: proc(node: ^TrieNode, r: rune) -> (^TrieNode, TrieError) 
 	return nil, .CHILD_DOES_NOT_EXIST
 }
 
+// Deletes nodes children and sets their array to len 0
 TrieNode_Delete :: proc(node: ^TrieNode) {
 	assert(node != nil)
 
@@ -104,28 +109,45 @@ Trie_Initialize :: proc() -> Trie {
 	}
 }
 
-Trie_AppendWord :: proc(trie: ^Trie, word: []rune, type: TokenType, kind: TokenKind) -> TrieError {
+// Allows for appending new words to the trie. It is made to accomodate tokens words so it takes in additional parameters
+// Can return errors:
+// .OK							if everything went well
+// .ALLOCATION_ERROR			if memory could not be allocated
+// .ALREADY_EXISTS				if word was already inside trie
+Trie_AppendWord :: proc(
+	trie: ^Trie,
+	word: []rune,
+	type: TokenType = .LITERAL,
+	kind: TokenKind = Keyword.INT,
+) -> TrieError {
 	currentNode := &trie.root
 
 	for i in 0 ..< len(word) {
-		exists, idx := TrieNode_Contains(currentNode, word[i])
-		if exists {
+		// exists, idx := TrieNode_Contains(currentNode, word[i])
+		// if exists {
+		// 	currentNode = &currentNode.children[idx]
+		// } else {
+		idx, err := TrieNode_AppendChild(currentNode, i == len(word) - 1, word[i], type, kind)
+		assert(err == .OK || err == .ALREADY_EXISTS || err == .ALLOCATION_ERROR)
+		if err == .ALLOCATION_ERROR {
+			return .ALLOCATION_ERROR
+		} else if err == .ALREADY_EXISTS {
 			currentNode = &currentNode.children[idx]
-		} else {
-			idx, err := TrieNode_AppendChild(currentNode, i == len(word) - 1, word[i], type, kind)
-			currentNode = &currentNode.children[idx]
-
-			trie.size += 1
-
-			if err != .OK {
-				return err
+			if i == len(word) - 1 {
+				return .ALREADY_EXISTS
 			}
+			continue
+		} else {
+			trie.size += 1
+			currentNode = &currentNode.children[idx]
 		}
+
 	}
 
 	return .OK
 }
 
+// Deletes whole content of trie
 Trie_Delete :: proc(trie: ^Trie) {
 	trie.size = 0
 	TrieNode_Delete(&trie.root)
