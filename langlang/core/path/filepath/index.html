@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>package path/filepath - pkg.odin-lang.org</title>	<link rel="icon" href="/favicon.svg">
+	<link rel="stylesheet" type="text/css" href="https://odin-lang.org/scss/custom.min.css">
+	<link rel=stylesheet href="//odin-lang.org/lib/highlight/styles/github-dark.min.css">
+	<script src="//odin-lang.org/lib/highlight/highlight.min.js"></script>
+
+	<script>hljs.registerLanguage("odin",function(a){return{aliases:["odin","odinlang","odin-lang"],keywords:{keyword:"auto_cast bit_set break case cast context continue defer distinct do dynamic else enum fallthrough for foreign if import in map not_in or_else or_return package proc return struct switch transmute type_of typeid union using when where",literal:"true false nil",built_in:"abs align_of cap clamp complex conj expand_to_tuple imag jmag kmag len max min offset_of quaternion real size_of soa_unzip soa_zip swizzle type_info_of type_of typeid_of"},illegal:"</",contains:[a.C_LINE_COMMENT_MODE,a.C_BLOCK_COMMENT_MODE,{className:"string",variants:[a.QUOTE_STRING_MODE,{begin:"'",end:"[^\\\\]'"},{begin:"`",end:"`"}]},{className:"number",variants:[{begin:a.C_NUMBER_RE+"[ijk]",relevance:1},a.C_NUMBER_MODE]}]}})</script>
+	<script>hljs.highlightAll()</script>
+	<script>
+		function OSDarkModeQuery() {
+			return window.matchMedia?.("(prefers-color-scheme: dark)");
+		}
+		function setDarkMode() {
+			document.body.classList.add("dark-mode");
+			window.localStorage.setItem("theme", "dark");
+		}
+		function removeDarkMode() {
+			document.body.classList.remove("dark-mode");
+			window.localStorage.setItem("theme", "light");
+		}
+		function toggleDarkMode() {
+			if (document.body.classList.contains("dark-mode")) removeDarkMode()
+			else setDarkMode()
+		}
+		function syncThemeToOS() {
+			if (OSDarkModeQuery().matches) setDarkMode()
+			else removeDarkMode()
+		}
+		document.addEventListener("DOMContentLoaded", () => {
+			OSDarkModeQuery().addEventListener("change", syncThemeToOS);
+		});
+	</script>
+	<link rel="stylesheet" type="text/css" href="https://odin-lang.org/css/style.css">
+
+	<link rel="stylesheet" type="text/css" href="/style.css">
+
+	</style>
+</head>
+<body>
+<script>
+	const themeSet = window.localStorage.getItem("theme");
+	if (themeSet === null) {
+		syncThemeToOS();
+	} else if (themeSet === "dark") {
+		setDarkMode();
+	} else if (themeSet === "light") {
+		removeDarkMode();
+	}
+</script>
+<header class="sticky-top">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-primary odin-menu">
+		<div class="container">
+			<a class="navbar-brand" href="https://odin-lang.org/">
+			<img src="https://odin-lang.org/logo.svg" height="30" alt="Odin"></a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#odin-navbar-content" aria-controls="odin-navbar-content" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+			<div class="collapse navbar-collapse" id="odin-navbar-content">
+			<ul class="navbar-nav ms-md-auto">
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/">Home</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/docs">Docs</a></li>
+				<li class="nav-item"><a class="nav-link active" href="/">Packages</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/news">News</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/showcase">Showcase</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://forum.odin-lang.org">Forum</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/community">Community</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://github.com/odin-lang/Odin" target="_blank">GitHub</a></li>
+				<li class="nav-item">
+					<a
+						class="nav-link btn-dark-mode"
+						onclick="toggleDarkMode();"
+						title="Toggle Light/Dark Mode"
+					>
+						<span class="dark-mode-appearance">Appearance:</span>
+						<svg fill="white" id="dark-mode-icon" viewBox="0 0 384 512"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"/></svg>
+						<svg fill="white" id="light-mode-icon" viewBox="0 0 16 16">
+						  <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
+						</svg>
+					</button>
+					</a>
+				</li>
+			</ul>
+		</div>
+		</div>
+	</nav>
+</header>
+<main>
+<div class="container full-width">
+<div class="row odin-main my-4" id="pkg">
+<nav id="pkg-sidebar" class="col-lg-2 odin-sidebar-border navbar-light sticky-top odin-below-navbar">
+<div class="py-3">
+<div>Current Package: <em><a href="/core/path/filepath">filepath</a></em></div><br>
+<h4><a style="text-transform: capitalize; color: inherit;" href="/core">core Library</a></h4>
+<ul>
+<li class="nav-item"><a href="/core/bufio">bufio</a></li>
+<li class="nav-item"><a href="/core/bytes">bytes</a></li>
+<li class="nav-item"><a href="/core/c">c</a><ul>
+<li><a href="/core/c/libc">libc</a></li>
+</ul>
+
+</li>
+<li class="nav-item">container<ul>
+<li><a href="/core/container/queue">queue</a></li>
+</ul>
+
+</li>
+<li class="nav-item">encoding<ul>
+<li><a href="/core/encoding/base64">base64</a></li>
+<li><a href="/core/encoding/json">json</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/fmt">fmt</a></li>
+<li class="nav-item"><a href="/core/io">io</a></li>
+<li class="nav-item"><a href="/core/log">log</a></li>
+<li class="nav-item"><a href="/core/math">math</a><ul>
+<li><a href="/core/math/bits">bits</a></li>
+<li><a href="/core/math/rand">rand</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/mem">mem</a></li>
+<li class="nav-item"><a href="/core/os">os</a></li>
+<li class="nav-item">path<ul>
+<li><a class="active" href="/core/path/filepath">filepath</a></li>
+<li><a href="/core/path/slashpath">slashpath</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/reflect">reflect</a></li>
+<li class="nav-item"><a href="/core/simd">simd</a></li>
+<li class="nav-item"><a href="/core/slice">slice</a></li>
+<li class="nav-item"><a href="/core/strconv">strconv</a><ul>
+<li><a href="/core/strconv/decimal">decimal</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/strings">strings</a></li>
+<li class="nav-item"><a href="/core/sync">sync</a><ul>
+<li><a href="/core/sync/chan">chan</a></li>
+</ul>
+
+</li>
+<li class="nav-item">sys<ul>
+<li><a href="/core/sys/linux">linux</a></li>
+<li><a href="/core/sys/posix">posix</a></li>
+<li><a href="/core/sys/valgrind">valgrind</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/terminal">terminal</a><ul>
+<li><a href="/core/terminal/ansi">ansi</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/testing">testing</a></li>
+<li class="nav-item"><a href="/core/thread">thread</a></li>
+<li class="nav-item"><a href="/core/time">time</a><ul>
+<li><a href="/core/time/datetime">datetime</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/unicode">unicode</a><ul>
+<li><a href="/core/unicode/utf16">utf16</a></li>
+<li><a href="/core/unicode/utf8">utf8</a></li>
+</ul>
+
+</li>
+</ul>
+</div>
+</nav>
+<article class="col-lg-8 p-4 documentation odin-article">
+<nav class="pkg-breadcrumb" aria-label="breadcrumb">
+<ol class="breadcrumb">
+<li class="breadcrumb-item"><a href="/core">core</a></li>
+<li class="breadcrumb-item">path</li>
+<li class="breadcrumb-item active" aria-current="page"><a href="/core/path/filepath">filepath</a></li>
+</ol>
+</nav>
+<h1>package core:path/filepath<div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath"><em>Source</em></a></div></h1>
+
+		<div class="odin-search-wrapper">
+			<input type="search" id="odin-search" class="odin-search-package" autocomplete="off" spellcheck="false" placeholder="Fuzzy Search..." autofocus>
+			<div class="odin-search-shortcut">
+				<div class="odin-search-key key-macos">⌘K</div>
+				<div class="odin-search-key key-windows">Ctrl+K</div>
+				<span class="odin-search-or">or</span>
+				<div class="odin-search-key">/</div>
+			</div>
+		</div>
+	
+<div id="odin-search-info">
+<div id="odin-search-time"></div>
+
+		<div id="odin-search-options">
+			<input type="checkbox" id="odin-search-filter" name="odin-search-filter">
+			<label for="odin-search-filter">Filter Results</label>
+		</div>
+</div>
+<ul id="odin-search-results"></ul>
+<div id="pkg-top">
+<h2>Overview</h2>
+<div id="pkg-overview">
+<p>Process paths using either forward slashes or backslashes depending on the operating system.
+To process paths such as URLs that depend on forward slashes regardless of the OS, use the slashpath package.</p>
+</div>
+<div id="pkg-index">
+<h2>Index</h2>
+<div>
+<details class="doc-index" id="doc-index-Types" aria-labelledby="#doc-index-Types-header">
+<summary id="#doc-index-Types-header">
+Types (2)</summary>
+<ul>
+<li><a href="#Relative_Error">Relative_Error</a></li>
+<li><a href="#Walker">Walker</a></li>
+</ul>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Constants" aria-labelledby="#doc-index-Constants-header">
+<summary id="#doc-index-Constants-header">
+Constants (4)</summary>
+<ul>
+<li><a href="#LIST_SEPARATOR">LIST_SEPARATOR</a></li>
+<li><a href="#SEPARATOR">SEPARATOR</a></li>
+<li><a href="#SEPARATOR_CHARS">SEPARATOR_CHARS</a></li>
+<li><a href="#SEPARATOR_STRING">SEPARATOR_STRING</a></li>
+</ul>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Variables" aria-labelledby="#doc-index-Variables-header">
+<summary id="#doc-index-Variables-header">
+Variables (0)</summary>
+<p class="pkg-empty-section">This section is empty.</p>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Procedures" aria-labelledby="#doc-index-Procedures-header">
+<summary id="#doc-index-Procedures-header">
+Procedures (5)</summary>
+<ul>
+<li><a href="#abs">abs</a></li>
+<li><a href="#clean">clean</a></li>
+<li><a href="#join">join</a></li>
+<li><a href="#rel">rel</a></li>
+<li><a href="#replace_separators">replace_separators</a></li>
+</ul>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Procedure Groups" aria-labelledby="#doc-index-Procedure Groups-header">
+<summary id="#doc-index-Procedure Groups-header">
+Procedure Groups (2)</summary>
+<ul>
+<li><a href="#walker_create">walker_create</a></li>
+<li><a href="#walker_init">walker_init</a></li>
+</ul>
+</details>
+</div>
+</div>
+</div>
+<section class="documentation">
+<h2 id="pkg-Types" class="pkg-header">Types</h2>
+<div class="pkg-entity">
+<h3 id="Relative_Error"><span><a class="doc-id-link" href="#Relative_Error">Relative_Error<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path.odin#L196"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">Relative_Error :: <span class="keyword-type">enum</span> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {
+	None, 
+	Cannot_Relate, 
+}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme">
+<h5 style="display:inline-block">Related Procedures With Returns</h5>
+</summary>
+<ul>
+<li><a href="/core/path/filepath/#rel">rel</a></li>
+</ul>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="Walker"><span><a class="doc-id-link" href="#Walker">Walker<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/walk.odin#L7"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">Walker :: os.<a class="code-typename" href="/core/os/#Walker">Walker</a></pre>
+</div>
+</div>
+<h2 id="pkg-Constants" class="pkg-header">Constants</h2>
+<div class="pkg-entity">
+<h3 id="LIST_SEPARATOR"><span><a class="doc-id-link" href="#LIST_SEPARATOR">LIST_SEPARATOR<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path_unix.odin#L6"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">LIST_SEPARATOR :: <span class="string">':'</span></pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="SEPARATOR"><span><a class="doc-id-link" href="#SEPARATOR">SEPARATOR<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path_unix.odin#L4"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">SEPARATOR :: <span class="string">'/'</span></pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="SEPARATOR_CHARS"><span><a class="doc-id-link" href="#SEPARATOR_CHARS">SEPARATOR_CHARS<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path.odin#L9"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">SEPARATOR_CHARS :: <span class="string">`/\`</span></pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="SEPARATOR_STRING"><span><a class="doc-id-link" href="#SEPARATOR_STRING">SEPARATOR_STRING<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path_unix.odin#L5"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">SEPARATOR_STRING :: <span class="string">`/`</span></pre>
+</div>
+</div>
+<h2 id="pkg-Variables" class="pkg-header">Variables</h2>
+<p class="pkg-empty-section">This section is empty.</p>
+<h2 id="pkg-Procedures" class="pkg-header">Procedures</h2>
+<div class="pkg-entity">
+<h3 id="abs"><span><a class="doc-id-link" href="#abs">abs<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path.odin#L186"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">abs :: <span class="keyword-type">proc</span>(path: <a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>) -> (absolute_path: <a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, error: os.<a class="code-typename" href="/core/os/#Error">Error</a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Get the absolute path to <code>path</code> with respect to the process's current directory.</p>
+<p><i>Allocates Using Provided Allocator</i></p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="clean"><span><a class="doc-id-link" href="#clean">clean<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path.odin#L148"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">clean :: <span class="keyword-type">proc</span>(path: <a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>) -> (cleaned: <a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, err: runtime.<a class="code-typename" href="/base/runtime/#Allocator_Error">Allocator_Error</a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Returns the shortest path name equivalent to <code>path</code> through solely lexical processing.
+It applies the folliwng rules until none of them can be applied:</p>
+<p>* Replace multiple separators with a single one
+* Remove each current directory (<code>.</code>) path name element
+* Remove each inner parent directory (<code>..</code>) path and the preceding paths
+* Remove <code>..</code> that begin at the root of a path
+* All possible separators are replaced with the OS specific separator</p>
+<p>The return path ends in a slash only if it represents the root of a directory (<code>C:\</code> on Windows and  <code>/</code> on *nix systems).</p>
+<p>If the result of the path is an empty string, the returned path with be <code>"."</code>.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="join"><span><a class="doc-id-link" href="#join">join<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path.odin#L36"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">join :: <span class="keyword-type">proc</span>(elems: []<a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>) -> (joined: <a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, err: runtime.<a class="code-typename" href="/base/runtime/#Allocator_Error">Allocator_Error</a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Join all <code>elems</code> with the system's path separator and normalize the result.</p>
+<p><i>Allocates Using Provided Allocator</i></p>
+<p>For example, <code>join_path({"/home", "foo", "bar.txt"})</code> will result in <code>"/home/foo/bar.txt"</code>.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="rel"><span><a class="doc-id-link" href="#rel">rel<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path.odin#L208"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">rel :: <span class="keyword-type">proc</span>(base_path, target_path: <a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>) -> (<a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, <a class="code-typename" href="/core/path/filepath/#Relative_Error">Relative_Error</a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Returns a relative path that is lexically equivalent to the <code>target_path</code> when joined with the <code>base_path</code> with an OS specific separator.</p>
+<p>e.g. <code>join(base_path, rel(base_path, target_path))</code> is equivalent to <code>target_path</code></p>
+<p>On failure, the <code>Relative_Error</code> will be state it cannot compute the necessary relative path.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="replace_separators"><span><a class="doc-id-link" href="#replace_separators">replace_separators<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path.odin#L164"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">replace_separators :: <span class="keyword-type">proc</span>(path: <a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, new_sep: <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>) -> (new_path: <a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, err: os.<a class="code-typename" href="/core/os/#Error">Error</a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Returns the result of replacing each path separator character in the path
+with the specific character <code>new_sep</code>.</p>
+<p><i>Allocates Using Provided Allocator</i></p>
+</details>
+</div>
+<h2 id="pkg-Procedure Groups" class="pkg-header">Procedure Groups</h2>
+<div class="pkg-entity">
+<h3 id="walker_create"><span><a class="doc-id-link" href="#walker_create">walker_create<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/walk.odin#L23"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">walker_create :: <span class="keyword-type">proc</span>{
+	os.<a class="code-procedure" href="/core/os/#walker_create_path">walker_create_path</a>,
+	os.<a class="code-procedure" href="/core/os/#walker_create_file">walker_create_file</a>,
+}
+</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Creates a walker, either using a path or a file pointer to a directory the walker will start at.</p>
+<p>For an example on how to use the walker, see <code>walker_walk</code>.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="walker_init"><span><a class="doc-id-link" href="#walker_init">walker_init<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/walk.odin#L16"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">walker_init :: <span class="keyword-type">proc</span>{
+	os.<a class="code-procedure" href="/core/os/#walker_init_path">walker_init_path</a>,
+	os.<a class="code-procedure" href="/core/os/#walker_init_file">walker_init_file</a>,
+}
+</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Initializes a walker, either using a path or a file pointer to a directory the walker will start at.</p>
+<p>You are allowed to repeatedly call this to reuse it for later walks.</p>
+<p>For an example on how to use the walker, see <code>walker_walk</code>.</p>
+</details>
+</div>
+</section>
+<h2 id="pkg-source-files">Source Files</h2>
+<ul>
+<li><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/match.odin">match.odin</a></li>
+<li><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path.odin">path.odin</a></li>
+<li><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/path_unix.odin">path_unix.odin</a></li>
+<li><a href="https://github.com/odin-lang/Odin/tree/master/core/path/filepath/walk.odin">walk.odin</a></li>
+</ul>
+<h2 id="pkg-generation-information">Generation Information</h2>
+<p>Generated with <code>odin version dev-2026-07 (vendor "odin") Linux_amd64 @ 2026-07-20 15:05:16.029368077 +0000 UTC</code></p>
+</article>
+<div class="col-lg-2 odin-toc-border navbar-light"><div class="sticky-top odin-below-navbar py-3">
+<nav id="TableOfContents">
+<ul>
+<li><a href="#pkg-overview">Overview</a><li><a href="#pkg-Types">Types</a><ul>
+<li><a href="#Relative_Error">Relative_Error</a></li>
+<li><a href="#Walker">Walker</a></li>
+</ul>
+</li>
+<li><a href="#pkg-Constants">Constants</a><ul>
+<li><a href="#LIST_SEPARATOR">LIST_SEPARATOR</a></li>
+<li><a href="#SEPARATOR">SEPARATOR</a></li>
+<li><a href="#SEPARATOR_CHARS">SEPARATOR_CHARS</a></li>
+<li><a href="#SEPARATOR_STRING">SEPARATOR_STRING</a></li>
+</ul>
+</li>
+<li><a href="#pkg-Procedures">Procedures</a><ul>
+<li><a href="#abs">abs</a></li>
+<li><a href="#clean">clean</a></li>
+<li><a href="#join">join</a></li>
+<li><a href="#rel">rel</a></li>
+<li><a href="#replace_separators">replace_separators</a></li>
+</ul>
+</li>
+<li><a href="#pkg-Procedure Groups">Procedure Groups</a><ul>
+<li><a href="#walker_create">walker_create</a></li>
+<li><a href="#walker_init">walker_init</a></li>
+</ul>
+</li>
+<li><a href="#pkg-source-files">Source Files</a></ul>
+</nav>
+</div></div>
+<script type="text/javascript">var odin_pkg_name = "filepath";</script>
+</div>
+
+</div>
+</main>
+
+<footer class="odin-footer">
+	<div class="container pb-5 pt-5">
+		<div class="row g-4">
+		<div class="col">
+		<a class="navbar-brand" href="https://odin-lang.org">
+		<img class="mb-3" src="https://odin-lang.org/logo.svg" height="30" alt="Odin"></a>
+		<p>
+		The Data-Oriented Language for Sane Software Development.
+		</p>
+		</div>
+		<nav class="col-md-auto">
+			<h4 class="fw-normal">Resources</h4>
+			<ul class="list-unstyled">
+			<li><a href="https://odin-lang.org/docs" class="link-light">Docs</a></li>
+			<li><a href="https://pkg.odin-lang.org/" class="link-light">Packages</a></li>
+			<li><a href="https://odin-lang.org/news" class="link-light">News</a></li>
+			</ul>
+		</nav>
+		<nav class="col-md-auto">
+			<h4 class="fw-normal">Community</h4>
+			<ul class="list-unstyled">
+			<li><a href="https://github.com/odin-lang/Odin" target="_blank" class="link-light">GitHub</a></li>
+			<li><a href="https://forum.odin-lang.org" target="_blank" class="link-light">Forum</a></li>
+			<li><a href="https://discord.com/invite/sVBPHEv" target="_blank" class="link-light">Discord</a></li>
+			<li><a href="https://www.twitch.tv/ginger_bill" target="_blank" class="link-light">Twitch</a></li>
+			<li><a href="https://www.youtube.com/channel/UCUSck1dOH7VKmG4lRW7tZXg" target="_blank" class="link-light">YouTube</a></li>
+			<li><a href="https://odin-lang.org/showcase" target="_blank" class="link-light">Showcase</a></li>
+			</ul>
+		</nav>
+		<nav class="col-md-auto">
+			<h4 class="fw-normal">Contribute</h4>
+			<ul class="list-unstyled">
+			<li><a href="https://github.com/odin-lang/Odin/issues" target="_blank" class="link-light">Issues</a></li>
+			<li><a href="https://www.patreon.com/gingerbill" target="_blank" class="link-light">Donate</a></li>
+			</ul>
+			</nav>
+		</div>
+		<div class="mt-4 text-muted">© 2016–2023 Ginger Bill</div>
+	</div>
+</footer>
+
+<script src="https://odin-lang.org/lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="https://odin-lang.org/js/script.js"></script>
+<script src="/pkg-data.js"></script>
+<script src="/search.js"></script>
+</body>
+</html>

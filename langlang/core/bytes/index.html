@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>package bytes - pkg.odin-lang.org</title>	<link rel="icon" href="/favicon.svg">
+	<link rel="stylesheet" type="text/css" href="https://odin-lang.org/scss/custom.min.css">
+	<link rel=stylesheet href="//odin-lang.org/lib/highlight/styles/github-dark.min.css">
+	<script src="//odin-lang.org/lib/highlight/highlight.min.js"></script>
+
+	<script>hljs.registerLanguage("odin",function(a){return{aliases:["odin","odinlang","odin-lang"],keywords:{keyword:"auto_cast bit_set break case cast context continue defer distinct do dynamic else enum fallthrough for foreign if import in map not_in or_else or_return package proc return struct switch transmute type_of typeid union using when where",literal:"true false nil",built_in:"abs align_of cap clamp complex conj expand_to_tuple imag jmag kmag len max min offset_of quaternion real size_of soa_unzip soa_zip swizzle type_info_of type_of typeid_of"},illegal:"</",contains:[a.C_LINE_COMMENT_MODE,a.C_BLOCK_COMMENT_MODE,{className:"string",variants:[a.QUOTE_STRING_MODE,{begin:"'",end:"[^\\\\]'"},{begin:"`",end:"`"}]},{className:"number",variants:[{begin:a.C_NUMBER_RE+"[ijk]",relevance:1},a.C_NUMBER_MODE]}]}})</script>
+	<script>hljs.highlightAll()</script>
+	<script>
+		function OSDarkModeQuery() {
+			return window.matchMedia?.("(prefers-color-scheme: dark)");
+		}
+		function setDarkMode() {
+			document.body.classList.add("dark-mode");
+			window.localStorage.setItem("theme", "dark");
+		}
+		function removeDarkMode() {
+			document.body.classList.remove("dark-mode");
+			window.localStorage.setItem("theme", "light");
+		}
+		function toggleDarkMode() {
+			if (document.body.classList.contains("dark-mode")) removeDarkMode()
+			else setDarkMode()
+		}
+		function syncThemeToOS() {
+			if (OSDarkModeQuery().matches) setDarkMode()
+			else removeDarkMode()
+		}
+		document.addEventListener("DOMContentLoaded", () => {
+			OSDarkModeQuery().addEventListener("change", syncThemeToOS);
+		});
+	</script>
+	<link rel="stylesheet" type="text/css" href="https://odin-lang.org/css/style.css">
+
+	<link rel="stylesheet" type="text/css" href="/style.css">
+
+	</style>
+</head>
+<body>
+<script>
+	const themeSet = window.localStorage.getItem("theme");
+	if (themeSet === null) {
+		syncThemeToOS();
+	} else if (themeSet === "dark") {
+		setDarkMode();
+	} else if (themeSet === "light") {
+		removeDarkMode();
+	}
+</script>
+<header class="sticky-top">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-primary odin-menu">
+		<div class="container">
+			<a class="navbar-brand" href="https://odin-lang.org/">
+			<img src="https://odin-lang.org/logo.svg" height="30" alt="Odin"></a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#odin-navbar-content" aria-controls="odin-navbar-content" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+			<div class="collapse navbar-collapse" id="odin-navbar-content">
+			<ul class="navbar-nav ms-md-auto">
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/">Home</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/docs">Docs</a></li>
+				<li class="nav-item"><a class="nav-link active" href="/">Packages</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/news">News</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/showcase">Showcase</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://forum.odin-lang.org">Forum</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/community">Community</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://github.com/odin-lang/Odin" target="_blank">GitHub</a></li>
+				<li class="nav-item">
+					<a
+						class="nav-link btn-dark-mode"
+						onclick="toggleDarkMode();"
+						title="Toggle Light/Dark Mode"
+					>
+						<span class="dark-mode-appearance">Appearance:</span>
+						<svg fill="white" id="dark-mode-icon" viewBox="0 0 384 512"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"/></svg>
+						<svg fill="white" id="light-mode-icon" viewBox="0 0 16 16">
+						  <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
+						</svg>
+					</button>
+					</a>
+				</li>
+			</ul>
+		</div>
+		</div>
+	</nav>
+</header>
+<main>
+<div class="container full-width">
+<div class="row odin-main my-4" id="pkg">
+<nav id="pkg-sidebar" class="col-lg-2 odin-sidebar-border navbar-light sticky-top odin-below-navbar">
+<div class="py-3">
+<div>Current Package: <em><a href="/core/bytes">bytes</a></em></div><br>
+<h4><a style="text-transform: capitalize; color: inherit;" href="/core">core Library</a></h4>
+<ul>
+<li class="nav-item"><a href="/core/bufio">bufio</a></li>
+<li class="nav-item"><a class="active" href="/core/bytes">bytes</a></li>
+<li class="nav-item"><a href="/core/c">c</a><ul>
+<li><a href="/core/c/libc">libc</a></li>
+</ul>
+
+</li>
+<li class="nav-item">container<ul>
+<li><a href="/core/container/queue">queue</a></li>
+</ul>
+
+</li>
+<li class="nav-item">encoding<ul>
+<li><a href="/core/encoding/base64">base64</a></li>
+<li><a href="/core/encoding/json">json</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/fmt">fmt</a></li>
+<li class="nav-item"><a href="/core/io">io</a></li>
+<li class="nav-item"><a href="/core/log">log</a></li>
+<li class="nav-item"><a href="/core/math">math</a><ul>
+<li><a href="/core/math/bits">bits</a></li>
+<li><a href="/core/math/rand">rand</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/mem">mem</a></li>
+<li class="nav-item"><a href="/core/os">os</a></li>
+<li class="nav-item">path<ul>
+<li><a href="/core/path/filepath">filepath</a></li>
+<li><a href="/core/path/slashpath">slashpath</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/reflect">reflect</a></li>
+<li class="nav-item"><a href="/core/simd">simd</a></li>
+<li class="nav-item"><a href="/core/slice">slice</a></li>
+<li class="nav-item"><a href="/core/strconv">strconv</a><ul>
+<li><a href="/core/strconv/decimal">decimal</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/strings">strings</a></li>
+<li class="nav-item"><a href="/core/sync">sync</a><ul>
+<li><a href="/core/sync/chan">chan</a></li>
+</ul>
+
+</li>
+<li class="nav-item">sys<ul>
+<li><a href="/core/sys/linux">linux</a></li>
+<li><a href="/core/sys/posix">posix</a></li>
+<li><a href="/core/sys/valgrind">valgrind</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/terminal">terminal</a><ul>
+<li><a href="/core/terminal/ansi">ansi</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/testing">testing</a></li>
+<li class="nav-item"><a href="/core/thread">thread</a></li>
+<li class="nav-item"><a href="/core/time">time</a><ul>
+<li><a href="/core/time/datetime">datetime</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/unicode">unicode</a><ul>
+<li><a href="/core/unicode/utf16">utf16</a></li>
+<li><a href="/core/unicode/utf8">utf8</a></li>
+</ul>
+
+</li>
+</ul>
+</div>
+</nav>
+<article class="col-lg-8 p-4 documentation odin-article">
+<nav class="pkg-breadcrumb" aria-label="breadcrumb">
+<ol class="breadcrumb">
+<li class="breadcrumb-item"><a href="/core">core</a></li>
+<li class="breadcrumb-item active" aria-current="page"><a href="/core/bytes">bytes</a></li>
+</ol>
+</nav>
+<h1>package core:bytes<div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes"><em>Source</em></a></div></h1>
+
+		<div class="odin-search-wrapper">
+			<input type="search" id="odin-search" class="odin-search-package" autocomplete="off" spellcheck="false" placeholder="Fuzzy Search..." autofocus>
+			<div class="odin-search-shortcut">
+				<div class="odin-search-key key-macos">⌘K</div>
+				<div class="odin-search-key key-windows">Ctrl+K</div>
+				<span class="odin-search-or">or</span>
+				<div class="odin-search-key">/</div>
+			</div>
+		</div>
+	
+<div id="odin-search-info">
+<div id="odin-search-time"></div>
+
+		<div id="odin-search-options">
+			<input type="checkbox" id="odin-search-filter" name="odin-search-filter">
+			<label for="odin-search-filter">Filter Results</label>
+		</div>
+</div>
+<ul id="odin-search-results"></ul>
+<div id="pkg-top">
+<h2>Overview</h2>
+<div id="pkg-overview">
+<p>Procedures for manipulation of <code>[]byte</code> slices.</p>
+</div>
+<div id="pkg-index">
+<h2>Index</h2>
+<div>
+<details class="doc-index" id="doc-index-Types" aria-labelledby="#doc-index-Types-header">
+<summary id="#doc-index-Types-header">
+Types (2)</summary>
+<ul>
+<li><a href="#Buffer">Buffer</a></li>
+<li><a href="#Reader">Reader</a></li>
+</ul>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Constants" aria-labelledby="#doc-index-Constants-header">
+<summary id="#doc-index-Constants-header">
+Constants (1)</summary>
+<ul>
+<li><a href="#MIN_READ">MIN_READ</a></li>
+</ul>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Variables" aria-labelledby="#doc-index-Variables-header">
+<summary id="#doc-index-Variables-header">
+Variables (0)</summary>
+<p class="pkg-empty-section">This section is empty.</p>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Procedures" aria-labelledby="#doc-index-Procedures-header">
+<summary id="#doc-index-Procedures-header">
+Procedures (125)</summary>
+<ul>
+<li><a href="#alias">alias</a></li>
+<li><a href="#alias_inexactly">alias_inexactly</a></li>
+<li><a href="#buffer_capacity">buffer_capacity</a></li>
+<li><a href="#buffer_destroy">buffer_destroy</a></li>
+<li><a href="#buffer_grow">buffer_grow</a></li>
+<li><a href="#buffer_init">buffer_init</a></li>
+<li><a href="#buffer_init_allocator">buffer_init_allocator</a></li>
+<li><a href="#buffer_init_string">buffer_init_string</a></li>
+<li><a href="#buffer_is_empty">buffer_is_empty</a></li>
+<li><a href="#buffer_length">buffer_length</a></li>
+<li><a href="#buffer_next">buffer_next</a></li>
+<li><a href="#buffer_read">buffer_read</a></li>
+<li><a href="#buffer_read_at">buffer_read_at</a></li>
+<li><a href="#buffer_read_byte">buffer_read_byte</a></li>
+<li><a href="#buffer_read_bytes">buffer_read_bytes</a></li>
+<li><a href="#buffer_read_from">buffer_read_from</a></li>
+<li><a href="#buffer_read_ptr">buffer_read_ptr</a></li>
+<li><a href="#buffer_read_rune">buffer_read_rune</a></li>
+<li><a href="#buffer_read_slice">buffer_read_slice</a></li>
+<li><a href="#buffer_read_string">buffer_read_string</a></li>
+<li><a href="#buffer_reset">buffer_reset</a></li>
+<li><a href="#buffer_seek">buffer_seek</a></li>
+<li><a href="#buffer_to_bytes">buffer_to_bytes</a></li>
+<li><a href="#buffer_to_stream">buffer_to_stream</a></li>
+<li><a href="#buffer_to_string">buffer_to_string</a></li>
+<li><a href="#buffer_truncate">buffer_truncate</a></li>
+<li><a href="#buffer_unread_byte">buffer_unread_byte</a></li>
+<li><a href="#buffer_unread_rune">buffer_unread_rune</a></li>
+<li><a href="#buffer_write">buffer_write</a></li>
+<li><a href="#buffer_write_at">buffer_write_at</a></li>
+<li><a href="#buffer_write_byte">buffer_write_byte</a></li>
+<li><a href="#buffer_write_ptr">buffer_write_ptr</a></li>
+<li><a href="#buffer_write_rune">buffer_write_rune</a></li>
+<li><a href="#buffer_write_slice">buffer_write_slice</a></li>
+<li><a href="#buffer_write_string">buffer_write_string</a></li>
+<li><a href="#buffer_write_to">buffer_write_to</a></li>
+<li><a href="#center_justify">center_justify</a></li>
+<li><a href="#centre_justify">centre_justify</a></li>
+<li><a href="#clone">clone</a></li>
+<li><a href="#clone_safe">clone_safe</a></li>
+<li><a href="#compare">compare</a></li>
+<li><a href="#concatenate">concatenate</a></li>
+<li><a href="#concatenate_safe">concatenate_safe</a></li>
+<li><a href="#contains">contains</a></li>
+<li><a href="#contains_any">contains_any</a></li>
+<li><a href="#contains_rune">contains_rune</a></li>
+<li><a href="#count">count</a></li>
+<li><a href="#equal">equal</a></li>
+<li><a href="#equal_fold">equal_fold</a></li>
+<li><a href="#expand_tabs">expand_tabs</a></li>
+<li><a href="#fields">fields</a></li>
+<li><a href="#fields_proc">fields_proc</a></li>
+<li><a href="#has_prefix">has_prefix</a></li>
+<li><a href="#has_suffix">has_suffix</a></li>
+<li><a href="#index">index</a></li>
+<li><a href="#index_any">index_any</a></li>
+<li><a href="#index_byte">index_byte</a></li>
+<li><a href="#index_proc">index_proc</a></li>
+<li><a href="#index_proc_with_state">index_proc_with_state</a></li>
+<li><a href="#index_rune">index_rune</a></li>
+<li><a href="#is_ascii_space">is_ascii_space</a></li>
+<li><a href="#is_in_cutset">is_in_cutset</a></li>
+<li><a href="#is_null">is_null</a></li>
+<li><a href="#is_space">is_space</a></li>
+<li><a href="#join">join</a></li>
+<li><a href="#join_safe">join_safe</a></li>
+<li><a href="#last_index">last_index</a></li>
+<li><a href="#last_index_any">last_index_any</a></li>
+<li><a href="#last_index_byte">last_index_byte</a></li>
+<li><a href="#last_index_proc">last_index_proc</a></li>
+<li><a href="#last_index_proc_with_state">last_index_proc_with_state</a></li>
+<li><a href="#left_justify">left_justify</a></li>
+<li><a href="#partition">partition</a></li>
+<li><a href="#ptr_from_bytes">ptr_from_bytes</a></li>
+<li><a href="#ptr_from_slice">ptr_from_slice</a></li>
+<li><a href="#reader_init">reader_init</a></li>
+<li><a href="#reader_length">reader_length</a></li>
+<li><a href="#reader_read">reader_read</a></li>
+<li><a href="#reader_read_at">reader_read_at</a></li>
+<li><a href="#reader_read_byte">reader_read_byte</a></li>
+<li><a href="#reader_read_ptr">reader_read_ptr</a></li>
+<li><a href="#reader_read_ptr_at">reader_read_ptr_at</a></li>
+<li><a href="#reader_read_rune">reader_read_rune</a></li>
+<li><a href="#reader_read_slice">reader_read_slice</a></li>
+<li><a href="#reader_read_slice_at">reader_read_slice_at</a></li>
+<li><a href="#reader_seek">reader_seek</a></li>
+<li><a href="#reader_size">reader_size</a></li>
+<li><a href="#reader_to_stream">reader_to_stream</a></li>
+<li><a href="#reader_unread_byte">reader_unread_byte</a></li>
+<li><a href="#reader_unread_rune">reader_unread_rune</a></li>
+<li><a href="#reader_write_to">reader_write_to</a></li>
+<li><a href="#remove">remove</a></li>
+<li><a href="#remove_all">remove_all</a></li>
+<li><a href="#repeat">repeat</a></li>
+<li><a href="#replace">replace</a></li>
+<li><a href="#replace_all">replace_all</a></li>
+<li><a href="#reverse">reverse</a></li>
+<li><a href="#right_justify">right_justify</a></li>
+<li><a href="#rune_count">rune_count</a></li>
+<li><a href="#scrub">scrub</a></li>
+<li><a href="#split">split</a></li>
+<li><a href="#split_after">split_after</a></li>
+<li><a href="#split_after_iterator">split_after_iterator</a></li>
+<li><a href="#split_after_n">split_after_n</a></li>
+<li><a href="#split_iterator">split_iterator</a></li>
+<li><a href="#split_multi">split_multi</a></li>
+<li><a href="#split_multi_iterator">split_multi_iterator</a></li>
+<li><a href="#split_n">split_n</a></li>
+<li><a href="#trim">trim</a></li>
+<li><a href="#trim_left">trim_left</a></li>
+<li><a href="#trim_left_null">trim_left_null</a></li>
+<li><a href="#trim_left_proc">trim_left_proc</a></li>
+<li><a href="#trim_left_proc_with_state">trim_left_proc_with_state</a></li>
+<li><a href="#trim_left_space">trim_left_space</a></li>
+<li><a href="#trim_null">trim_null</a></li>
+<li><a href="#trim_prefix">trim_prefix</a></li>
+<li><a href="#trim_right">trim_right</a></li>
+<li><a href="#trim_right_null">trim_right_null</a></li>
+<li><a href="#trim_right_proc">trim_right_proc</a></li>
+<li><a href="#trim_right_proc_with_state">trim_right_proc_with_state</a></li>
+<li><a href="#trim_right_space">trim_right_space</a></li>
+<li><a href="#trim_space">trim_space</a></li>
+<li><a href="#trim_suffix">trim_suffix</a></li>
+<li><a href="#truncate_to_byte">truncate_to_byte</a></li>
+<li><a href="#truncate_to_rune">truncate_to_rune</a></li>
+</ul>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Procedure Groups" aria-labelledby="#doc-index-Procedure Groups-header">
+<summary id="#doc-index-Procedure Groups-header">
+Procedure Groups (0)</summary>
+<p class="pkg-empty-section">This section is empty.</p>
+</details>
+</div>
+</div>
+</div>
+<section class="documentation">
+<h2 id="pkg-Types" class="pkg-header">Types</h2>
+<div class="pkg-entity">
+<h3 id="Buffer"><span><a class="doc-id-link" href="#Buffer">Buffer<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L13"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">Buffer :: <span class="keyword-type">struct</span> {
+	buf:       [<span class="keyword">dynamic</span>]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>,
+	off:       <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>,
+	last_read: Read_Op,
+}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>A Buffer is a variable-sized buffer of bytes with a io.Stream interface
+The zero value for Buffer is an empty buffer ready to use.</p>
+</details>
+<details class="odin-doc-toggle" close>
+<summary class="hideme">
+<h5 style="display:inline-block">Related Procedures With Parameters</h5>
+</summary>
+<ul>
+<li><a href="/core/bytes/#buffer_capacity">buffer_capacity</a></li>
+<li><a href="/core/bytes/#buffer_destroy">buffer_destroy</a></li>
+<li><a href="/core/bytes/#buffer_grow">buffer_grow</a></li>
+<li><a href="/core/bytes/#buffer_init">buffer_init</a></li>
+<li><a href="/core/bytes/#buffer_init_allocator">buffer_init_allocator</a></li>
+<li><a href="/core/bytes/#buffer_init_string">buffer_init_string</a></li>
+<li><a href="/core/bytes/#buffer_is_empty">buffer_is_empty</a></li>
+<li><a href="/core/bytes/#buffer_length">buffer_length</a></li>
+<li><a href="/core/bytes/#buffer_next">buffer_next</a></li>
+<li><a href="/core/bytes/#buffer_read">buffer_read</a></li>
+<li><a href="/core/bytes/#buffer_read_at">buffer_read_at</a></li>
+<li><a href="/core/bytes/#buffer_read_byte">buffer_read_byte</a></li>
+<li><a href="/core/bytes/#buffer_read_bytes">buffer_read_bytes</a></li>
+<li><a href="/core/bytes/#buffer_read_from">buffer_read_from</a></li>
+<li><a href="/core/bytes/#buffer_read_ptr">buffer_read_ptr</a></li>
+<li><a href="/core/bytes/#buffer_read_rune">buffer_read_rune</a></li>
+<li><a href="/core/bytes/#buffer_read_slice">buffer_read_slice</a></li>
+<li><a href="/core/bytes/#buffer_read_string">buffer_read_string</a></li>
+<li><a href="/core/bytes/#buffer_reset">buffer_reset</a></li>
+<li><a href="/core/bytes/#buffer_seek">buffer_seek</a></li>
+<li><a href="/core/bytes/#buffer_to_bytes">buffer_to_bytes</a></li>
+<li><a href="/core/bytes/#buffer_to_stream">buffer_to_stream</a></li>
+<li><a href="/core/bytes/#buffer_to_string">buffer_to_string</a></li>
+<li><a href="/core/bytes/#buffer_truncate">buffer_truncate</a></li>
+<li><a href="/core/bytes/#buffer_unread_byte">buffer_unread_byte</a></li>
+<li><a href="/core/bytes/#buffer_unread_rune">buffer_unread_rune</a></li>
+<li><a href="/core/bytes/#buffer_write">buffer_write</a></li>
+<li><a href="/core/bytes/#buffer_write_at">buffer_write_at</a></li>
+<li><a href="/core/bytes/#buffer_write_byte">buffer_write_byte</a></li>
+<li><a href="/core/bytes/#buffer_write_ptr">buffer_write_ptr</a></li>
+<li><a href="/core/bytes/#buffer_write_rune">buffer_write_rune</a></li>
+<li><a href="/core/bytes/#buffer_write_slice">buffer_write_slice</a></li>
+<li><a href="/core/bytes/#buffer_write_string">buffer_write_string</a></li>
+<li><a href="/core/bytes/#buffer_write_to">buffer_write_to</a></li>
+</ul>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="Reader"><span><a class="doc-id-link" href="#Reader">Reader<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L6"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">Reader :: <span class="keyword-type">struct</span> {
+	s:         []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>,
+	<span class="comment">// read-only buffer</span>
+	i:         <a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a>,
+	<span class="comment">// current reading index</span>
+	prev_rune: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>,
+}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme">
+<h5 style="display:inline-block">Related Procedures With Parameters</h5>
+</summary>
+<ul>
+<li><a href="/core/bytes/#reader_init">reader_init</a></li>
+<li><a href="/core/bytes/#reader_length">reader_length</a></li>
+<li><a href="/core/bytes/#reader_read">reader_read</a></li>
+<li><a href="/core/bytes/#reader_read_at">reader_read_at</a></li>
+<li><a href="/core/bytes/#reader_read_byte">reader_read_byte</a></li>
+<li><a href="/core/bytes/#reader_read_ptr">reader_read_ptr</a></li>
+<li><a href="/core/bytes/#reader_read_ptr_at">reader_read_ptr_at</a></li>
+<li><a href="/core/bytes/#reader_read_rune">reader_read_rune</a></li>
+<li><a href="/core/bytes/#reader_read_slice">reader_read_slice</a></li>
+<li><a href="/core/bytes/#reader_read_slice_at">reader_read_slice_at</a></li>
+<li><a href="/core/bytes/#reader_seek">reader_seek</a></li>
+<li><a href="/core/bytes/#reader_size">reader_size</a></li>
+<li><a href="/core/bytes/#reader_to_stream">reader_to_stream</a></li>
+<li><a href="/core/bytes/#reader_unread_byte">reader_unread_byte</a></li>
+<li><a href="/core/bytes/#reader_unread_rune">reader_unread_rune</a></li>
+<li><a href="/core/bytes/#reader_write_to">reader_write_to</a></li>
+</ul>
+</details>
+</div>
+<h2 id="pkg-Constants" class="pkg-header">Constants</h2>
+<div class="pkg-entity">
+<h3 id="MIN_READ"><span><a class="doc-id-link" href="#MIN_READ">MIN_READ<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L6"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">MIN_READ :: 512</pre>
+</div>
+</div>
+<h2 id="pkg-Variables" class="pkg-header">Variables</h2>
+<p class="pkg-empty-section">This section is empty.</p>
+<h2 id="pkg-Procedures" class="pkg-header">Procedures</h2>
+<div class="pkg-entity">
+<h3 id="alias"><span><a class="doc-id-link" href="#alias">alias<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1465"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">alias :: <span class="keyword-type">proc</span> <span class="string">"contextless"</span> (a, b: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>alias returns true <abbr title="If and only if (⟺)">iff</abbr> a and b have a non-zero length, and any part of
+a overlaps with b.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="alias_inexactly"><span><a class="doc-id-link" href="#alias_inexactly">alias_inexactly<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1481"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">alias_inexactly :: <span class="keyword-type">proc</span> <span class="string">"contextless"</span> (a, b: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>alias_inexactly returns true <abbr title="If and only if (⟺)">iff</abbr> a and b have a non-zero length,
+the base pointer of a and b are NOT equal, and any part of a overlaps
+with b (ie: <code>alias(a, b)</code> with an exception that returns false for
+<code>a == b</code>, <code>b = a[:len(a)-69]</code> and similar conditions).</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_capacity"><span><a class="doc-id-link" href="#buffer_capacity">buffer_capacity<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L75"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_capacity :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_destroy"><span><a class="doc-id-link" href="#buffer_destroy">buffer_destroy<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L51"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_destroy :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_grow"><span><a class="doc-id-link" href="#buffer_grow">buffer_grow<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L138"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_grow :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_init"><span><a class="doc-id-link" href="#buffer_init">buffer_init<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L30"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_init :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, buf: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_init_allocator"><span><a class="doc-id-link" href="#buffer_init_allocator">buffer_init_allocator<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L40"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_init_allocator :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, len, cap: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_init_string"><span><a class="doc-id-link" href="#buffer_init_string">buffer_init_string<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L35"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_init_string :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, s: <a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_is_empty"><span><a class="doc-id-link" href="#buffer_is_empty">buffer_is_empty<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L67"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_is_empty :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_length"><span><a class="doc-id-link" href="#buffer_length">buffer_length<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L71"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_length :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_next"><span><a class="doc-id-link" href="#buffer_next">buffer_next<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L220"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_next :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_read"><span><a class="doc-id-link" href="#buffer_read">buffer_read<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L235"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_read :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, p: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_read_at"><span><a class="doc-id-link" href="#buffer_read_at">buffer_read_at<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L262"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_read_at :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, p: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, offset: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_read_byte"><span><a class="doc-id-link" href="#buffer_read_byte">buffer_read_byte<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L280"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_read_byte :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) -> (<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_read_bytes"><span><a class="doc-id-link" href="#buffer_read_bytes">buffer_read_bytes<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L352"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_read_bytes :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, delim: <a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> (line: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_read_from"><span><a class="doc-id-link" href="#buffer_read_from">buffer_read_from<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L393"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_read_from :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, r: io.<a class="code-typename" href="/core/io/#Stream">Stream</a>) -> (n: <a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_read_ptr"><span><a class="doc-id-link" href="#buffer_read_ptr">buffer_read_ptr<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L252"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_read_ptr :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, ptr: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, size: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_read_rune"><span><a class="doc-id-link" href="#buffer_read_rune">buffer_read_rune<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L291"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_read_rune :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) -> (r: <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>, size: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_read_slice"><span><a class="doc-id-link" href="#buffer_read_slice">buffer_read_slice<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L256"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_read_slice :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, slice: $S/[]$T) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_read_string"><span><a class="doc-id-link" href="#buffer_read_string">buffer_read_string<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L365"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_read_string :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, delim: <a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> (line: <a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_reset"><span><a class="doc-id-link" href="#buffer_reset">buffer_reset<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L79"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_reset :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_seek"><span><a class="doc-id-link" href="#buffer_seek">buffer_seek<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L330"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_seek :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, offset: <a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a>, whence: io.<a class="code-typename" href="/core/io/#Seek_From">Seek_From</a>) -> (<a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a>, io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_to_bytes"><span><a class="doc-id-link" href="#buffer_to_bytes">buffer_to_bytes<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L56"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_to_bytes :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_to_stream"><span><a class="doc-id-link" href="#buffer_to_stream">buffer_to_stream<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L418"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_to_stream :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) -> (s: io.<a class="code-typename" href="/core/io/#Stream">Stream</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_to_string"><span><a class="doc-id-link" href="#buffer_to_string">buffer_to_string<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L60"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_to_string :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) -> <a href="/base/builtin#string"><span class="doc-builtin">string</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_truncate"><span><a class="doc-id-link" href="#buffer_truncate">buffer_truncate<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L86"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_truncate :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_unread_byte"><span><a class="doc-id-link" href="#buffer_unread_byte">buffer_unread_byte<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L308"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_unread_byte :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) -> io.<a class="code-typename" href="/core/io/#Error">Error</a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_unread_rune"><span><a class="doc-id-link" href="#buffer_unread_rune">buffer_unread_rune<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L319"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_unread_rune :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>) -> io.<a class="code-typename" href="/core/io/#Error">Error</a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_write"><span><a class="doc-id-link" href="#buffer_write">buffer_write<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L166"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_write :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, p: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_write_at"><span><a class="doc-id-link" href="#buffer_write_at">buffer_write_at<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L146"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_write_at :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, p: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, offset: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_write_byte"><span><a class="doc-id-link" href="#buffer_write_byte">buffer_write_byte<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L193"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_write_byte :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, c: <a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> io.<a class="code-typename" href="/core/io/#Error">Error</a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_write_ptr"><span><a class="doc-id-link" href="#buffer_write_ptr">buffer_write_ptr<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L175"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_write_ptr :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, ptr: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, size: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_write_rune"><span><a class="doc-id-link" href="#buffer_write_rune">buffer_write_rune<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L203"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_write_rune :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, r: <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_write_slice"><span><a class="doc-id-link" href="#buffer_write_slice">buffer_write_slice<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L179"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_write_slice :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, slice: $S/[]$T, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_write_string"><span><a class="doc-id-link" href="#buffer_write_string">buffer_write_string<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L184"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_write_string :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, s: <a href="/base/builtin#string"><span class="doc-builtin">string</span></a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="buffer_write_to"><span><a class="doc-id-link" href="#buffer_write_to">buffer_write_to<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin#L371"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">buffer_write_to :: <span class="keyword-type">proc</span>(b: ^<a class="code-typename" href="/core/bytes/#Buffer">Buffer</a>, w: io.<a class="code-typename" href="/core/io/#Stream">Stream</a>) -> (n: <a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="center_justify"><span><a class="doc-id-link" href="#center_justify">center_justify<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1299"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">center_justify :: <a class="code-procedure" href="/core/bytes/#centre_justify">centre_justify</a></pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>centre_justify returns a byte slice with a pad byte slice at boths sides if the str's rune length is smaller than length</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="centre_justify"><span><a class="doc-id-link" href="#centre_justify">centre_justify<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1299"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">centre_justify :: <span class="keyword-type">proc</span>(str: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, length: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, pad: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>centre_justify returns a byte slice with a pad byte slice at boths sides if the str's rune length is smaller than length</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="clone"><span><a class="doc-id-link" href="#clone">clone<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L37"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">clone :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="clone_safe"><span><a class="doc-id-link" href="#clone_safe">clone_safe<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L43"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">clone_safe :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (data: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, err: runtime.<a class="code-typename" href="/base/runtime/#Allocator_Error">Allocator_Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="compare"><span><a class="doc-id-link" href="#compare">compare<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L72"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">compare :: <span class="keyword-type">proc</span>(lhs, rhs: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Compares two []byte, returning a value representing which one comes first lexiographically.
+Returns: -1 for <code>lhs</code>, 1 for <code>rhs</code>, or 0 if they are equal.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="concatenate"><span><a class="doc-id-link" href="#concatenate">concatenate<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L204"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">concatenate :: <span class="keyword-type">proc</span>(a: [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="concatenate_safe"><span><a class="doc-id-link" href="#concatenate_safe">concatenate_safe<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L221"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">concatenate_safe :: <span class="keyword-type">proc</span>(a: [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (data: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, err: runtime.<a class="code-typename" href="/base/runtime/#Allocator_Error">Allocator_Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="contains"><span><a class="doc-id-link" href="#contains">contains<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L91"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">contains :: <span class="keyword-type">proc</span>(s, substr: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="contains_any"><span><a class="doc-id-link" href="#contains_any">contains_any<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L95"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">contains_any :: <span class="keyword-type">proc</span>(s, chars: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="contains_rune"><span><a class="doc-id-link" href="#contains_rune">contains_rune<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L82"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">contains_rune :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, r: <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="count"><span><a class="doc-id-link" href="#count">count<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L741"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">count :: <span class="keyword-type">proc</span>(s, substr: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="equal"><span><a class="doc-id-link" href="#equal">equal<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L105"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">equal :: <span class="keyword-type">proc</span>(a, b: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="equal_fold"><span><a class="doc-id-link" href="#equal_fold">equal_fold<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L109"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">equal_fold :: <span class="keyword-type">proc</span>(u, v: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="expand_tabs"><span><a class="doc-id-link" href="#expand_tabs">expand_tabs<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1240"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">expand_tabs :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, tab_size: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="fields"><span><a class="doc-id-link" href="#fields">fields<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1380"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">fields :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>fields splits the byte slice s around each instance of one or more consecutive white space character, defined by unicode.is_space
+returning a slice of subslices of s or an empty slice if s only contains white space</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="fields_proc"><span><a class="doc-id-link" href="#fields_proc">fields_proc<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1436"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">fields_proc :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, f: <span class="keyword-type">proc</span>(<a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>fields_proc splits the byte slice s at each run of unicode code points <code>ch</code> satisfying f(ch)
+returns a slice of subslices of s
+If all code points in s satisfy f(ch) or string is empty, an empty slice is returned</p>
+<p>fields_proc makes no guarantee about the order in which it calls f(ch)
+it assumes that <code>f</code> always returns the same value for a given ch</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="has_prefix"><span><a class="doc-id-link" href="#has_prefix">has_prefix<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L157"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">has_prefix :: <span class="keyword-type">proc</span>(s, prefix: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="has_suffix"><span><a class="doc-id-link" href="#has_suffix">has_suffix<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L161"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">has_suffix :: <span class="keyword-type">proc</span>(s, suffix: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="index"><span><a class="doc-id-link" href="#index">index<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L610"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">index :: <span class="keyword-type">proc</span>(s, substr: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="index_any"><span><a class="doc-id-link" href="#index_any">index_any<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L708"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">index_any :: <span class="keyword-type">proc</span>(s, chars: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="index_byte"><span><a class="doc-id-link" href="#index_byte">index_byte<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L349"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">index_byte :: <span class="keyword-type">proc</span> <span class="string">"contextless"</span> (s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, c: <a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> (index: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Scan a slice of bytes for a specific byte.</p>
+<p>This procedure safely handles slices of any length, including empty slices.</p>
+<p><b>Inputs:</b><br><span class="doc-list">data: A slice of bytes.</span>
+<span class="doc-list">c: The byte to search for.</span></p>
+<p><b>Returns:</b><br><span class="doc-list">index: The index of the byte <code>c</code>, or -1 if it was not found.</span></p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="index_proc"><span><a class="doc-id-link" href="#index_proc">index_proc<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L878"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">index_proc :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, p: <span class="keyword-type">proc</span>(<a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>, truth: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> = true) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="index_proc_with_state"><span><a class="doc-id-link" href="#index_proc_with_state">index_proc_with_state<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L887"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">index_proc_with_state :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, p: <span class="keyword-type">proc</span>(<a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>, state: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, truth: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> = true) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="index_rune"><span><a class="doc-id-link" href="#index_rune">index_rune<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L929"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">index_rune :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, r: <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="is_ascii_space"><span><a class="doc-id-link" href="#is_ascii_space">is_ascii_space<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L849"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">is_ascii_space :: <span class="keyword-type">proc</span>(r: <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="is_in_cutset"><span><a class="doc-id-link" href="#is_in_cutset">is_in_cutset<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L982"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">is_in_cutset :: <span class="keyword-type">proc</span>(state: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, r: <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="is_null"><span><a class="doc-id-link" href="#is_null">is_null<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L874"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">is_null :: <span class="keyword-type">proc</span>(r: <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="is_space"><span><a class="doc-id-link" href="#is_space">is_space<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L856"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">is_space :: <span class="keyword-type">proc</span>(r: <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="join"><span><a class="doc-id-link" href="#join">join<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L166"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">join :: <span class="keyword-type">proc</span>(a: [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, sep: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="join_safe"><span><a class="doc-id-link" href="#join_safe">join_safe<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L185"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">join_safe :: <span class="keyword-type">proc</span>(a: [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, sep: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (data: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, err: runtime.<a class="code-typename" href="/base/runtime/#Allocator_Error">Allocator_Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="last_index"><span><a class="doc-id-link" href="#last_index">last_index<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L660"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">last_index :: <span class="keyword-type">proc</span>(s, substr: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="last_index_any"><span><a class="doc-id-link" href="#last_index_any">last_index_any<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L724"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">last_index_any :: <span class="keyword-type">proc</span>(s, chars: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="last_index_byte"><span><a class="doc-id-link" href="#last_index_byte">last_index_byte<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L484"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">last_index_byte :: <span class="keyword-type">proc</span> <span class="string">"contextless"</span> (s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, c: <a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Scan a slice of bytes for a specific byte, starting from the end and working
+backwards to the start.</p>
+<p>This procedure safely handles slices of any length, including empty slices.</p>
+<p><b>Inputs:</b><br><span class="doc-list">data: A slice of bytes.</span>
+<span class="doc-list">c: The byte to search for.</span></p>
+<p><b>Returns:</b><br><span class="doc-list">index: The index of the byte <code>c</code>, or -1 if it was not found.</span></p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="last_index_proc"><span><a class="doc-id-link" href="#last_index_proc">last_index_proc<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L896"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">last_index_proc :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, p: <span class="keyword-type">proc</span>(<a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>, truth: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> = true) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="last_index_proc_with_state"><span><a class="doc-id-link" href="#last_index_proc_with_state">last_index_proc_with_state<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L908"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">last_index_proc_with_state :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, p: <span class="keyword-type">proc</span>(<a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>, state: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, truth: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> = true) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="left_justify"><span><a class="doc-id-link" href="#left_justify">left_justify<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1319"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">left_justify :: <span class="keyword-type">proc</span>(str: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, length: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, pad: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>left_justify returns a byte slice with a pad byte slice at left side if the str's rune length is smaller than length</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="partition"><span><a class="doc-id-link" href="#partition">partition<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1283"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">partition :: <span class="keyword-type">proc</span>(str, sep: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> (head, match, tail: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="ptr_from_bytes"><span><a class="doc-id-link" href="#ptr_from_bytes">ptr_from_bytes<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L50"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">ptr_from_bytes :: <span class="keyword-type">proc</span>(str: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> ^<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="ptr_from_slice"><span><a class="doc-id-link" href="#ptr_from_slice">ptr_from_slice<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L50"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">ptr_from_slice :: <a class="code-procedure" href="/core/bytes/#ptr_from_bytes">ptr_from_bytes</a></pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_init"><span><a class="doc-id-link" href="#reader_init">reader_init<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L12"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_init :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>, s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> io.<a class="code-typename" href="/core/io/#Stream">Stream</a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_length"><span><a class="doc-id-link" href="#reader_length">reader_length<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L25"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_length :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_read"><span><a class="doc-id-link" href="#reader_read">reader_read<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L36"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_read :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>, p: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_read_at"><span><a class="doc-id-link" href="#reader_read_at">reader_read_at<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L48"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_read_at :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>, p: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, off: <a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_read_byte"><span><a class="doc-id-link" href="#reader_read_byte">reader_read_byte<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L85"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_read_byte :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>) -> (<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_read_ptr"><span><a class="doc-id-link" href="#reader_read_ptr">reader_read_ptr<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L74"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_read_ptr :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>, data: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, len: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_read_ptr_at"><span><a class="doc-id-link" href="#reader_read_ptr_at">reader_read_ptr_at<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L79"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_read_ptr_at :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>, data: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, len: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, off: <a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_read_rune"><span><a class="doc-id-link" href="#reader_read_rune">reader_read_rune<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L102"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_read_rune :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>) -> (ch: <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>, size: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_read_slice"><span><a class="doc-id-link" href="#reader_read_slice">reader_read_slice<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L64"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_read_slice :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>, slice: $T/[]$S) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_read_slice_at"><span><a class="doc-id-link" href="#reader_read_slice_at">reader_read_slice_at<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L69"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_read_slice_at :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>, slice: $T/[]$S, off: <a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a>) -> (n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_seek"><span><a class="doc-id-link" href="#reader_seek">reader_seek<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L127"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_seek :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>, offset: <a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a>, whence: io.<a class="code-typename" href="/core/io/#Seek_From">Seek_From</a>) -> (<a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a>, io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_size"><span><a class="doc-id-link" href="#reader_size">reader_size<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L32"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_size :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>) -> <a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_to_stream"><span><a class="doc-id-link" href="#reader_to_stream">reader_to_stream<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L19"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_to_stream :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>) -> (s: io.<a class="code-typename" href="/core/io/#Stream">Stream</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_unread_byte"><span><a class="doc-id-link" href="#reader_unread_byte">reader_unread_byte<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L94"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_unread_byte :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>) -> io.<a class="code-typename" href="/core/io/#Error">Error</a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_unread_rune"><span><a class="doc-id-link" href="#reader_unread_rune">reader_unread_rune<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L116"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_unread_rune :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>) -> io.<a class="code-typename" href="/core/io/#Error">Error</a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reader_write_to"><span><a class="doc-id-link" href="#reader_write_to">reader_write_to<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin#L147"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reader_write_to :: <span class="keyword-type">proc</span>(r: ^<a class="code-typename" href="/core/bytes/#Reader">Reader</a>, w: io.<a class="code-typename" href="/core/io/#Stream">Stream</a>) -> (n: <a href="/base/builtin#i64"><span class="doc-builtin">i64</span></a>, err: io.<a class="code-typename" href="/core/io/#Error">Error</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="remove"><span><a class="doc-id-link" href="#remove">remove<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L838"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">remove :: <span class="keyword-type">proc</span>(s, key: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (output: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, was_allocation: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="remove_all"><span><a class="doc-id-link" href="#remove_all">remove_all<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L842"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">remove_all :: <span class="keyword-type">proc</span>(s, key: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (output: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, was_allocation: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="repeat"><span><a class="doc-id-link" href="#repeat">repeat<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L777"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">repeat :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, count: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="replace"><span><a class="doc-id-link" href="#replace">replace<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L798"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">replace :: <span class="keyword-type">proc</span>(
+	s, old, new: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, 
+	n:           <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, 
+	allocator := <a href="/base/runtime/#Context">context.allocator</a>, 
+	loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>, 
+) -> (output: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, was_allocation: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>if n &lt; 0, no limit on the number of replacements</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="replace_all"><span><a class="doc-id-link" href="#replace_all">replace_all<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L793"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">replace_all :: <span class="keyword-type">proc</span>(s, old, new: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> (output: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, was_allocation: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="reverse"><span><a class="doc-id-link" href="#reverse">reverse<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1225"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">reverse :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="right_justify"><span><a class="doc-id-link" href="#right_justify">right_justify<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1338"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">right_justify :: <span class="keyword-type">proc</span>(str: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, length: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, pad: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>right_justify returns a byte slice with a pad byte slice at right side if the str's rune length is smaller than length</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="rune_count"><span><a class="doc-id-link" href="#rune_count">rune_count<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L100"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">rune_count :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="scrub"><span><a class="doc-id-link" href="#scrub">scrub<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1192"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">scrub :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, replacement: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Scrubs invalid utf-8 characters and replaces them with the replacement string
+Adjacent invalid bytes are only replaced once</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="split"><span><a class="doc-id-link" href="#split">split<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L287"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">split :: <span class="keyword-type">proc</span>(s, sep: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="split_after"><span><a class="doc-id-link" href="#split_after">split_after<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L295"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">split_after :: <span class="keyword-type">proc</span>(s, sep: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="split_after_iterator"><span><a class="doc-id-link" href="#split_after_iterator">split_after_iterator<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L333"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">split_after_iterator :: <span class="keyword-type">proc</span>(s: ^[]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, sep: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> ([]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="split_after_n"><span><a class="doc-id-link" href="#split_after_n">split_after_n<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L299"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">split_after_n :: <span class="keyword-type">proc</span>(s, sep: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="split_iterator"><span><a class="doc-id-link" href="#split_iterator">split_iterator<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L329"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">split_iterator :: <span class="keyword-type">proc</span>(s: ^[]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, sep: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> ([]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="split_multi"><span><a class="doc-id-link" href="#split_multi">split_multi<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1057"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">split_multi :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, substrs: [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, skip_empty: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> = false, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="split_multi_iterator"><span><a class="doc-id-link" href="#split_multi_iterator">split_multi_iterator<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1138"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">split_multi_iterator :: <span class="keyword-type">proc</span>(s: ^[]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, substrs: [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, skip_empty: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> = false) -> ([]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="split_n"><span><a class="doc-id-link" href="#split_n">split_n<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L291"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">split_n :: <span class="keyword-type">proc</span>(s, sep: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, n: <a href="/base/builtin#int"><span class="doc-builtin">int</span></a>, allocator := <a href="/base/runtime/#Context">context.allocator</a>, loc := <a href="/base/runtime/#Source_Code_Location">#caller_location</a>) -> [][]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim"><span><a class="doc-id-link" href="#trim">trim<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1014"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, cutset: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_left"><span><a class="doc-id-link" href="#trim_left">trim_left<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L996"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_left :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, cutset: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_left_null"><span><a class="doc-id-link" href="#trim_left_null">trim_left_null<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1031"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_left_null :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_left_proc"><span><a class="doc-id-link" href="#trim_left_proc">trim_left_proc<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L920"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_left_proc :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, p: <span class="keyword-type">proc</span>(<a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_left_proc_with_state"><span><a class="doc-id-link" href="#trim_left_proc_with_state">trim_left_proc_with_state<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L951"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_left_proc_with_state :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, p: <span class="keyword-type">proc</span>(<a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>, state: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_left_space"><span><a class="doc-id-link" href="#trim_left_space">trim_left_space<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1018"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_left_space :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_null"><span><a class="doc-id-link" href="#trim_null">trim_null<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1039"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_null :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_prefix"><span><a class="doc-id-link" href="#trim_prefix">trim_prefix<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1043"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_prefix :: <span class="keyword-type">proc</span>(s, prefix: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_right"><span><a class="doc-id-link" href="#trim_right">trim_right<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1005"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_right :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, cutset: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_right_null"><span><a class="doc-id-link" href="#trim_right_null">trim_right_null<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1035"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_right_null :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_right_proc"><span><a class="doc-id-link" href="#trim_right_proc">trim_right_proc<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L959"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_right_proc :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, p: <span class="keyword-type">proc</span>(<a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_right_proc_with_state"><span><a class="doc-id-link" href="#trim_right_proc_with_state">trim_right_proc_with_state<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L970"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_right_proc_with_state :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, p: <span class="keyword-type">proc</span>(<a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>, state: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_right_space"><span><a class="doc-id-link" href="#trim_right_space">trim_right_space<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1022"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_right_space :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_space"><span><a class="doc-id-link" href="#trim_space">trim_space<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1026"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_space :: <span class="keyword-type">proc</span>(s: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="trim_suffix"><span><a class="doc-id-link" href="#trim_suffix">trim_suffix<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L1050"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">trim_suffix :: <span class="keyword-type">proc</span>(s, suffix: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="truncate_to_byte"><span><a class="doc-id-link" href="#truncate_to_byte">truncate_to_byte<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L55"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">truncate_to_byte :: <span class="keyword-type">proc</span>(str: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, b: <a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="truncate_to_rune"><span><a class="doc-id-link" href="#truncate_to_rune">truncate_to_rune<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin#L62"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">truncate_to_rune :: <span class="keyword-type">proc</span>(str: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, r: <a href="/base/builtin#rune"><span class="doc-builtin">rune</span></a>) -> []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+</div>
+<h2 id="pkg-Procedure Groups" class="pkg-header">Procedure Groups</h2>
+<p class="pkg-empty-section">This section is empty.</p>
+</section>
+<h2 id="pkg-source-files">Source Files</h2>
+<ul>
+<li><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/buffer.odin">buffer.odin</a></li>
+<li><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/bytes.odin">bytes.odin</a></li>
+<li><a href="https://github.com/odin-lang/Odin/tree/master/core/bytes/reader.odin">reader.odin</a></li>
+</ul>
+<h2 id="pkg-generation-information">Generation Information</h2>
+<p>Generated with <code>odin version dev-2026-07 (vendor "odin") Linux_amd64 @ 2026-07-20 15:05:15.941949145 +0000 UTC</code></p>
+</article>
+<div class="col-lg-2 odin-toc-border navbar-light"><div class="sticky-top odin-below-navbar py-3">
+<nav id="TableOfContents">
+<ul>
+<li><a href="#pkg-overview">Overview</a><li><a href="#pkg-Types">Types</a><ul>
+<li><a href="#Buffer">Buffer</a></li>
+<li><a href="#Reader">Reader</a></li>
+</ul>
+</li>
+<li><a href="#pkg-Constants">Constants</a><ul>
+<li><a href="#MIN_READ">MIN_READ</a></li>
+</ul>
+</li>
+<li><a href="#pkg-Procedures">Procedures</a><ul>
+<li><a href="#alias">alias</a></li>
+<li><a href="#alias_inexactly">alias_inexactly</a></li>
+<li><a href="#buffer_capacity">buffer_capacity</a></li>
+<li><a href="#buffer_destroy">buffer_destroy</a></li>
+<li><a href="#buffer_grow">buffer_grow</a></li>
+<li><a href="#buffer_init">buffer_init</a></li>
+<li><a href="#buffer_init_allocator">buffer_init_allocator</a></li>
+<li><a href="#buffer_init_string">buffer_init_string</a></li>
+<li><a href="#buffer_is_empty">buffer_is_empty</a></li>
+<li><a href="#buffer_length">buffer_length</a></li>
+<li><a href="#buffer_next">buffer_next</a></li>
+<li><a href="#buffer_read">buffer_read</a></li>
+<li><a href="#buffer_read_at">buffer_read_at</a></li>
+<li><a href="#buffer_read_byte">buffer_read_byte</a></li>
+<li><a href="#buffer_read_bytes">buffer_read_bytes</a></li>
+<li><a href="#buffer_read_from">buffer_read_from</a></li>
+<li><a href="#buffer_read_ptr">buffer_read_ptr</a></li>
+<li><a href="#buffer_read_rune">buffer_read_rune</a></li>
+<li><a href="#buffer_read_slice">buffer_read_slice</a></li>
+<li><a href="#buffer_read_string">buffer_read_string</a></li>
+<li><a href="#buffer_reset">buffer_reset</a></li>
+<li><a href="#buffer_seek">buffer_seek</a></li>
+<li><a href="#buffer_to_bytes">buffer_to_bytes</a></li>
+<li><a href="#buffer_to_stream">buffer_to_stream</a></li>
+<li><a href="#buffer_to_string">buffer_to_string</a></li>
+<li><a href="#buffer_truncate">buffer_truncate</a></li>
+<li><a href="#buffer_unread_byte">buffer_unread_byte</a></li>
+<li><a href="#buffer_unread_rune">buffer_unread_rune</a></li>
+<li><a href="#buffer_write">buffer_write</a></li>
+<li><a href="#buffer_write_at">buffer_write_at</a></li>
+<li><a href="#buffer_write_byte">buffer_write_byte</a></li>
+<li><a href="#buffer_write_ptr">buffer_write_ptr</a></li>
+<li><a href="#buffer_write_rune">buffer_write_rune</a></li>
+<li><a href="#buffer_write_slice">buffer_write_slice</a></li>
+<li><a href="#buffer_write_string">buffer_write_string</a></li>
+<li><a href="#buffer_write_to">buffer_write_to</a></li>
+<li><a href="#center_justify">center_justify</a></li>
+<li><a href="#centre_justify">centre_justify</a></li>
+<li><a href="#clone">clone</a></li>
+<li><a href="#clone_safe">clone_safe</a></li>
+<li><a href="#compare">compare</a></li>
+<li><a href="#concatenate">concatenate</a></li>
+<li><a href="#concatenate_safe">concatenate_safe</a></li>
+<li><a href="#contains">contains</a></li>
+<li><a href="#contains_any">contains_any</a></li>
+<li><a href="#contains_rune">contains_rune</a></li>
+<li><a href="#count">count</a></li>
+<li><a href="#equal">equal</a></li>
+<li><a href="#equal_fold">equal_fold</a></li>
+<li><a href="#expand_tabs">expand_tabs</a></li>
+<li><a href="#fields">fields</a></li>
+<li><a href="#fields_proc">fields_proc</a></li>
+<li><a href="#has_prefix">has_prefix</a></li>
+<li><a href="#has_suffix">has_suffix</a></li>
+<li><a href="#index">index</a></li>
+<li><a href="#index_any">index_any</a></li>
+<li><a href="#index_byte">index_byte</a></li>
+<li><a href="#index_proc">index_proc</a></li>
+<li><a href="#index_proc_with_state">index_proc_with_state</a></li>
+<li><a href="#index_rune">index_rune</a></li>
+<li><a href="#is_ascii_space">is_ascii_space</a></li>
+<li><a href="#is_in_cutset">is_in_cutset</a></li>
+<li><a href="#is_null">is_null</a></li>
+<li><a href="#is_space">is_space</a></li>
+<li><a href="#join">join</a></li>
+<li><a href="#join_safe">join_safe</a></li>
+<li><a href="#last_index">last_index</a></li>
+<li><a href="#last_index_any">last_index_any</a></li>
+<li><a href="#last_index_byte">last_index_byte</a></li>
+<li><a href="#last_index_proc">last_index_proc</a></li>
+<li><a href="#last_index_proc_with_state">last_index_proc_with_state</a></li>
+<li><a href="#left_justify">left_justify</a></li>
+<li><a href="#partition">partition</a></li>
+<li><a href="#ptr_from_bytes">ptr_from_bytes</a></li>
+<li><a href="#ptr_from_slice">ptr_from_slice</a></li>
+<li><a href="#reader_init">reader_init</a></li>
+<li><a href="#reader_length">reader_length</a></li>
+<li><a href="#reader_read">reader_read</a></li>
+<li><a href="#reader_read_at">reader_read_at</a></li>
+<li><a href="#reader_read_byte">reader_read_byte</a></li>
+<li><a href="#reader_read_ptr">reader_read_ptr</a></li>
+<li><a href="#reader_read_ptr_at">reader_read_ptr_at</a></li>
+<li><a href="#reader_read_rune">reader_read_rune</a></li>
+<li><a href="#reader_read_slice">reader_read_slice</a></li>
+<li><a href="#reader_read_slice_at">reader_read_slice_at</a></li>
+<li><a href="#reader_seek">reader_seek</a></li>
+<li><a href="#reader_size">reader_size</a></li>
+<li><a href="#reader_to_stream">reader_to_stream</a></li>
+<li><a href="#reader_unread_byte">reader_unread_byte</a></li>
+<li><a href="#reader_unread_rune">reader_unread_rune</a></li>
+<li><a href="#reader_write_to">reader_write_to</a></li>
+<li><a href="#remove">remove</a></li>
+<li><a href="#remove_all">remove_all</a></li>
+<li><a href="#repeat">repeat</a></li>
+<li><a href="#replace">replace</a></li>
+<li><a href="#replace_all">replace_all</a></li>
+<li><a href="#reverse">reverse</a></li>
+<li><a href="#right_justify">right_justify</a></li>
+<li><a href="#rune_count">rune_count</a></li>
+<li><a href="#scrub">scrub</a></li>
+<li><a href="#split">split</a></li>
+<li><a href="#split_after">split_after</a></li>
+<li><a href="#split_after_iterator">split_after_iterator</a></li>
+<li><a href="#split_after_n">split_after_n</a></li>
+<li><a href="#split_iterator">split_iterator</a></li>
+<li><a href="#split_multi">split_multi</a></li>
+<li><a href="#split_multi_iterator">split_multi_iterator</a></li>
+<li><a href="#split_n">split_n</a></li>
+<li><a href="#trim">trim</a></li>
+<li><a href="#trim_left">trim_left</a></li>
+<li><a href="#trim_left_null">trim_left_null</a></li>
+<li><a href="#trim_left_proc">trim_left_proc</a></li>
+<li><a href="#trim_left_proc_with_state">trim_left_proc_with_state</a></li>
+<li><a href="#trim_left_space">trim_left_space</a></li>
+<li><a href="#trim_null">trim_null</a></li>
+<li><a href="#trim_prefix">trim_prefix</a></li>
+<li><a href="#trim_right">trim_right</a></li>
+<li><a href="#trim_right_null">trim_right_null</a></li>
+<li><a href="#trim_right_proc">trim_right_proc</a></li>
+<li><a href="#trim_right_proc_with_state">trim_right_proc_with_state</a></li>
+<li><a href="#trim_right_space">trim_right_space</a></li>
+<li><a href="#trim_space">trim_space</a></li>
+<li><a href="#trim_suffix">trim_suffix</a></li>
+<li><a href="#truncate_to_byte">truncate_to_byte</a></li>
+<li><a href="#truncate_to_rune">truncate_to_rune</a></li>
+</ul>
+</li>
+<li><a href="#pkg-source-files">Source Files</a></ul>
+</nav>
+</div></div>
+<script type="text/javascript">var odin_pkg_name = "bytes";</script>
+</div>
+
+</div>
+</main>
+
+<footer class="odin-footer">
+	<div class="container pb-5 pt-5">
+		<div class="row g-4">
+		<div class="col">
+		<a class="navbar-brand" href="https://odin-lang.org">
+		<img class="mb-3" src="https://odin-lang.org/logo.svg" height="30" alt="Odin"></a>
+		<p>
+		The Data-Oriented Language for Sane Software Development.
+		</p>
+		</div>
+		<nav class="col-md-auto">
+			<h4 class="fw-normal">Resources</h4>
+			<ul class="list-unstyled">
+			<li><a href="https://odin-lang.org/docs" class="link-light">Docs</a></li>
+			<li><a href="https://pkg.odin-lang.org/" class="link-light">Packages</a></li>
+			<li><a href="https://odin-lang.org/news" class="link-light">News</a></li>
+			</ul>
+		</nav>
+		<nav class="col-md-auto">
+			<h4 class="fw-normal">Community</h4>
+			<ul class="list-unstyled">
+			<li><a href="https://github.com/odin-lang/Odin" target="_blank" class="link-light">GitHub</a></li>
+			<li><a href="https://forum.odin-lang.org" target="_blank" class="link-light">Forum</a></li>
+			<li><a href="https://discord.com/invite/sVBPHEv" target="_blank" class="link-light">Discord</a></li>
+			<li><a href="https://www.twitch.tv/ginger_bill" target="_blank" class="link-light">Twitch</a></li>
+			<li><a href="https://www.youtube.com/channel/UCUSck1dOH7VKmG4lRW7tZXg" target="_blank" class="link-light">YouTube</a></li>
+			<li><a href="https://odin-lang.org/showcase" target="_blank" class="link-light">Showcase</a></li>
+			</ul>
+		</nav>
+		<nav class="col-md-auto">
+			<h4 class="fw-normal">Contribute</h4>
+			<ul class="list-unstyled">
+			<li><a href="https://github.com/odin-lang/Odin/issues" target="_blank" class="link-light">Issues</a></li>
+			<li><a href="https://www.patreon.com/gingerbill" target="_blank" class="link-light">Donate</a></li>
+			</ul>
+			</nav>
+		</div>
+		<div class="mt-4 text-muted">© 2016–2023 Ginger Bill</div>
+	</div>
+</footer>
+
+<script src="https://odin-lang.org/lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="https://odin-lang.org/js/script.js"></script>
+<script src="/pkg-data.js"></script>
+<script src="/search.js"></script>
+</body>
+</html>

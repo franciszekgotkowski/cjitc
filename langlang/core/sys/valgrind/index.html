@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>package sys/valgrind - pkg.odin-lang.org</title>	<link rel="icon" href="/favicon.svg">
+	<link rel="stylesheet" type="text/css" href="https://odin-lang.org/scss/custom.min.css">
+	<link rel=stylesheet href="//odin-lang.org/lib/highlight/styles/github-dark.min.css">
+	<script src="//odin-lang.org/lib/highlight/highlight.min.js"></script>
+
+	<script>hljs.registerLanguage("odin",function(a){return{aliases:["odin","odinlang","odin-lang"],keywords:{keyword:"auto_cast bit_set break case cast context continue defer distinct do dynamic else enum fallthrough for foreign if import in map not_in or_else or_return package proc return struct switch transmute type_of typeid union using when where",literal:"true false nil",built_in:"abs align_of cap clamp complex conj expand_to_tuple imag jmag kmag len max min offset_of quaternion real size_of soa_unzip soa_zip swizzle type_info_of type_of typeid_of"},illegal:"</",contains:[a.C_LINE_COMMENT_MODE,a.C_BLOCK_COMMENT_MODE,{className:"string",variants:[a.QUOTE_STRING_MODE,{begin:"'",end:"[^\\\\]'"},{begin:"`",end:"`"}]},{className:"number",variants:[{begin:a.C_NUMBER_RE+"[ijk]",relevance:1},a.C_NUMBER_MODE]}]}})</script>
+	<script>hljs.highlightAll()</script>
+	<script>
+		function OSDarkModeQuery() {
+			return window.matchMedia?.("(prefers-color-scheme: dark)");
+		}
+		function setDarkMode() {
+			document.body.classList.add("dark-mode");
+			window.localStorage.setItem("theme", "dark");
+		}
+		function removeDarkMode() {
+			document.body.classList.remove("dark-mode");
+			window.localStorage.setItem("theme", "light");
+		}
+		function toggleDarkMode() {
+			if (document.body.classList.contains("dark-mode")) removeDarkMode()
+			else setDarkMode()
+		}
+		function syncThemeToOS() {
+			if (OSDarkModeQuery().matches) setDarkMode()
+			else removeDarkMode()
+		}
+		document.addEventListener("DOMContentLoaded", () => {
+			OSDarkModeQuery().addEventListener("change", syncThemeToOS);
+		});
+	</script>
+	<link rel="stylesheet" type="text/css" href="https://odin-lang.org/css/style.css">
+
+	<link rel="stylesheet" type="text/css" href="/style.css">
+
+	</style>
+</head>
+<body>
+<script>
+	const themeSet = window.localStorage.getItem("theme");
+	if (themeSet === null) {
+		syncThemeToOS();
+	} else if (themeSet === "dark") {
+		setDarkMode();
+	} else if (themeSet === "light") {
+		removeDarkMode();
+	}
+</script>
+<header class="sticky-top">
+	<nav class="navbar navbar-expand-lg navbar-dark bg-primary odin-menu">
+		<div class="container">
+			<a class="navbar-brand" href="https://odin-lang.org/">
+			<img src="https://odin-lang.org/logo.svg" height="30" alt="Odin"></a>
+			<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#odin-navbar-content" aria-controls="odin-navbar-content" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+			<div class="collapse navbar-collapse" id="odin-navbar-content">
+			<ul class="navbar-nav ms-md-auto">
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/">Home</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/docs">Docs</a></li>
+				<li class="nav-item"><a class="nav-link active" href="/">Packages</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/news">News</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/showcase">Showcase</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://forum.odin-lang.org">Forum</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://odin-lang.org/community">Community</a></li>
+				<li class="nav-item"><a class="nav-link" href="https://github.com/odin-lang/Odin" target="_blank">GitHub</a></li>
+				<li class="nav-item">
+					<a
+						class="nav-link btn-dark-mode"
+						onclick="toggleDarkMode();"
+						title="Toggle Light/Dark Mode"
+					>
+						<span class="dark-mode-appearance">Appearance:</span>
+						<svg fill="white" id="dark-mode-icon" viewBox="0 0 384 512"><path d="M223.5 32C100 32 0 132.3 0 256S100 480 223.5 480c60.6 0 115.5-24.2 155.8-63.4c5-4.9 6.3-12.5 3.1-18.7s-10.1-9.7-17-8.5c-9.8 1.7-19.8 2.6-30.1 2.6c-96.9 0-175.5-78.8-175.5-176c0-65.8 36-123.1 89.3-153.3c6.1-3.5 9.2-10.5 7.7-17.3s-7.3-11.9-14.3-12.5c-6.3-.5-12.6-.8-19-.8z"/></svg>
+						<svg fill="white" id="light-mode-icon" viewBox="0 0 16 16">
+						  <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8M8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0m0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13m8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5M3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8m10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0m-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0m9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707M4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708"/>
+						</svg>
+					</button>
+					</a>
+				</li>
+			</ul>
+		</div>
+		</div>
+	</nav>
+</header>
+<main>
+<div class="container full-width">
+<div class="row odin-main my-4" id="pkg">
+<nav id="pkg-sidebar" class="col-lg-2 odin-sidebar-border navbar-light sticky-top odin-below-navbar">
+<div class="py-3">
+<div>Current Package: <em><a href="/core/sys/valgrind">sys_valgrind</a></em></div><br>
+<h4><a style="text-transform: capitalize; color: inherit;" href="/core">core Library</a></h4>
+<ul>
+<li class="nav-item"><a href="/core/bufio">bufio</a></li>
+<li class="nav-item"><a href="/core/bytes">bytes</a></li>
+<li class="nav-item"><a href="/core/c">c</a><ul>
+<li><a href="/core/c/libc">libc</a></li>
+</ul>
+
+</li>
+<li class="nav-item">container<ul>
+<li><a href="/core/container/queue">queue</a></li>
+</ul>
+
+</li>
+<li class="nav-item">encoding<ul>
+<li><a href="/core/encoding/base64">base64</a></li>
+<li><a href="/core/encoding/json">json</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/fmt">fmt</a></li>
+<li class="nav-item"><a href="/core/io">io</a></li>
+<li class="nav-item"><a href="/core/log">log</a></li>
+<li class="nav-item"><a href="/core/math">math</a><ul>
+<li><a href="/core/math/bits">bits</a></li>
+<li><a href="/core/math/rand">rand</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/mem">mem</a></li>
+<li class="nav-item"><a href="/core/os">os</a></li>
+<li class="nav-item">path<ul>
+<li><a href="/core/path/filepath">filepath</a></li>
+<li><a href="/core/path/slashpath">slashpath</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/reflect">reflect</a></li>
+<li class="nav-item"><a href="/core/simd">simd</a></li>
+<li class="nav-item"><a href="/core/slice">slice</a></li>
+<li class="nav-item"><a href="/core/strconv">strconv</a><ul>
+<li><a href="/core/strconv/decimal">decimal</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/strings">strings</a></li>
+<li class="nav-item"><a href="/core/sync">sync</a><ul>
+<li><a href="/core/sync/chan">chan</a></li>
+</ul>
+
+</li>
+<li class="nav-item">sys<ul>
+<li><a href="/core/sys/linux">linux</a></li>
+<li><a href="/core/sys/posix">posix</a></li>
+<li><a class="active" href="/core/sys/valgrind">valgrind</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/terminal">terminal</a><ul>
+<li><a href="/core/terminal/ansi">ansi</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/testing">testing</a></li>
+<li class="nav-item"><a href="/core/thread">thread</a></li>
+<li class="nav-item"><a href="/core/time">time</a><ul>
+<li><a href="/core/time/datetime">datetime</a></li>
+</ul>
+
+</li>
+<li class="nav-item"><a href="/core/unicode">unicode</a><ul>
+<li><a href="/core/unicode/utf16">utf16</a></li>
+<li><a href="/core/unicode/utf8">utf8</a></li>
+</ul>
+
+</li>
+</ul>
+</div>
+</nav>
+<article class="col-lg-8 p-4 documentation odin-article">
+<nav class="pkg-breadcrumb" aria-label="breadcrumb">
+<ol class="breadcrumb">
+<li class="breadcrumb-item"><a href="/core">core</a></li>
+<li class="breadcrumb-item">sys</li>
+<li class="breadcrumb-item active" aria-current="page"><a href="/core/sys/valgrind">valgrind</a></li>
+</ol>
+</nav>
+<h1>package core:sys/valgrind<div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind"><em>Source</em></a></div></h1>
+<h4><strong>Warning:&nbsp;</strong>This was generated for <code>-target:windows_amd64</code> and might not represent every target this package supports.</h4>
+		<div class="odin-search-wrapper">
+			<input type="search" id="odin-search" class="odin-search-package" autocomplete="off" spellcheck="false" placeholder="Fuzzy Search..." autofocus>
+			<div class="odin-search-shortcut">
+				<div class="odin-search-key key-macos">⌘K</div>
+				<div class="odin-search-key key-windows">Ctrl+K</div>
+				<span class="odin-search-or">or</span>
+				<div class="odin-search-key">/</div>
+			</div>
+		</div>
+	
+<div id="odin-search-info">
+<div id="odin-search-time"></div>
+
+		<div id="odin-search-options">
+			<input type="checkbox" id="odin-search-filter" name="odin-search-filter">
+			<label for="odin-search-filter">Filter Results</label>
+		</div>
+</div>
+<ul id="odin-search-results"></ul>
+<div id="pkg-top">
+<div id="pkg-index">
+<h2>Index</h2>
+<div>
+<details class="doc-index" id="doc-index-Types" aria-labelledby="#doc-index-Types-header">
+<summary id="#doc-index-Types-header">
+Types (7)</summary>
+<ul>
+<li><a href="#Callgrind_Client_Request">Callgrind_Client_Request</a></li>
+<li><a href="#Client_Request">Client_Request</a></li>
+<li><a href="#Count_Result">Count_Result</a></li>
+<li><a href="#Helgrind_Client_Request">Helgrind_Client_Request</a></li>
+<li><a href="#Mem_Check_Client_Request">Mem_Check_Client_Request</a></li>
+<li><a href="#Mem_Pool_Flag">Mem_Pool_Flag</a></li>
+<li><a href="#Mem_Pool_Flags">Mem_Pool_Flags</a></li>
+</ul>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Constants" aria-labelledby="#doc-index-Constants-header">
+<summary id="#doc-index-Constants-header">
+Constants (0)</summary>
+<p class="pkg-empty-section">This section is empty.</p>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Variables" aria-labelledby="#doc-index-Variables-header">
+<summary id="#doc-index-Variables-header">
+Variables (0)</summary>
+<p class="pkg-empty-section">This section is empty.</p>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Procedures" aria-labelledby="#doc-index-Procedures-header">
+<summary id="#doc-index-Procedures-header">
+Procedures (92)</summary>
+<ul>
+<li><a href="#added_leak_check">added_leak_check</a></li>
+<li><a href="#callgrind_client_request_expr">callgrind_client_request_expr</a></li>
+<li><a href="#callgrind_client_request_stmt">callgrind_client_request_stmt</a></li>
+<li><a href="#changed_leak_check">changed_leak_check</a></li>
+<li><a href="#check_mem_is_addressable">check_mem_is_addressable</a></li>
+<li><a href="#check_mem_is_defined">check_mem_is_defined</a></li>
+<li><a href="#client_request_expr">client_request_expr</a></li>
+<li><a href="#client_request_stmt">client_request_stmt</a></li>
+<li><a href="#count_errrors">count_errrors</a></li>
+<li><a href="#count_leak_blocks">count_leak_blocks</a></li>
+<li><a href="#count_leaks">count_leaks</a></li>
+<li><a href="#create_block">create_block</a></li>
+<li><a href="#create_mem_pool">create_mem_pool</a></li>
+<li><a href="#destroy_mem_pool">destroy_mem_pool</a></li>
+<li><a href="#disable_addr_error_reporting_in_range">disable_addr_error_reporting_in_range</a></li>
+<li><a href="#disable_error_reporting">disable_error_reporting</a></li>
+<li><a href="#discard">discard</a></li>
+<li><a href="#discard_translations">discard_translations</a></li>
+<li><a href="#dump_stats">dump_stats</a></li>
+<li><a href="#dump_stats_at">dump_stats_at</a></li>
+<li><a href="#enable_addr_error_reporting_in_range">enable_addr_error_reporting_in_range</a></li>
+<li><a href="#enable_error_reporting">enable_error_reporting</a></li>
+<li><a href="#free_like_block">free_like_block</a></li>
+<li><a href="#get_vbits">get_vbits</a></li>
+<li><a href="#helgrind_annotate_condvar_lock_wait">helgrind_annotate_condvar_lock_wait</a></li>
+<li><a href="#helgrind_annotate_condvar_signal">helgrind_annotate_condvar_signal</a></li>
+<li><a href="#helgrind_annotate_condvar_signal_all">helgrind_annotate_condvar_signal_all</a></li>
+<li><a href="#helgrind_annotate_condvar_wait">helgrind_annotate_condvar_wait</a></li>
+<li><a href="#helgrind_barrier_destroy_pre">helgrind_barrier_destroy_pre</a></li>
+<li><a href="#helgrind_barrier_init_pre">helgrind_barrier_init_pre</a></li>
+<li><a href="#helgrind_barrier_resize_pre">helgrind_barrier_resize_pre</a></li>
+<li><a href="#helgrind_barrier_wait_pre">helgrind_barrier_wait_pre</a></li>
+<li><a href="#helgrind_clean_memory">helgrind_clean_memory</a></li>
+<li><a href="#helgrind_clean_memory_heap_block">helgrind_clean_memory_heap_block</a></li>
+<li><a href="#helgrind_clean_memory_slice">helgrind_clean_memory_slice</a></li>
+<li><a href="#helgrind_client_request_expr">helgrind_client_request_expr</a></li>
+<li><a href="#helgrind_client_request_stmt">helgrind_client_request_stmt</a></li>
+<li><a href="#helgrind_client_request_unimp">helgrind_client_request_unimp</a></li>
+<li><a href="#helgrind_cond_broadcast_pre">helgrind_cond_broadcast_pre</a></li>
+<li><a href="#helgrind_cond_destroy_pre">helgrind_cond_destroy_pre</a></li>
+<li><a href="#helgrind_cond_init_post">helgrind_cond_init_post</a></li>
+<li><a href="#helgrind_cond_signal_pre">helgrind_cond_signal_pre</a></li>
+<li><a href="#helgrind_cond_wait_post">helgrind_cond_wait_post</a></li>
+<li><a href="#helgrind_cond_wait_pre">helgrind_cond_wait_pre</a></li>
+<li><a href="#helgrind_disable_checking">helgrind_disable_checking</a></li>
+<li><a href="#helgrind_enable_checking">helgrind_enable_checking</a></li>
+<li><a href="#helgrind_mutex_destroy_pre">helgrind_mutex_destroy_pre</a></li>
+<li><a href="#helgrind_mutex_init_post">helgrind_mutex_init_post</a></li>
+<li><a href="#helgrind_mutex_lock_post">helgrind_mutex_lock_post</a></li>
+<li><a href="#helgrind_mutex_lock_pre">helgrind_mutex_lock_pre</a></li>
+<li><a href="#helgrind_mutex_unlock_post">helgrind_mutex_unlock_post</a></li>
+<li><a href="#helgrind_mutex_unlock_pre">helgrind_mutex_unlock_pre</a></li>
+<li><a href="#helgrind_rwlock_destroy_pre">helgrind_rwlock_destroy_pre</a></li>
+<li><a href="#helgrind_rwlock_init_post">helgrind_rwlock_init_post</a></li>
+<li><a href="#helgrind_rwlock_lock_pre">helgrind_rwlock_lock_pre</a></li>
+<li><a href="#helgrind_rwlock_unlock_post">helgrind_rwlock_unlock_post</a></li>
+<li><a href="#helgrind_sem_destroy_pre">helgrind_sem_destroy_pre</a></li>
+<li><a href="#helgrind_sem_init_post">helgrind_sem_init_post</a></li>
+<li><a href="#helgrind_sem_post_pre">helgrind_sem_post_pre</a></li>
+<li><a href="#helgrind_sem_wait_post">helgrind_sem_wait_post</a></li>
+<li><a href="#inner_threads">inner_threads</a></li>
+<li><a href="#leak_check">leak_check</a></li>
+<li><a href="#make_mem_defined">make_mem_defined</a></li>
+<li><a href="#make_mem_defined_if_addressable">make_mem_defined_if_addressable</a></li>
+<li><a href="#make_mem_no_access">make_mem_no_access</a></li>
+<li><a href="#make_mem_undefined">make_mem_undefined</a></li>
+<li><a href="#malloc_like_block">malloc_like_block</a></li>
+<li><a href="#map_ip_to_src_loc">map_ip_to_src_loc</a></li>
+<li><a href="#mem_check_client_request_expr">mem_check_client_request_expr</a></li>
+<li><a href="#mem_check_client_request_stmt">mem_check_client_request_stmt</a></li>
+<li><a href="#mem_pool_alloc">mem_pool_alloc</a></li>
+<li><a href="#mem_pool_change">mem_pool_change</a></li>
+<li><a href="#mem_pool_exists">mem_pool_exists</a></li>
+<li><a href="#mem_pool_free">mem_pool_free</a></li>
+<li><a href="#mem_pool_trim">mem_pool_trim</a></li>
+<li><a href="#monitor_command">monitor_command</a></li>
+<li><a href="#move_mem_pool">move_mem_pool</a></li>
+<li><a href="#non_simd_call0">non_simd_call0</a></li>
+<li><a href="#non_simd_call1">non_simd_call1</a></li>
+<li><a href="#non_simd_call2">non_simd_call2</a></li>
+<li><a href="#non_simd_call3">non_simd_call3</a></li>
+<li><a href="#quick_leak_check">quick_leak_check</a></li>
+<li><a href="#resize_inplace_block">resize_inplace_block</a></li>
+<li><a href="#running_on_valgrind">running_on_valgrind</a></li>
+<li><a href="#set_vbits">set_vbits</a></li>
+<li><a href="#stack_change">stack_change</a></li>
+<li><a href="#stack_deregister">stack_deregister</a></li>
+<li><a href="#stack_register">stack_register</a></li>
+<li><a href="#start_instrumentation">start_instrumentation</a></li>
+<li><a href="#stop_instrumentation">stop_instrumentation</a></li>
+<li><a href="#toggle_collect">toggle_collect</a></li>
+<li><a href="#zero_stats">zero_stats</a></li>
+</ul>
+</details>
+</div>
+<div>
+<details class="doc-index" id="doc-index-Procedure Groups" aria-labelledby="#doc-index-Procedure Groups-header">
+<summary id="#doc-index-Procedure Groups-header">
+Procedure Groups (0)</summary>
+<p class="pkg-empty-section">This section is empty.</p>
+</details>
+</div>
+</div>
+</div>
+<section class="documentation">
+<h2 id="pkg-Types" class="pkg-header">Types</h2>
+<div class="pkg-entity">
+<h3 id="Callgrind_Client_Request"><span><a class="doc-id-link" href="#Callgrind_Client_Request">Callgrind_Client_Request<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/callgrind.odin#L6"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">Callgrind_Client_Request :: <span class="keyword-type">enum</span> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {
+	Dump_Stats            = 1129578496, 
+	Zero_Stats, 
+	Toggle_Collect, 
+	Dump_Stats_At, 
+	Start_Instrumentation, 
+	Stop_Instrumentation, 
+}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme">
+<h5 style="display:inline-block">Related Procedures With Parameters</h5>
+</summary>
+<ul>
+<li><a href="/core/sys/valgrind/#callgrind_client_request_expr">callgrind_client_request_expr</a></li>
+<li><a href="/core/sys/valgrind/#callgrind_client_request_stmt">callgrind_client_request_stmt</a></li>
+</ul>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="Client_Request"><span><a class="doc-id-link" href="#Client_Request">Client_Request<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L6"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">Client_Request :: <span class="keyword-type">enum</span> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {
+	Running_On_Valgrind            = 4097, 
+	Discard_Translations           = 4098, 
+	Client_Call0                   = 4353, 
+	Client_Call1                   = 4354, 
+	Client_Call2                   = 4355, 
+	Client_Call3                   = 4356, 
+	Count_Errors                   = 4609, 
+	Gdb_Monitor_Command            = 4610, 
+	Malloc_Like_Block              = 4865, 
+	Resize_Inplace_Block           = 4875, 
+	Free_Like_Block                = 4866, 
+	Create_Mem_Pool                = 4867, 
+	Destroy_Mem_Pool               = 4868, 
+	Mem_Pool_Alloc                 = 4869, 
+	Mem_Pool_Free                  = 4870, 
+	Mem_Pool_Trim                  = 4871, 
+	Move_Mem_Pool                  = 4872, 
+	Mem_Pool_Change                = 4873, 
+	Mem_Pool_Exists                = 4874, 
+	Printf                         = 5121, 
+	Printf_Backtrace               = 5122, 
+	Printf_Valist_By_Ref           = 5123, 
+	Printf_Backtrace_Valist_By_Ref = 5124, 
+	Stack_Register                 = 5377, 
+	Stack_Deregister               = 5378, 
+	Stack_Change                   = 5379, 
+	Load_Pdb_Debug_Info            = 5633, 
+	Map_Ip_To_Src_Loc              = 5889, 
+	Change_Err_Disablement         = 6145, 
+	Vex_Init_For_Iri               = 6401, 
+	Inner_Threads                  = 6402, 
+}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme">
+<h5 style="display:inline-block">Related Procedures With Parameters</h5>
+</summary>
+<ul>
+<li><a href="/core/sys/valgrind/#client_request_expr">client_request_expr</a></li>
+<li><a href="/core/sys/valgrind/#client_request_stmt">client_request_stmt</a></li>
+</ul>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="Count_Result"><span><a class="doc-id-link" href="#Count_Result">Count_Result<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L103"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">Count_Result :: <span class="keyword-type">struct</span> {
+	leaked:     <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>,
+	dubious:    <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>,
+	reachable:  <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>,
+	suppressed: <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>,
+}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme">
+<h5 style="display:inline-block">Related Procedures With Returns</h5>
+</summary>
+<ul>
+<li><a href="/core/sys/valgrind/#count_leak_blocks">count_leak_blocks</a></li>
+<li><a href="/core/sys/valgrind/#count_leaks">count_leaks</a></li>
+</ul>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="Helgrind_Client_Request"><span><a class="doc-id-link" href="#Helgrind_Client_Request">Helgrind_Client_Request<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L6"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">Helgrind_Client_Request :: <span class="keyword-type">enum</span> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {
+	Clean_Memory                     = 1212612608, 
+	Set_My_pthread_t                 = 2420572416, 
+	Pthread_Join_Post, 
+	Pthread_Mutex_Init_Post, 
+	Pthread_Mutex_Destroy_Pre, 
+	Pthread_Mutex_Unlock_Pre, 
+	Pthread_Mutex_Unlock_Post, 
+	Pthread_Mutex_Lock_Pre, 
+	Pthread_Mutex_Lock_Post, 
+	Pthread_Cond_Signal_Pre, 
+	Pthread_Cond_Broadcast_Pre, 
+	Pthread_Cond_Wait_Pre, 
+	Pthread_Cond_Wait_Post, 
+	Pthread_Cond_Destroy_Pre, 
+	Pthread_Rwlock_Init_Post, 
+	Pthread_Rwlock_Destroy_Pre, 
+	Pthread_Rwlock_Lock_Pre, 
+	Pthread_Rwlock_Lock_Post, 
+	Pthread_Rwlock_Unlock_Pre, 
+	Pthread_Rwlock_Unlock_Post, 
+	Posix_Sem_Init_Post, 
+	Posix_Sem_Destroy_Pre, 
+	Posix_Sem_Post_Pre, 
+	Posix_Sem_Wait_Post, 
+	Pthread_Barrier_Init_Pre, 
+	Pthread_Barrier_Wait_Pre, 
+	Pthread_Barrier_Destroy_Pre, 
+	Pthread_Spin_Init_Or_Unlock_Pre, 
+	Pthread_Spin_Init_Or_Unlock_Post, 
+	Pthread_Spin_Lock_Pre, 
+	Pthread_Spin_Lock_Post, 
+	Pthread_Spin_Destroy_Pre, 
+	Clientreq_Unimp, 
+	Userso_Send_Pre, 
+	Userso_Recv_Post, 
+	Userso_Forget_All, 
+	Reserved2, 
+	Reserved3, 
+	Reserved4, 
+	Arange_Make_Untracked, 
+	Arange_Make_Tracked, 
+	Pthread_Barrier_Resize_Pre, 
+	Clean_Memory_Heapblock, 
+	Pthread_Cond_Init_Post, 
+}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme">
+<h5 style="display:inline-block">Related Procedures With Parameters</h5>
+</summary>
+<ul>
+<li><a href="/core/sys/valgrind/#helgrind_client_request_expr">helgrind_client_request_expr</a></li>
+<li><a href="/core/sys/valgrind/#helgrind_client_request_stmt">helgrind_client_request_stmt</a></li>
+</ul>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="Mem_Check_Client_Request"><span><a class="doc-id-link" href="#Mem_Check_Client_Request">Mem_Check_Client_Request<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L6"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">Mem_Check_Client_Request :: <span class="keyword-type">enum</span> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {
+	Make_Mem_No_Access                    = 1296236544, 
+	Make_Mem_Undefined, 
+	Make_Mem_Defined, 
+	Discard, 
+	Check_Mem_Is_Addressable, 
+	Check_Mem_Is_Defined, 
+	Do_Leak_Check, 
+	Count_Leaks, 
+	Get_Vbits, 
+	Set_Vbits, 
+	Create_Block, 
+	Make_Mem_Defined_If_Addressable, 
+	Count_Leak_Blocks, 
+	Enable_Addr_Error_Reporting_In_Range, 
+	Disable_Addr_Error_Reporting_In_Range, 
+}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme">
+<h5 style="display:inline-block">Related Procedures With Parameters</h5>
+</summary>
+<ul>
+<li><a href="/core/sys/valgrind/#mem_check_client_request_expr">mem_check_client_request_expr</a></li>
+<li><a href="/core/sys/valgrind/#mem_check_client_request_stmt">mem_check_client_request_stmt</a></li>
+</ul>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="Mem_Pool_Flag"><span><a class="doc-id-link" href="#Mem_Pool_Flag">Mem_Pool_Flag<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L96"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">Mem_Pool_Flag :: <span class="keyword-type">enum</span> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {
+	Auto_Free = 0, 
+	Meta_Pool = 1, 
+}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="Mem_Pool_Flags"><span><a class="doc-id-link" href="#Mem_Pool_Flags">Mem_Pool_Flags<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L95"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">Mem_Pool_Flags :: <span class="keyword-type">distinct</span> <span class="keyword-type">bit_set</span>[<a class="code-typename" href="/core/sys/valgrind/#Mem_Pool_Flag">Mem_Pool_Flag</a>; <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>]</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme">
+<h5 style="display:inline-block">Related Procedures With Parameters</h5>
+</summary>
+<ul>
+<li><a href="/core/sys/valgrind/#create_mem_pool">create_mem_pool</a></li>
+</ul>
+</details>
+</div>
+<h2 id="pkg-Constants" class="pkg-header">Constants</h2>
+<p class="pkg-empty-section">This section is empty.</p>
+<h2 id="pkg-Variables" class="pkg-header">Variables</h2>
+<p class="pkg-empty-section">This section is empty.</p>
+<h2 id="pkg-Procedures" class="pkg-header">Procedures</h2>
+<div class="pkg-entity">
+<h3 id="added_leak_check"><span><a class="doc-id-link" href="#added_leak_check">added_leak_check<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L90"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">added_leak_check :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Same as <code>leak_check()</code> but only showing the entries for which there was an increase
+in leaked bytes or leaked nr of blocks since the previous leak search.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="callgrind_client_request_expr"><span><a class="doc-id-link" href="#callgrind_client_request_expr">callgrind_client_request_expr<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/callgrind.odin#L16"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">callgrind_client_request_expr :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (
+	default:        <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+	request:        <a class="code-typename" href="/core/sys/valgrind/#Callgrind_Client_Request">Callgrind_Client_Request</a>, 
+	a0, a1, a2, a3, 
+	a4:             <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="callgrind_client_request_stmt"><span><a class="doc-id-link" href="#callgrind_client_request_stmt">callgrind_client_request_stmt<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/callgrind.odin#L19"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">callgrind_client_request_stmt :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (
+	request:        <a class="code-typename" href="/core/sys/valgrind/#Callgrind_Client_Request">Callgrind_Client_Request</a>, 
+	a0, a1, a2, a3, 
+	a4:             <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="changed_leak_check"><span><a class="doc-id-link" href="#changed_leak_check">changed_leak_check<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L95"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">changed_leak_check :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Same as <code>added_leak_check()</code> but showing entries with increased or decreased
+leaked bytes/blocks since previous leak search.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="check_mem_is_addressable"><span><a class="doc-id-link" href="#check_mem_is_addressable">check_mem_is_addressable<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L52"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">check_mem_is_addressable :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Check that memory at <code>raw_data(qzz)</code> is addressable for <code>len(qzz)</code> bytes.
+If suitable addressibility is not established, Valgrind prints an error
+message and returns the address of the first offending byte.
+Otherwise it returns zero.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="check_mem_is_defined"><span><a class="doc-id-link" href="#check_mem_is_defined">check_mem_is_defined<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L59"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">check_mem_is_defined :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Check that memory at <code>raw_data(qzz)</code> is addressable and defined for <code>len(qzz)</code> bytes.
+If suitable addressibility and definedness are not established,
+Valgrind prints an error message and returns the address of the first
+offending byte. Otherwise it returns zero.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="client_request_expr"><span><a class="doc-id-link" href="#client_request_expr">client_request_expr<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L41"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">client_request_expr :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (
+	default:        <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+	request:        <a class="code-typename" href="/core/sys/valgrind/#Client_Request">Client_Request</a>, 
+	a0, a1, a2, a3, 
+	a4:             <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="client_request_stmt"><span><a class="doc-id-link" href="#client_request_stmt">client_request_stmt<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L44"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">client_request_stmt :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (
+	request:        <a class="code-typename" href="/core/sys/valgrind/#Client_Request">Client_Request</a>, 
+	a0, a1, a2, a3, 
+	a4:             <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="count_errrors"><span><a class="doc-id-link" href="#count_errrors">count_errrors<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L76"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">count_errrors :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () -> <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Counts the number of errors that have been recorded by a tool.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="count_leak_blocks"><span><a class="doc-id-link" href="#count_leak_blocks">count_leak_blocks<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L122"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">count_leak_blocks :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () -> (res: <a class="code-typename" href="/core/sys/valgrind/#Count_Result">Count_Result</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="count_leaks"><span><a class="doc-id-link" href="#count_leaks">count_leaks<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L110"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">count_leaks :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () -> (res: <a class="code-typename" href="/core/sys/valgrind/#Count_Result">Count_Result</a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="create_block"><span><a class="doc-id-link" href="#create_block">create_block<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L75"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">create_block :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, desc: <a href="/base/builtin#cstring"><span class="doc-builtin">cstring</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Create a block-description handle.
+The description is an ascii string which is included in any messages
+pertaining to addresses within the specified memory range.
+Has no other effect on the properties of the memory range.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="create_mem_pool"><span><a class="doc-id-link" href="#create_mem_pool">create_mem_pool<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L102"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">create_mem_pool :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (pool: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, rz_b: <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, is_zeroed: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>, flags: <a class="code-typename" href="/core/sys/valgrind/#Mem_Pool_Flags">Mem_Pool_Flags</a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Create a memory pool.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="destroy_mem_pool"><span><a class="doc-id-link" href="#destroy_mem_pool">destroy_mem_pool<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L106"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">destroy_mem_pool :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (pool: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Destroy a memory pool.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="disable_addr_error_reporting_in_range"><span><a class="doc-id-link" href="#disable_addr_error_reporting_in_range">disable_addr_error_reporting_in_range<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L167"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">disable_addr_error_reporting_in_range :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Disable reporting of addressing errors in the specified address range.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="disable_error_reporting"><span><a class="doc-id-link" href="#disable_error_reporting">disable_error_reporting<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L162"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">disable_error_reporting :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Disable error reporting for the current thread/
+It behaves in a stack-like way, meaning you can safely call this multiple times
+given that <code>enable_error_reporting()</code> is called the same number of times to
+re-enable the error reporting.
+The first call of this macro disables reporting.
+Subsequent calls have no effect except to increase the number of <code>enable_error_reporting()</code>
+calls needed to re-enable reporting.
+Child threads do not inherit this setting from their parents;
+they are always created with reporting enabled.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="discard"><span><a class="doc-id-link" href="#discard">discard<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L79"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">discard :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (blk_index: <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Discard a block-description-handle. Returns true for an invalid handle, false for a valid handle.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="discard_translations"><span><a class="doc-id-link" href="#discard_translations">discard_translations<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L58"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">discard_translations :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Discard translation of code in the slice qzz. Useful if you are debugging a JIT-er or some such,
+since it provides a way to make sure valgrind will retranslate the invalidated area.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="dump_stats"><span><a class="doc-id-link" href="#dump_stats">dump_stats<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/callgrind.odin#L24"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">dump_stats :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Dump current state of cost centres, and zero them afterwards.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="dump_stats_at"><span><a class="doc-id-link" href="#dump_stats_at">dump_stats_at<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/callgrind.odin#L44"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">dump_stats_at :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (pos_str: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Dump current state of cost centres, and zero them afterwards.
+The argument is appended to a string stating the reason which triggered
+the dump. This string is written as a description field into the
+profile data dump.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="enable_addr_error_reporting_in_range"><span><a class="doc-id-link" href="#enable_addr_error_reporting_in_range">enable_addr_error_reporting_in_range<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L163"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">enable_addr_error_reporting_in_range :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>(Re-)enable reporting of addressing errors in the specified address range.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="enable_error_reporting"><span><a class="doc-id-link" href="#enable_error_reporting">enable_error_reporting<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L166"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">enable_error_reporting :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Re-enable error reporting</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="free_like_block"><span><a class="doc-id-link" href="#free_like_block">free_like_block<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L91"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">free_like_block :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (addr: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, rz_b: <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="get_vbits"><span><a class="doc-id-link" href="#get_vbits">get_vbits<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L142"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">get_vbits :: <span class="keyword-type">proc</span>(zza, zzvbits: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Get the validity data for addresses zza and copy it
+into the provided zzvbits array.  Return values:
+    0 - if not running on valgrind
+    1 - success
+    2 - [previously indicated unaligned arrays;  these are now allowed]
+    3 - if any parts of zzsrc/zzvbits are not addressable.
+The metadata is not copied in cases 0, 2 or 3 so it should be
+impossible to segfault your system by using this call.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_annotate_condvar_lock_wait"><span><a class="doc-id-link" href="#helgrind_annotate_condvar_lock_wait">helgrind_annotate_condvar_lock_wait<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L167"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_annotate_condvar_lock_wait :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (cv: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, lock: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_annotate_condvar_signal"><span><a class="doc-id-link" href="#helgrind_annotate_condvar_signal">helgrind_annotate_condvar_signal<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L173"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_annotate_condvar_signal :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (cv: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_annotate_condvar_signal_all"><span><a class="doc-id-link" href="#helgrind_annotate_condvar_signal_all">helgrind_annotate_condvar_signal_all<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L176"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_annotate_condvar_signal_all :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (cv: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_annotate_condvar_wait"><span><a class="doc-id-link" href="#helgrind_annotate_condvar_wait">helgrind_annotate_condvar_wait<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L170"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_annotate_condvar_wait :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (cv: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_barrier_destroy_pre"><span><a class="doc-id-link" href="#helgrind_barrier_destroy_pre">helgrind_barrier_destroy_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L117"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_barrier_destroy_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (bar: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_barrier_init_pre"><span><a class="doc-id-link" href="#helgrind_barrier_init_pre">helgrind_barrier_init_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L108"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_barrier_init_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (bar: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, count: <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>, resizable: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_barrier_resize_pre"><span><a class="doc-id-link" href="#helgrind_barrier_resize_pre">helgrind_barrier_resize_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L114"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_barrier_resize_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (bar: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, new_count: <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_barrier_wait_pre"><span><a class="doc-id-link" href="#helgrind_barrier_wait_pre">helgrind_barrier_wait_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L111"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_barrier_wait_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (bar: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_clean_memory"><span><a class="doc-id-link" href="#helgrind_clean_memory">helgrind_clean_memory<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L123"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_clean_memory :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz_start: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, qzz_len: <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_clean_memory_heap_block"><span><a class="doc-id-link" href="#helgrind_clean_memory_heap_block">helgrind_clean_memory_heap_block<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L129"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_clean_memory_heap_block :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz_blockstart: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) -> <a href="/base/builtin#int"><span class="doc-builtin">int</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_clean_memory_slice"><span><a class="doc-id-link" href="#helgrind_clean_memory_slice">helgrind_clean_memory_slice<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L126"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_clean_memory_slice :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_client_request_expr"><span><a class="doc-id-link" href="#helgrind_client_request_expr">helgrind_client_request_expr<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L54"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_client_request_expr :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (
+	default:        <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+	request:        <a class="code-typename" href="/core/sys/valgrind/#Helgrind_Client_Request">Helgrind_Client_Request</a>, 
+	a0, a1, a2, a3, 
+	a4:             <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_client_request_stmt"><span><a class="doc-id-link" href="#helgrind_client_request_stmt">helgrind_client_request_stmt<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L57"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_client_request_stmt :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (
+	request:        <a class="code-typename" href="/core/sys/valgrind/#Helgrind_Client_Request">Helgrind_Client_Request</a>, 
+	a0, a1, a2, a3, 
+	a4:             <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_client_request_unimp"><span><a class="doc-id-link" href="#helgrind_client_request_unimp">helgrind_client_request_unimp<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L162"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_client_request_unimp :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (msg: <a href="/base/builtin#cstring"><span class="doc-builtin">cstring</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_cond_broadcast_pre"><span><a class="doc-id-link" href="#helgrind_cond_broadcast_pre">helgrind_cond_broadcast_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L151"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_cond_broadcast_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (cond: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_cond_destroy_pre"><span><a class="doc-id-link" href="#helgrind_cond_destroy_pre">helgrind_cond_destroy_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L145"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_cond_destroy_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (cond: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_cond_init_post"><span><a class="doc-id-link" href="#helgrind_cond_init_post">helgrind_cond_init_post<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L142"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_cond_init_post :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (cond: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_cond_signal_pre"><span><a class="doc-id-link" href="#helgrind_cond_signal_pre">helgrind_cond_signal_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L148"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_cond_signal_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (cond: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_cond_wait_post"><span><a class="doc-id-link" href="#helgrind_cond_wait_post">helgrind_cond_wait_post<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L157"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_cond_wait_post :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (cond: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, lock: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_cond_wait_pre"><span><a class="doc-id-link" href="#helgrind_cond_wait_pre">helgrind_cond_wait_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L154"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_cond_wait_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (cond: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, lock: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_disable_checking"><span><a class="doc-id-link" href="#helgrind_disable_checking">helgrind_disable_checking<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L134"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_disable_checking :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz_start: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, qzz_len: <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_enable_checking"><span><a class="doc-id-link" href="#helgrind_enable_checking">helgrind_enable_checking<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L137"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_enable_checking :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz_start: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, qzz_len: <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_mutex_destroy_pre"><span><a class="doc-id-link" href="#helgrind_mutex_destroy_pre">helgrind_mutex_destroy_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L64"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_mutex_destroy_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (mutex: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_mutex_init_post"><span><a class="doc-id-link" href="#helgrind_mutex_init_post">helgrind_mutex_init_post<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L61"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_mutex_init_post :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (mutex: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, mb_rec: <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_mutex_lock_post"><span><a class="doc-id-link" href="#helgrind_mutex_lock_post">helgrind_mutex_lock_post<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L70"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_mutex_lock_post :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (mutex: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_mutex_lock_pre"><span><a class="doc-id-link" href="#helgrind_mutex_lock_pre">helgrind_mutex_lock_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L67"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_mutex_lock_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (mutex: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, is_try_lock: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_mutex_unlock_post"><span><a class="doc-id-link" href="#helgrind_mutex_unlock_post">helgrind_mutex_unlock_post<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L76"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_mutex_unlock_post :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (mutex: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_mutex_unlock_pre"><span><a class="doc-id-link" href="#helgrind_mutex_unlock_pre">helgrind_mutex_unlock_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L73"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_mutex_unlock_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (mutex: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_rwlock_destroy_pre"><span><a class="doc-id-link" href="#helgrind_rwlock_destroy_pre">helgrind_rwlock_destroy_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L83"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_rwlock_destroy_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (lock: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_rwlock_init_post"><span><a class="doc-id-link" href="#helgrind_rwlock_init_post">helgrind_rwlock_init_post<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L80"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_rwlock_init_post :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (lock: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_rwlock_lock_pre"><span><a class="doc-id-link" href="#helgrind_rwlock_lock_pre">helgrind_rwlock_lock_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L86"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_rwlock_lock_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (lock: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, is_w: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_rwlock_unlock_post"><span><a class="doc-id-link" href="#helgrind_rwlock_unlock_post">helgrind_rwlock_unlock_post<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L89"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_rwlock_unlock_post :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (lock: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, is_w: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_sem_destroy_pre"><span><a class="doc-id-link" href="#helgrind_sem_destroy_pre">helgrind_sem_destroy_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L103"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_sem_destroy_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (sem: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_sem_init_post"><span><a class="doc-id-link" href="#helgrind_sem_init_post">helgrind_sem_init_post<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L94"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_sem_init_post :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (sem: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, value: <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_sem_post_pre"><span><a class="doc-id-link" href="#helgrind_sem_post_pre">helgrind_sem_post_pre<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L100"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_sem_post_pre :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (sem: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="helgrind_sem_wait_post"><span><a class="doc-id-link" href="#helgrind_sem_wait_post">helgrind_sem_wait_post<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin#L97"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">helgrind_sem_wait_post :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (sem: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="inner_threads"><span><a class="doc-id-link" href="#inner_threads">inner_threads<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L171"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">inner_threads :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="leak_check"><span><a class="doc-id-link" href="#leak_check">leak_check<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L85"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">leak_check :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Do a full memory leak check (like <code>--leak-check=full</code>) mid-execution.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="make_mem_defined"><span><a class="doc-id-link" href="#make_mem_defined">make_mem_defined<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L44"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">make_mem_defined :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Mark memory at <code>raw_data(qzz)</code> as addressable for <code>len(qzz)</code> bytes.
+Returns true when run on Valgrind and false otherwise.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="make_mem_defined_if_addressable"><span><a class="doc-id-link" href="#make_mem_defined_if_addressable">make_mem_defined_if_addressable<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L67"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">make_mem_defined_if_addressable :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Similar to <code>make_mem_defined(qzz)</code> except that addressability is not altered:
+bytes which are addressable are marked as defined, but those which
+are not addressable are left unchanged.
+Returns true when run on Valgrind and false otherwise.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="make_mem_no_access"><span><a class="doc-id-link" href="#make_mem_no_access">make_mem_no_access<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L34"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">make_mem_no_access :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Mark memory at <code>raw_data(qzz)</code> as unaddressable for <code>len(qzz)</code> bytes.
+Returns true when run on Valgrind and false otherwise.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="make_mem_undefined"><span><a class="doc-id-link" href="#make_mem_undefined">make_mem_undefined<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L39"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">make_mem_undefined :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (qzz: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Mark memory at <code>raw_data(qzz)</code> as addressable but undefined for <code>len(qzz)</code> bytes.
+Returns true when run on Valgrind and false otherwise.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="malloc_like_block"><span><a class="doc-id-link" href="#malloc_like_block">malloc_like_block<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L85"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">malloc_like_block :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (mem: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, rz_b: <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, is_zeroed: <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="map_ip_to_src_loc"><span><a class="doc-id-link" href="#map_ip_to_src_loc">map_ip_to_src_loc<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L180"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">map_ip_to_src_loc :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (addr: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, buf64: ^[<span class="number">64</span>]<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Map a code address to a source file name and line number.
+<code>buf64</code> must point to a 64-byte buffer in the caller's address space.
+The result will be dumped in there and is guaranteed to be zero terminated.
+If no info is found, the first byte is set to zero.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="mem_check_client_request_expr"><span><a class="doc-id-link" href="#mem_check_client_request_expr">mem_check_client_request_expr<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L25"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">mem_check_client_request_expr :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (
+	default:        <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+	request:        <a class="code-typename" href="/core/sys/valgrind/#Mem_Check_Client_Request">Mem_Check_Client_Request</a>, 
+	a0, a1, a2, a3, 
+	a4:             <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="mem_check_client_request_stmt"><span><a class="doc-id-link" href="#mem_check_client_request_stmt">mem_check_client_request_stmt<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L28"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">mem_check_client_request_stmt :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (
+	request:        <a class="code-typename" href="/core/sys/valgrind/#Mem_Check_Client_Request">Mem_Check_Client_Request</a>, 
+	a0, a1, a2, a3, 
+	a4:             <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, 
+) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="mem_pool_alloc"><span><a class="doc-id-link" href="#mem_pool_alloc">mem_pool_alloc<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L110"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">mem_pool_alloc :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (pool: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, mem: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Associate a section of memory with a memory pool.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="mem_pool_change"><span><a class="doc-id-link" href="#mem_pool_change">mem_pool_change<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L126"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">mem_pool_change :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (pool: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, addr_a: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, mem: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Resize and/or move a section of memory associated with a memory pool.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="mem_pool_exists"><span><a class="doc-id-link" href="#mem_pool_exists">mem_pool_exists<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L130"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">mem_pool_exists :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (pool: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Return true if a memory pool exists</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="mem_pool_free"><span><a class="doc-id-link" href="#mem_pool_free">mem_pool_free<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L114"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">mem_pool_free :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (pool: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, addr: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Disassociate a section of memory from a memory pool.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="mem_pool_trim"><span><a class="doc-id-link" href="#mem_pool_trim">mem_pool_trim<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L118"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">mem_pool_trim :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (pool: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>, mem: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Disassociate parts of a section of memory outside a particular range.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="monitor_command"><span><a class="doc-id-link" href="#monitor_command">monitor_command<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L80"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">monitor_command :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (command: <a href="/base/builtin#cstring"><span class="doc-builtin">cstring</span></a>) -> <a href="/base/builtin#bool"><span class="doc-builtin">bool</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="move_mem_pool"><span><a class="doc-id-link" href="#move_mem_pool">move_mem_pool<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L122"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">move_mem_pool :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (pool_a, pool_b: <a href="/base/builtin#rawptr"><span class="doc-builtin">rawptr</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Resize and/or move a section of memory associated with a memory pool.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="non_simd_call0"><span><a class="doc-id-link" href="#non_simd_call0">non_simd_call0<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L62"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">non_simd_call0 :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (p: <span class="keyword-type">proc</span> <span class="string">"c"</span> (<a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="non_simd_call1"><span><a class="doc-id-link" href="#non_simd_call1">non_simd_call1<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L65"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">non_simd_call1 :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (p: <span class="keyword-type">proc</span> <span class="string">"c"</span> (<a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, a0: <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="non_simd_call2"><span><a class="doc-id-link" href="#non_simd_call2">non_simd_call2<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L68"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">non_simd_call2 :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (p: <span class="keyword-type">proc</span> <span class="string">"c"</span> (<a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, a0, a1: <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="non_simd_call3"><span><a class="doc-id-link" href="#non_simd_call3">non_simd_call3<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L71"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">non_simd_call3 :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (p: <span class="keyword-type">proc</span> <span class="string">"c"</span> (<a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>, a0, a1, a2: <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) -> <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a> {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="quick_leak_check"><span><a class="doc-id-link" href="#quick_leak_check">quick_leak_check<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L99"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">quick_leak_check :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Do a summary memory leak check (like <code>--leak-check=summary</code>) mid-execution.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="resize_inplace_block"><span><a class="doc-id-link" href="#resize_inplace_block">resize_inplace_block<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L88"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">resize_inplace_block :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (old_mem: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>, new_size: <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>, rz_b: <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) {…}</pre>
+</div>
+</div>
+<div class="pkg-entity">
+<h3 id="running_on_valgrind"><span><a class="doc-id-link" href="#running_on_valgrind">running_on_valgrind<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L52"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">running_on_valgrind :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () -> <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Returns the number of Valgrinds this code is running under
+    0 - running natively
+    1 - running under Valgrind
+    2 - running under Valgrind which is running under another Valgrind</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="set_vbits"><span><a class="doc-id-link" href="#set_vbits">set_vbits<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin#L156"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">set_vbits :: <span class="keyword-type">proc</span>(zzvbits, zza: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> <a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a> {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Set the validity data for addresses zza, copying it
+from the provided zzvbits array.  Return values:
+    0 - if not running on valgrind
+    1 - success
+    2 - [previously indicated unaligned arrays;  these are now allowed]
+    3 - if any parts of zza/zzvbits are not addressable.
+The metadata is not copied in cases 0, 2 or 3 so it should be
+impossible to segfault your system by using this call.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="stack_change"><span><a class="doc-id-link" href="#stack_change">stack_change<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L147"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">stack_change :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (id: <a href="/base/builtin#uint"><span class="doc-builtin">uint</span></a>, new_stack: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Change the start and end address of the stack id with the <code>new_stack</code> slice.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="stack_deregister"><span><a class="doc-id-link" href="#stack_deregister">stack_deregister<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L142"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">stack_deregister :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (id: <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Unmark a section of memory associated with a stack id as being a stack.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="stack_register"><span><a class="doc-id-link" href="#stack_register">stack_register<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin#L136"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">stack_register :: <span class="keyword-type">proc</span> <span class="string">"c"</span> (stack: []<a href="/base/builtin#u8"><span class="doc-builtin">u8</span></a>) -> (stack_id: <a href="/base/builtin#uintptr"><span class="doc-builtin">uintptr</span></a>) {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Mark a section of memory as being a stack. Returns a stack id.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="start_instrumentation"><span><a class="doc-id-link" href="#start_instrumentation">start_instrumentation<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/callgrind.odin#L52"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">start_instrumentation :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Start full callgrind instrumentation if not already switched on.
+When cache simulation is done, it will flush the simulated cache;
+this will lead to an artificial cache warmup phase afterwards with
+cache misses which would not have happened in reality.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="stop_instrumentation"><span><a class="doc-id-link" href="#stop_instrumentation">stop_instrumentation<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/callgrind.odin#L61"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">stop_instrumentation :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Stop full callgrind instrumentation if not already switched off.
+This flushes Valgrinds translation cache, and does no additional instrumentation
+afterwards, which effectivly will run at the same speed as the "none" tool (ie. at minimal slowdown).
+Use this to bypass Callgrind aggregation for uninteresting code parts.
+To start Callgrind in this mode to ignore the setup phase, use the option "--instr-atstart=no".</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="toggle_collect"><span><a class="doc-id-link" href="#toggle_collect">toggle_collect<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/callgrind.odin#L36"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">toggle_collect :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Toggles collection state.
+The collection state specifies whether the happening of events should be noted or
+if they are to be ignored. Events are noted by increment of counters in a cost centre.</p>
+</details>
+</div>
+<div class="pkg-entity">
+<h3 id="zero_stats"><span><a class="doc-id-link" href="#zero_stats">zero_stats<span class="a-hidden">&nbsp;¶</span></a></span><div class="doc-source"><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/callgrind.odin#L29"><em>Source</em></a></div></h3>
+<div>
+<pre class="doc-code">zero_stats :: <span class="keyword-type">proc</span> <span class="string">"c"</span> () {…}</pre>
+</div>
+<details class="odin-doc-toggle" open>
+<summary class="hideme"><span>&nbsp;</span></summary>
+<p>Zero cost centres</p>
+</details>
+</div>
+<h2 id="pkg-Procedure Groups" class="pkg-header">Procedure Groups</h2>
+<p class="pkg-empty-section">This section is empty.</p>
+</section>
+<h2 id="pkg-source-files">Source Files</h2>
+<ul>
+<li><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/callgrind.odin">callgrind.odin</a></li>
+<li><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/helgrind.odin">helgrind.odin</a></li>
+<li><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/memcheck.odin">memcheck.odin</a></li>
+<li><a href="https://github.com/odin-lang/Odin/tree/master/core/sys/valgrind/valgrind.odin">valgrind.odin</a></li>
+</ul>
+<h2 id="pkg-generation-information">Generation Information</h2>
+<p>Generated with <code>odin version dev-2026-07 (vendor "odin") Linux_amd64 @ 2026-07-20 15:05:16.221354558 +0000 UTC</code></p>
+</article>
+<div class="col-lg-2 odin-toc-border navbar-light"><div class="sticky-top odin-below-navbar py-3">
+<nav id="TableOfContents">
+<ul>
+<li><a href="#pkg-Types">Types</a><ul>
+<li><a href="#Callgrind_Client_Request">Callgrind_Client_Request</a></li>
+<li><a href="#Client_Request">Client_Request</a></li>
+<li><a href="#Count_Result">Count_Result</a></li>
+<li><a href="#Helgrind_Client_Request">Helgrind_Client_Request</a></li>
+<li><a href="#Mem_Check_Client_Request">Mem_Check_Client_Request</a></li>
+<li><a href="#Mem_Pool_Flag">Mem_Pool_Flag</a></li>
+<li><a href="#Mem_Pool_Flags">Mem_Pool_Flags</a></li>
+</ul>
+</li>
+<li><a href="#pkg-Procedures">Procedures</a><ul>
+<li><a href="#added_leak_check">added_leak_check</a></li>
+<li><a href="#callgrind_client_request_expr">callgrind_client_request_expr</a></li>
+<li><a href="#callgrind_client_request_stmt">callgrind_client_request_stmt</a></li>
+<li><a href="#changed_leak_check">changed_leak_check</a></li>
+<li><a href="#check_mem_is_addressable">check_mem_is_addressable</a></li>
+<li><a href="#check_mem_is_defined">check_mem_is_defined</a></li>
+<li><a href="#client_request_expr">client_request_expr</a></li>
+<li><a href="#client_request_stmt">client_request_stmt</a></li>
+<li><a href="#count_errrors">count_errrors</a></li>
+<li><a href="#count_leak_blocks">count_leak_blocks</a></li>
+<li><a href="#count_leaks">count_leaks</a></li>
+<li><a href="#create_block">create_block</a></li>
+<li><a href="#create_mem_pool">create_mem_pool</a></li>
+<li><a href="#destroy_mem_pool">destroy_mem_pool</a></li>
+<li><a href="#disable_addr_error_reporting_in_range">disable_addr_error_reporting_in_range</a></li>
+<li><a href="#disable_error_reporting">disable_error_reporting</a></li>
+<li><a href="#discard">discard</a></li>
+<li><a href="#discard_translations">discard_translations</a></li>
+<li><a href="#dump_stats">dump_stats</a></li>
+<li><a href="#dump_stats_at">dump_stats_at</a></li>
+<li><a href="#enable_addr_error_reporting_in_range">enable_addr_error_reporting_in_range</a></li>
+<li><a href="#enable_error_reporting">enable_error_reporting</a></li>
+<li><a href="#free_like_block">free_like_block</a></li>
+<li><a href="#get_vbits">get_vbits</a></li>
+<li><a href="#helgrind_annotate_condvar_lock_wait">helgrind_annotate_condvar_lock_wait</a></li>
+<li><a href="#helgrind_annotate_condvar_signal">helgrind_annotate_condvar_signal</a></li>
+<li><a href="#helgrind_annotate_condvar_signal_all">helgrind_annotate_condvar_signal_all</a></li>
+<li><a href="#helgrind_annotate_condvar_wait">helgrind_annotate_condvar_wait</a></li>
+<li><a href="#helgrind_barrier_destroy_pre">helgrind_barrier_destroy_pre</a></li>
+<li><a href="#helgrind_barrier_init_pre">helgrind_barrier_init_pre</a></li>
+<li><a href="#helgrind_barrier_resize_pre">helgrind_barrier_resize_pre</a></li>
+<li><a href="#helgrind_barrier_wait_pre">helgrind_barrier_wait_pre</a></li>
+<li><a href="#helgrind_clean_memory">helgrind_clean_memory</a></li>
+<li><a href="#helgrind_clean_memory_heap_block">helgrind_clean_memory_heap_block</a></li>
+<li><a href="#helgrind_clean_memory_slice">helgrind_clean_memory_slice</a></li>
+<li><a href="#helgrind_client_request_expr">helgrind_client_request_expr</a></li>
+<li><a href="#helgrind_client_request_stmt">helgrind_client_request_stmt</a></li>
+<li><a href="#helgrind_client_request_unimp">helgrind_client_request_unimp</a></li>
+<li><a href="#helgrind_cond_broadcast_pre">helgrind_cond_broadcast_pre</a></li>
+<li><a href="#helgrind_cond_destroy_pre">helgrind_cond_destroy_pre</a></li>
+<li><a href="#helgrind_cond_init_post">helgrind_cond_init_post</a></li>
+<li><a href="#helgrind_cond_signal_pre">helgrind_cond_signal_pre</a></li>
+<li><a href="#helgrind_cond_wait_post">helgrind_cond_wait_post</a></li>
+<li><a href="#helgrind_cond_wait_pre">helgrind_cond_wait_pre</a></li>
+<li><a href="#helgrind_disable_checking">helgrind_disable_checking</a></li>
+<li><a href="#helgrind_enable_checking">helgrind_enable_checking</a></li>
+<li><a href="#helgrind_mutex_destroy_pre">helgrind_mutex_destroy_pre</a></li>
+<li><a href="#helgrind_mutex_init_post">helgrind_mutex_init_post</a></li>
+<li><a href="#helgrind_mutex_lock_post">helgrind_mutex_lock_post</a></li>
+<li><a href="#helgrind_mutex_lock_pre">helgrind_mutex_lock_pre</a></li>
+<li><a href="#helgrind_mutex_unlock_post">helgrind_mutex_unlock_post</a></li>
+<li><a href="#helgrind_mutex_unlock_pre">helgrind_mutex_unlock_pre</a></li>
+<li><a href="#helgrind_rwlock_destroy_pre">helgrind_rwlock_destroy_pre</a></li>
+<li><a href="#helgrind_rwlock_init_post">helgrind_rwlock_init_post</a></li>
+<li><a href="#helgrind_rwlock_lock_pre">helgrind_rwlock_lock_pre</a></li>
+<li><a href="#helgrind_rwlock_unlock_post">helgrind_rwlock_unlock_post</a></li>
+<li><a href="#helgrind_sem_destroy_pre">helgrind_sem_destroy_pre</a></li>
+<li><a href="#helgrind_sem_init_post">helgrind_sem_init_post</a></li>
+<li><a href="#helgrind_sem_post_pre">helgrind_sem_post_pre</a></li>
+<li><a href="#helgrind_sem_wait_post">helgrind_sem_wait_post</a></li>
+<li><a href="#inner_threads">inner_threads</a></li>
+<li><a href="#leak_check">leak_check</a></li>
+<li><a href="#make_mem_defined">make_mem_defined</a></li>
+<li><a href="#make_mem_defined_if_addressable">make_mem_defined_if_addressable</a></li>
+<li><a href="#make_mem_no_access">make_mem_no_access</a></li>
+<li><a href="#make_mem_undefined">make_mem_undefined</a></li>
+<li><a href="#malloc_like_block">malloc_like_block</a></li>
+<li><a href="#map_ip_to_src_loc">map_ip_to_src_loc</a></li>
+<li><a href="#mem_check_client_request_expr">mem_check_client_request_expr</a></li>
+<li><a href="#mem_check_client_request_stmt">mem_check_client_request_stmt</a></li>
+<li><a href="#mem_pool_alloc">mem_pool_alloc</a></li>
+<li><a href="#mem_pool_change">mem_pool_change</a></li>
+<li><a href="#mem_pool_exists">mem_pool_exists</a></li>
+<li><a href="#mem_pool_free">mem_pool_free</a></li>
+<li><a href="#mem_pool_trim">mem_pool_trim</a></li>
+<li><a href="#monitor_command">monitor_command</a></li>
+<li><a href="#move_mem_pool">move_mem_pool</a></li>
+<li><a href="#non_simd_call0">non_simd_call0</a></li>
+<li><a href="#non_simd_call1">non_simd_call1</a></li>
+<li><a href="#non_simd_call2">non_simd_call2</a></li>
+<li><a href="#non_simd_call3">non_simd_call3</a></li>
+<li><a href="#quick_leak_check">quick_leak_check</a></li>
+<li><a href="#resize_inplace_block">resize_inplace_block</a></li>
+<li><a href="#running_on_valgrind">running_on_valgrind</a></li>
+<li><a href="#set_vbits">set_vbits</a></li>
+<li><a href="#stack_change">stack_change</a></li>
+<li><a href="#stack_deregister">stack_deregister</a></li>
+<li><a href="#stack_register">stack_register</a></li>
+<li><a href="#start_instrumentation">start_instrumentation</a></li>
+<li><a href="#stop_instrumentation">stop_instrumentation</a></li>
+<li><a href="#toggle_collect">toggle_collect</a></li>
+<li><a href="#zero_stats">zero_stats</a></li>
+</ul>
+</li>
+<li><a href="#pkg-source-files">Source Files</a></ul>
+</nav>
+</div></div>
+<script type="text/javascript">var odin_pkg_name = "sys_valgrind";</script>
+</div>
+
+</div>
+</main>
+
+<footer class="odin-footer">
+	<div class="container pb-5 pt-5">
+		<div class="row g-4">
+		<div class="col">
+		<a class="navbar-brand" href="https://odin-lang.org">
+		<img class="mb-3" src="https://odin-lang.org/logo.svg" height="30" alt="Odin"></a>
+		<p>
+		The Data-Oriented Language for Sane Software Development.
+		</p>
+		</div>
+		<nav class="col-md-auto">
+			<h4 class="fw-normal">Resources</h4>
+			<ul class="list-unstyled">
+			<li><a href="https://odin-lang.org/docs" class="link-light">Docs</a></li>
+			<li><a href="https://pkg.odin-lang.org/" class="link-light">Packages</a></li>
+			<li><a href="https://odin-lang.org/news" class="link-light">News</a></li>
+			</ul>
+		</nav>
+		<nav class="col-md-auto">
+			<h4 class="fw-normal">Community</h4>
+			<ul class="list-unstyled">
+			<li><a href="https://github.com/odin-lang/Odin" target="_blank" class="link-light">GitHub</a></li>
+			<li><a href="https://forum.odin-lang.org" target="_blank" class="link-light">Forum</a></li>
+			<li><a href="https://discord.com/invite/sVBPHEv" target="_blank" class="link-light">Discord</a></li>
+			<li><a href="https://www.twitch.tv/ginger_bill" target="_blank" class="link-light">Twitch</a></li>
+			<li><a href="https://www.youtube.com/channel/UCUSck1dOH7VKmG4lRW7tZXg" target="_blank" class="link-light">YouTube</a></li>
+			<li><a href="https://odin-lang.org/showcase" target="_blank" class="link-light">Showcase</a></li>
+			</ul>
+		</nav>
+		<nav class="col-md-auto">
+			<h4 class="fw-normal">Contribute</h4>
+			<ul class="list-unstyled">
+			<li><a href="https://github.com/odin-lang/Odin/issues" target="_blank" class="link-light">Issues</a></li>
+			<li><a href="https://www.patreon.com/gingerbill" target="_blank" class="link-light">Donate</a></li>
+			</ul>
+			</nav>
+		</div>
+		<div class="mt-4 text-muted">© 2016–2023 Ginger Bill</div>
+	</div>
+</footer>
+
+<script src="https://odin-lang.org/lib/bootstrap/js/bootstrap.min.js"></script>
+<script src="https://odin-lang.org/js/script.js"></script>
+<script src="/pkg-data.js"></script>
+<script src="/search.js"></script>
+</body>
+</html>
