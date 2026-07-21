@@ -19,6 +19,7 @@ Token :: struct {
 }
 
 // Idenifies first word in code, that is present in words.
+// It does not serve the purpose to check if the word is alredy inside trie
 // If there is a word with a subword inside it, procedure will return the larger word
 // If returned []rune is nil it means, procedure didn't find any word. In such case TokenType and TokenKind values are meaningless
 IdentifyWord :: proc(code: []rune, words: ^Trie) -> ([]rune, TokenType, TokenKind) {
@@ -90,8 +91,13 @@ IdentifyLiteral :: proc(code: []rune) -> ([]rune, Literal, LexerError) {
 
 		i := 1
 
-		for code[i] != LiteralCharSeparator && i < len(code) {
-			i += 1
+		for i < len(code) {
+			if code[i] != LiteralCharSeparator {
+				i += 1
+			} else {
+				i += 1
+				break
+			}
 		}
 
 		if i == 1 {
@@ -106,9 +112,13 @@ IdentifyLiteral :: proc(code: []rune) -> ([]rune, Literal, LexerError) {
 		assert(code[0] == LiteralTextSeparator)
 
 		i := 1
-
-		for code[i] != LiteralTextSeparator && i < len(code) {
-			i += 1
+		for i < len(code) {
+			if code[i] != LiteralTextSeparator {
+				i += 1
+			} else {
+				i += 1
+				break
+			}
 		}
 
 		if i == 1 {
@@ -122,12 +132,11 @@ IdentifyLiteral :: proc(code: []rune) -> ([]rune, Literal, LexerError) {
 		assert(code != nil)
 
 		i := 0
-		for IsOmitable(code[i]) == false {
+		for i < len(code) {
 			if IsDigit(code[i]) {
 				i += 1
 			} else {
 				break
-				// return nil, .NOT_A_TOKEN
 			}
 		}
 
@@ -163,9 +172,14 @@ IdentifyLiteral :: proc(code: []rune) -> ([]rune, Literal, LexerError) {
 }
 
 // This procedure creates an identifier looking at the start of code
+// It will make an identifier from string of consecutive runes that are not  omitables, operators and delmiters
+// Procedure will also check if string doesn't start with any of words inside of trie or if Identifier isn't a literal
 // If it cannot create an identifier from the given code it will return nil []rune
-CreateIdentifier :: proc(code: []rune) -> []rune {
+CreateIdentifier :: proc(code: []rune, trie: ^Trie) -> []rune {
 	assert(code != nil)
+	if Trie_Contains(trie, code) {
+		return nil
+	}
 	if IsDigit(code[0]) || IsOmitable(code[0]) {
 		return nil
 	}
@@ -174,6 +188,11 @@ CreateIdentifier :: proc(code: []rune) -> []rune {
 	}
 	if op, err := IsDelimiter(code[0]); err == .OK {
 		return nil
+	}
+	if r, literal, err := IdentifyLiteral(code); err == .OK || err == .NOT_A_TOKEN {
+		return nil
+	} else {
+		assert(err == .NOT_A_LITERAL)
 	}
 
 	lexeme: []rune
@@ -238,7 +257,7 @@ Tokenise :: proc(code: []rune, words: ^Trie) -> [dynamic]Token {
 		}
 
 		// muszę mieć do czynienia z identifierem
-		lexeme = CreateIdentifier(c)
+		lexeme = CreateIdentifier(c, words)
 		if len(lexeme) == 0 {
 			fmt.println("Tokenisation Error!")
 			delete(tokens)

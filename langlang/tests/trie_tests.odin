@@ -4,6 +4,8 @@ import lang "../src"
 import "core:testing"
 import "core:unicode/utf8"
 
+// exp :: testing.expect
+
 @(private)
 Prepare_Trie :: proc() -> lang.Trie {
 	tokens: [dynamic]lang.Token = {}
@@ -127,5 +129,14 @@ Trie_AppendWord_test :: proc(t: ^testing.T) {
 		err := lang.Trie_AppendWord(&trie, words[i])
 		testing.expect(t, err == errs[i], "")
 	}
+
+	exp(t, !lang.Trie_Contains(&trie, {'g', 'i', 'g', 'a'}))
+	err := lang.Trie_AppendWord(&trie, {'g', 'i', 'g', 'a'})
+	exp(t, err == .OK)
+	exp(t, lang.Trie_Contains(&trie, {'g', 'i', 'g', 'a'}))
+	exp(t, !lang.Trie_Contains(&trie, {'g', 'i', 'g'}))
+	lang.Trie_AppendWord(&trie, {'g', 'i', 'g'})
+	exp(t, err == .OK)
+	exp(t, lang.Trie_Contains(&trie, {'g', 'i', 'g'}))
 
 }

@@ -11,10 +11,10 @@ TrieError :: enum {
 
 TrieNode :: struct {
 	isWord:    bool `json:"is word"`,
+	children:  [dynamic]TrieNode `json:"children"`,
 	value:     rune `json:"value"`,
 	tokenType: TokenType `json:"token type"`,
 	tokenKind: TokenKind `json:"token kind"`,
-	children:  [dynamic]TrieNode `json:"children"`,
 }
 
 // Checks if TrieNode has a child with r value. If it has such child it will return true and index to this child
@@ -123,10 +123,6 @@ Trie_AppendWord :: proc(
 	currentNode := &trie.root
 
 	for i in 0 ..< len(word) {
-		// exists, idx := TrieNode_Contains(currentNode, word[i])
-		// if exists {
-		// 	currentNode = &currentNode.children[idx]
-		// } else {
 		idx, err := TrieNode_AppendChild(currentNode, i == len(word) - 1, word[i], type, kind)
 		assert(err == .OK || err == .ALREADY_EXISTS || err == .ALLOCATION_ERROR)
 		if err == .ALLOCATION_ERROR {
@@ -134,7 +130,18 @@ Trie_AppendWord :: proc(
 		} else if err == .ALREADY_EXISTS {
 			currentNode = &currentNode.children[idx]
 			if i == len(word) - 1 {
-				return .ALREADY_EXISTS
+				if currentNode.isWord {
+					return .ALREADY_EXISTS
+				} else {
+					children := currentNode.children
+					currentNode^ = TrieNode {
+						isWord    = true,
+						children  = children,
+						tokenType = type,
+						tokenKind = kind,
+						value     = word[i],
+					}
+				}
 			}
 			continue
 		} else {
@@ -151,6 +158,35 @@ Trie_AppendWord :: proc(
 Trie_Delete :: proc(trie: ^Trie) {
 	trie.size = 0
 	TrieNode_Delete(&trie.root)
+}
+
+// Checks if word is already a word inside a trie
+Trie_Contains :: proc(trie: ^Trie, word: []rune) -> bool {
+	assert(word != nil)
+	assert(trie != nil)
+
+	node: ^TrieNode = &trie.root
+
+	for v, i in word {
+
+		if c, idx := TrieNode_Contains(node, v); c {
+			node = &node.children[idx]
+
+			if i == len(word) - 1 {
+				if node.isWord {
+					return true
+				} else {
+					return false
+				}
+			}
+
+		} else {
+			return false
+		}
+	}
+
+	return false
+
 }
 
 IsDigit :: proc(r: rune) -> bool {
