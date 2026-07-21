@@ -1,4 +1,4 @@
-package main
+package langlang
 
 import "core:encoding/json"
 import "core:fmt"

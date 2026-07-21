@@ -1,4 +1,4 @@
-package main
+package langlang
 
 import "core:fmt"
 import "core:unicode/utf8"
@@ -8,6 +8,7 @@ LexerError :: enum {
 	NOT_A_TOKEN,
 	NOT_A_LITERAL,
 	NOT_AN_OPERATOR,
+	NOT_AN_IDENTIFIER,
 	NOT_A_DELIMITER,
 }
 
@@ -17,6 +18,9 @@ Token :: struct {
 	lexeme: []rune,
 }
 
+// Idenifies first word in code, that is present in words.
+// If there is a word with a subword inside it, procedure will return the larger word
+// If returned []rune is nil it means, procedure didn't find any word. In such case TokenType and TokenKind values are meaningless
 IdentifyWord :: proc(code: []rune, words: ^Trie) -> ([]rune, TokenType, TokenKind) {
 	assert(code != nil)
 	assert(words != nil)
@@ -45,7 +49,7 @@ IdentifyWord :: proc(code: []rune, words: ^Trie) -> ([]rune, TokenType, TokenKin
 			if wordFound {
 				return code[:wordLenght], wordFinalNode.tokenType, wordFinalNode.tokenKind
 			} else {
-				return code[:wordLenght], .IDENTIFIER, Keyword.INT
+				return nil, .IDENTIFIER, Keyword.INT
 			}
 		}
 	}
@@ -53,13 +57,18 @@ IdentifyWord :: proc(code: []rune, words: ^Trie) -> ([]rune, TokenType, TokenKin
 	if wordFound {
 		return code[:wordLenght], wordFinalNode.tokenType, wordFinalNode.tokenKind
 	} else {
-		return code[:wordLenght], .IDENTIFIER, Keyword.INT
+		return nil, .IDENTIFIER, Keyword.INT
 	}
 
 	// assert(false)
 	// return nil, .IDENTIFIER, Keyword.INT
 }
 
+// This procedure will try to identify literal which starts at code[0]. Currently it can identify char literal (with ''), text literal (with "") or decimal literal (comprised of digits)
+// Can return errors:
+// .OK						if everything went fine
+// .NOT_A_LITERAL			if string is not a literal (it does not start with ", ', or a digit)
+// .NOT_A_TOKEN				if token starts with " or ' but does not close with such rune
 IdentifyLiteral :: proc(code: []rune) -> ([]rune, Literal, LexerError) {
 	assert(code != nil)
 
@@ -117,7 +126,8 @@ IdentifyLiteral :: proc(code: []rune) -> ([]rune, Literal, LexerError) {
 			if IsDigit(code[i]) {
 				i += 1
 			} else {
-				return nil, .NOT_A_TOKEN
+				break
+				// return nil, .NOT_A_TOKEN
 			}
 		}
 
@@ -152,10 +162,19 @@ IdentifyLiteral :: proc(code: []rune) -> ([]rune, Literal, LexerError) {
 	return nil, .CHARACTER, .NOT_A_TOKEN
 }
 
+// This procedure creates an identifier looking at the start of code
+// If it cannot create an identifier from the given code it will return nil []rune
 CreateIdentifier :: proc(code: []rune) -> []rune {
 	assert(code != nil)
-	assert(IsDigit(code[0]) == false)
-	assert(IsOmitable(code[0]) == false)
+	if IsDigit(code[0]) || IsOmitable(code[0]) {
+		return nil
+	}
+	if op, err := IsOperator(code[0]); err == .OK {
+		return nil
+	}
+	if op, err := IsDelimiter(code[0]); err == .OK {
+		return nil
+	}
 
 	lexeme: []rune
 
@@ -178,6 +197,8 @@ CreateIdentifier :: proc(code: []rune) -> []rune {
 	return lexeme
 }
 
+// This procedure creates array of tokens made from the code and words Trie it was given
+// If a tokenisation could not be finished array will be nil
 Tokenise :: proc(code: []rune, words: ^Trie) -> [dynamic]Token {
 	assert(code != nil)
 

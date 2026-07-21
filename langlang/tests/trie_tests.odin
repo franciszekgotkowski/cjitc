@@ -1,10 +1,12 @@
 package main
 
+import lang "../src"
 import "core:testing"
 import "core:unicode/utf8"
 
-Prepare_Trie_test :: proc() -> Trie {
-	tokens: [dynamic]Token = {}
+@(private)
+Prepare_Trie :: proc() -> lang.Trie {
+	tokens: [dynamic]lang.Token = {}
 	defer {
 		for v, i in tokens {
 			delete(tokens[i].lexeme)
@@ -12,31 +14,31 @@ Prepare_Trie_test :: proc() -> Trie {
 		delete(tokens)
 	}
 
-	for v, i in TokenType {
+	for v, i in lang.TokenType {
 		#partial switch v {
 		case .KEYWORD:
-			for vv, j in Keyword {
-				lex := utf8.string_to_runes(KeywordValues[vv])
-				append(&tokens, Token{type = v, kind = vv, lexeme = lex})
+			for vv, j in lang.Keyword {
+				lex := utf8.string_to_runes(lang.KeywordValues[vv])
+				append(&tokens, lang.Token{type = v, kind = vv, lexeme = lex})
 			}
 		case .OPERATOR:
-			for vv, j in Operator {
-				lex := utf8.string_to_runes(OperatorValues[vv])
-				append(&tokens, Token{type = v, kind = vv, lexeme = lex})
+			for vv, j in lang.Operator {
+				lex := utf8.string_to_runes(lang.OperatorValues[vv])
+				append(&tokens, lang.Token{type = v, kind = vv, lexeme = lex})
 			}
 		case .DELIMITER:
-			for vv, j in Delimiter {
-				lex := utf8.string_to_runes(DelimiterValues[vv])
-				append(&tokens, Token{type = v, kind = vv, lexeme = lex})
+			for vv, j in lang.Delimiter {
+				lex := utf8.string_to_runes(lang.DelimiterValues[vv])
+				append(&tokens, lang.Token{type = v, kind = vv, lexeme = lex})
 			}
 		case:
 			continue
 		}
 	}
 
-	trie := Trie_Initialize()
+	trie := lang.Trie_Initialize()
 	for v, i in tokens {
-		Trie_AppendWord(&trie, v.lexeme, v.type, v.kind)
+		lang.Trie_AppendWord(&trie, v.lexeme, v.type, v.kind)
 	}
 	return trie
 
@@ -44,67 +46,67 @@ Prepare_Trie_test :: proc() -> Trie {
 
 @(test)
 TrieNode_Contains_test :: proc(t: ^testing.T) {
-	node: TrieNode = {}
+	node: lang.TrieNode = {}
 
-	contains, _ := TrieNode_Contains(&node, 'r')
-	defer TrieNode_Delete(&node)
+	contains, _ := lang.TrieNode_Contains(&node, 'r')
+	defer lang.TrieNode_Delete(&node)
 
 	testing.expect(t, !contains, "Node should not contain anything")
 
 	values: []rune = {'r', '4', '-', ' ', '\n', '1'}
 
 	for v, i in values {
-		b, i := TrieNode_Contains(&node, v)
+		b, i := lang.TrieNode_Contains(&node, v)
 		testing.expectf(t, !b, "should not contain '%c'", v)
 	}
 
 	for v, i in values {
-		append(&node.children, TrieNode{value = v})
+		append(&node.children, lang.TrieNode{value = v})
 	}
 
 	for v, i in values {
-		b, i := TrieNode_Contains(&node, v)
+		b, i := lang.TrieNode_Contains(&node, v)
 		testing.expectf(t, b, "should contain '%c' at index %d", v, i)
 	}
 	#reverse for v, i in values {
-		b, i := TrieNode_Contains(&node, v)
+		b, i := lang.TrieNode_Contains(&node, v)
 		testing.expectf(t, b, "should contain '%c' at index %d", v, i)
 	}
 
 	nonValues: []rune = {'e', '8', '=', '_', '\t', '2'}
 	for v, i in nonValues {
-		b, i := TrieNode_Contains(&node, v)
+		b, i := lang.TrieNode_Contains(&node, v)
 		testing.expectf(t, !b, "should not contain '%c'", v)
 	}
 }
 
 @(test)
 TrieNode_AppendChild_test :: proc(t: ^testing.T) {
-	trie := Prepare_Trie_test()
-	defer Trie_Delete(&trie)
+	trie := Prepare_Trie()
+	defer lang.Trie_Delete(&trie)
 
 	runes: []rune = {'i', 'f', '[', ']', 'g'}
-	errors: []TrieError = {.ALREADY_EXISTS, .ALREADY_EXISTS, .OK, .OK, .OK}
+	errors: []lang.TrieError = {.ALREADY_EXISTS, .ALREADY_EXISTS, .OK, .OK, .OK}
 
 	for v, i in runes {
-		idx, err := TrieNode_AppendChild(&trie.root, true, runes[i], .KEYWORD, .INT)
+		idx, err := lang.TrieNode_AppendChild(&trie.root, true, runes[i], .KEYWORD, .INT)
 		testing.expectf(t, err == errors[i], "Tesing if '%c' can be added to root\n", runes[i])
 	}
 }
 
 @(test)
 TrieNode_Delete_test :: proc(t: ^testing.T) {
-	trie := Prepare_Trie_test()
+	trie := Prepare_Trie()
 
 	testing.expect(t, len(trie.root.children) > 0)
-	TrieNode_Delete(&trie.root)
+	lang.TrieNode_Delete(&trie.root)
 	testing.expect(t, len(trie.root.children) == 0)
 }
 
 @(test)
 Trie_AppendWord_test :: proc(t: ^testing.T) {
-	trie := Prepare_Trie_test()
-	defer Trie_Delete(&trie)
+	trie := Prepare_Trie()
+	defer lang.Trie_Delete(&trie)
 
 	words: [][]rune = {
 		utf8.string_to_runes("float"),
@@ -119,10 +121,10 @@ Trie_AppendWord_test :: proc(t: ^testing.T) {
 			delete(words[i])
 		}
 	}
-	errs: []TrieError = {.OK, .ALREADY_EXISTS, .OK, .OK, .ALREADY_EXISTS, .OK}
+	errs: []lang.TrieError = {.OK, .ALREADY_EXISTS, .OK, .OK, .ALREADY_EXISTS, .OK}
 
 	for v, i in words {
-		err := Trie_AppendWord(&trie, words[i])
+		err := lang.Trie_AppendWord(&trie, words[i])
 		testing.expect(t, err == errs[i], "")
 	}
 
