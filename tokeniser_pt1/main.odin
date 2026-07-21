@@ -1,5 +1,6 @@
 package main
 
+import "core:encoding/json"
 import "core:fmt"
 import "core:slice"
 import "core:unicode/utf8"
@@ -23,16 +24,6 @@ Keyword :: enum i32 {
 	BRACE_CLOSE,
 	CURLY_BRACE_OPEN,
 	CURLY_BRACE_CLOSE,
-	// DIGIT_0,
-	// DIGIT_1,
-	// DIGIT_2,
-	// DIGIT_3,
-	// DIGIT_4,
-	// DIGIT_5,
-	// DIGIT_6,
-	// DIGIT_7,
-	// DIGIT_8,
-	// DIGIT_9,
 }
 
 keywords: [Keyword]string = {
@@ -49,23 +40,13 @@ keywords: [Keyword]string = {
 	.BRACE_CLOSE       = ")",
 	.CURLY_BRACE_OPEN  = "{",
 	.CURLY_BRACE_CLOSE = "}",
-	// .DIGIT_0           = "0",
-	// .DIGIT_1           = "1",
-	// .DIGIT_2           = "2",
-	// .DIGIT_3           = "3",
-	// .DIGIT_4           = "4",
-	// .DIGIT_5           = "5",
-	// .DIGIT_6           = "6",
-	// .DIGIT_7           = "7",
-	// .DIGIT_8           = "8",
-	// .DIGIT_9           = "9",
 }
 
 Token :: struct {
-	type:    TokenType,
-	keyword: Keyword,
-	lexeme:  []rune,
-	id:      int,
+	type:    TokenType `json:"type"`,
+	keyword: Keyword `json:"Keyword"`,
+	lexeme:  []rune `json:"lexeme"`,
+	id:      int `json:"id"`,
 }
 
 Tokenise :: proc(code: []rune, trie: ^Trie) -> [dynamic]Token {
@@ -150,6 +131,10 @@ Tokenise :: proc(code: []rune, trie: ^Trie) -> [dynamic]Token {
 			)
 		} else {
 			tip += 1
+
+			if cutcode[0] != ' ' {
+
+			}
 		}
 	}
 
@@ -168,18 +153,20 @@ main :: proc() {
 
 	Trie_Print(&trie)
 
-	c := ";;i;nintt(if ;"
+	// c := ";;i;nintt(if ;"
 
-	tokens := Tokenise(utf8.string_to_runes(c), &trie)
+	// tokens := Tokenise(utf8.string_to_runes(c), &trie)
+	// fmt.printfln("\namount of tokens: %v", len(tokens))
+	// for i in 0 ..< len(tokens) {
+	// 	fmt.printf("token: \"%s\", keyword: %v\n", tokens[i].lexeme, tokens[i].keyword)
+	// }
+
+	tokens := Tokenise(utf8.string_to_runes(code), &trie)
 	fmt.printfln("\namount of tokens: %v", len(tokens))
 	for i in 0 ..< len(tokens) {
 		fmt.printf("token: \"%s\", keyword: %v\n", tokens[i].lexeme, tokens[i].keyword)
 	}
 
-	tokens = Tokenise(utf8.string_to_runes(code), &trie)
-	fmt.printfln("\namount of tokens: %v", len(tokens))
-	for i in 0 ..< len(tokens) {
-		fmt.printf("token: \"%s\", keyword: %v\n", tokens[i].lexeme, tokens[i].keyword)
-	}
-
+	js, _ := json.marshal(tokens, {pretty = true, use_enum_names = true})
+	fmt.printfln("%s\n", js)
 }

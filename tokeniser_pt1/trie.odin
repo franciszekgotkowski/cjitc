@@ -189,35 +189,3 @@ TrieNode_ChildExists :: proc(node: ^TrieNode, r: rune) -> (bool, int) {
 	}
 	return false, -1
 }
-
-// Trie_ContainsWord_Runes :: proc(trie: ^Trie, r: []rune) -> bool {
-// 	match :: proc(node: ^TrieNode, r: []rune) -> bool {
-// 		for _, i in node.children {
-
-// 			if node.children[i].value == r[0] {
-
-// 				if len(r) == 1 {
-// 					if node.isWord {
-// 						return true
-// 					} else {
-// 						return false
-// 					}
-// 				}
-
-// 				match(&node.children[i], r[1:])
-// 			}
-// 		}
-
-// 	}
-// }
-
-// Trie_MatchesRunes :: proc(trie: ^Trie, r: []rune) -> [][]rune {
-
-// 	matchExisting :: proc(trie: ^Trie, r: []rune, txt: ^[dynamic]rune) {
-// 		assert(trie != nil)
-// 		assert(r != nil)
-// 		assert(txt != nil)
-
-
-// 	}
-// }
