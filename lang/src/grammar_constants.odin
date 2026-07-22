@@ -9,28 +9,34 @@ package langlang
 // Repetition = "{" Expression "}"
 
 ProductionName :: enum {
-	DECIMAL_DECLARATION,
+	DECLARATION,
+	DECLARATION_WITH_ASSIGNMENT,
+	DECIMAL_TYPE,
+	FLOAT_TYPE,
+	TEXT_TYPE,
+	CHARACTER_TYPE,
+	DECIMAL_LITERAL,
+	FLOAT_LITERAL,
+	TEXT_LITERAL,
+	CHARACTER_LITERAL,
 }
 // Allows for Production creation
 Production :: struct #all_or_none {
 	name:       ProductionName `json:"ProductionName"`,
 	expression: Expression `json:"Expression"`,
 }
-Prod :: Production
 
 // Always returns a value
 Expression :: struct #all_or_none {
 	alternative:  Alternative `json:"Alternative"`,
 	alternatives: Repetition `json:"Alternatives"`,
 }
-Expr :: Expression
 
 // One of alternative options Expression holds
 Alternative :: struct #all_or_none {
 	term:  Term `json:"Term"`,
 	terms: Repetition `json:"Terms"`,
 }
-Alt :: Alternative
 
 // Possible values of Term
 // @(private = "file")
@@ -49,54 +55,147 @@ Term :: struct #all_or_none {
 // Has to hold one expressions from the list of possible expressions.
 // For example it could hold one of "+", "-" operator tokens
 // Use of []Expr is unfortunate and doesn't reflect well the data type but it mitigates recursive struct inclusion problem
-Group :: distinct []Expr
+Group :: distinct []ExpressionOrProductionGroup
 
 // Can hold one or zero expressions
 // Use of []Expr is unfortunate and doesn't reflect well the data type but it mitigates recursive struct inclusion problem
-Option :: distinct []Expr
-Opt :: Option
+Option :: distinct []ExpressionOrProductionGroup
 
 // Can hold zero or many expression
-Repetition :: distinct []Expr
-Rep :: Repetition
+Repetition :: distinct []ExpressionOrProductionGroup
 
 ProductionGroup :: []Production
-ProdG :: ProductionGroup
 
+ExpressionOrProductionGroup :: union #no_nil {
+	Expression,
+	ProductionGroup,
+}
 
-Declarations: ProdG = {
+Types: ProductionGroup = {
 	Production {
-		name = .DECIMAL_DECLARATION,
-		expression = Expression {
-			alternative = Alternative {
-				term = Term{value = Token{type = .KEYWORD, kind = Keyword.INT}},
-				terms = Repetition {
-					Expression {
-						alternative = Alternative {
-							term = Term{value = Token{type = .IDENTIFIER}},
-							terms = Repetition{},
-						},
-						alternatives = {},
-					},
-					Expression {
-						alternative = Alternative {
-							term = Term{value = Token{type = .OPERATOR, kind = Operator.EQUAL}},
-							terms = {},
-						},
-						alternatives = {},
-					},
-					Expression {
-						alternative = Alternative {
-							term = Term{value = Token{type = .LITERAL, kind = Literal.DECIMAL}},
-							terms = {},
-						},
-						alternatives = {},
-					},
-				},
-			},
-			alternatives = {},
+		.DECIMAL_TYPE,
+		Expression {
+			Alternative{Term{Token{type = .KEYWORD, kind = Keyword.INT}}, Repetition{}},
+			Repetition{},
+		},
+	},
+	Production {
+		.FLOAT_TYPE,
+		Expression {
+			Alternative{Term{Token{type = .KEYWORD, kind = Keyword.FLOAT}}, Repetition{}},
+			Repetition{},
+		},
+	},
+	Production {
+		.CHARACTER_TYPE,
+		Expression {
+			Alternative{Term{Token{type = .KEYWORD, kind = Keyword.CHAR}}, Repetition{}},
+			Repetition{},
+		},
+	},
+	Production {
+		.TEXT_TYPE,
+		Expression {
+			Alternative{Term{Token{type = .KEYWORD, kind = Keyword.STRING}}, Repetition{}},
+			Repetition{},
 		},
 	},
 }
 
-allGroups: []ProdG = {Declarations}
+Literals: ProductionGroup = {
+	Production {
+		.DECIMAL_LITERAL,
+		Expression{Alternative{Term{Token{type = .LITERAL, kind = Literal.DECIMAL}}, {}}, {}},
+	},
+	Production {
+		.FLOAT_LITERAL,
+		Expression {
+			Alternative {
+				Term{Token{type = .LITERAL, kind = Literal.DECIMAL}},
+				{
+					Expression {
+						Alternative{Term{Token{type = .OPERATOR, kind = Operator.DOT}}, {}},
+						{},
+					},
+					Expression {
+						Alternative{Term{Token{type = .LITERAL, kind = Literal.DECIMAL}}, {}},
+						{},
+					},
+				},
+			},
+			{},
+		},
+	},
+	Production {
+		.TEXT_LITERAL,
+		Expression{Alternative{Term{Token{type = .LITERAL, kind = Literal.TEXT}}, {}}, {}},
+	},
+	Production {
+		.CHARACTER_LITERAL,
+		Expression{Alternative{Term{Token{type = .LITERAL, kind = Literal.CHARACTER}}, {}}, {}},
+	},
+}
+
+ValueDeclaration: ProductionGroup = {
+	Production {
+		.DECLARATION_WITH_ASSIGNMENT,
+		Expression {
+			Alternative {
+				Term{Repetition{Types}},
+				Repetition {
+					Expression {
+						Alternative {
+							term = Term{value = Token{type = .IDENTIFIER}},
+							terms = Repetition{},
+						},
+						{},
+					},
+					Expression {
+						Alternative {
+							term = Term{value = Token{type = .OPERATOR, kind = Operator.EQUAL}},
+							terms = Repetition{},
+						},
+						{},
+					},
+					Literals,
+					Expression {
+						Alternative {
+							Term{value = Token{type = .DELIMITER, kind = Delimiter.SEMICOLUMN}},
+							{},
+						},
+						{},
+					},
+				},
+			},
+			{},
+		},
+	},
+	Production {
+		.DECLARATION,
+		Expression {
+			Alternative {
+				Term{Repetition{Types}},
+				Repetition {
+					Expression {
+						Alternative {
+							term = Term{value = Token{type = .IDENTIFIER}},
+							terms = Repetition{},
+						},
+						{},
+					},
+					Literals,
+					Expression {
+						Alternative {
+							Term{value = Token{type = .DELIMITER, kind = Delimiter.SEMICOLUMN}},
+							{},
+						},
+						{},
+					},
+				},
+			},
+			{},
+		},
+	},
+}
+
+allGroups: []ProductionGroup = {ValueDeclaration}

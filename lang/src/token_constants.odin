@@ -36,6 +36,9 @@ TokenType :: enum {
 
 Keyword :: enum {
 	INT,
+	FLOAT,
+	CHAR,
+	STRING,
 	FUNCTION,
 	DECLARE,
 	RETURN,
@@ -71,6 +74,9 @@ Literal :: enum {
 
 KeywordValues: [Keyword]string = {
 	.INT      = "int",
+	.FLOAT    = "float",
+	.CHAR     = "char",
+	.STRING   = "string",
 	.FUNCTION = "function",
 	.DECLARE  = "declare",
 	.RETURN   = "return",

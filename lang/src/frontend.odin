@@ -42,7 +42,9 @@ main :: proc() {
 
 	trie := Trie_Initialize()
 
-	js, _ := json.marshal(Declarations, {pretty = true, use_enum_names = true})
+	fmt.println(size_of(Production))
+
+	js, _ := json.marshal(ValueDeclaration, {pretty = true, use_enum_names = true})
 	fmt.printfln("%s", js)
 
 	t: [dynamic]Token = make_tokentree()
