@@ -42,6 +42,9 @@ main :: proc() {
 
 	trie := Trie_Initialize()
 
+	js, _ := json.marshal(Declarations, {pretty = true, use_enum_names = true})
+	fmt.printfln("%s", js)
+
 	t: [dynamic]Token = make_tokentree()
 	defer delete(t)
 
@@ -53,8 +56,8 @@ main :: proc() {
 	// code: []rune = utf8.string_to_runes("s")
 	tokens := Tokenise(code, &trie)
 	defer delete(tokens)
-	json, _ := json.marshal(tokens, {pretty = true, use_enum_names = true})
-	fmt.printfln("%s", json)
+	js, _ = json.marshal(tokens, {pretty = true, use_enum_names = true})
+	fmt.printfln("%s", js)
 
 
 }

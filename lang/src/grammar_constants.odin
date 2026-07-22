@@ -66,8 +66,12 @@ Repetition :: struct #all_or_none {
 }
 Rep :: Repetition
 
-Prods: [ProductionName]Production = {
-	.DECIMAL_DECLARATION = Production {
+ProductionGroup :: []Production
+ProdG :: ProductionGroup
+
+
+Declarations: ProdG = {
+	Production {
 		name = .DECIMAL_DECLARATION,
 		expression = Expression {
 			alternative = Alternative {
@@ -90,6 +94,15 @@ Prods: [ProductionName]Production = {
 							},
 							alternatives = Repetition{expressions = {}},
 						},
+						Expression {
+							alternative = Alternative {
+								term = Term {
+									value = Token{type = .LITERAL, kind = Literal.DECIMAL},
+								},
+								terms = Repetition{expressions = {}},
+							},
+							alternatives = Repetition{expressions = {}},
+						},
 					},
 				},
 			},
@@ -97,3 +110,5 @@ Prods: [ProductionName]Production = {
 		},
 	},
 }
+
+allGroups: []ProdG = {Declarations}
