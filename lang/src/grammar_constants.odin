@@ -49,21 +49,15 @@ Term :: struct #all_or_none {
 // Has to hold one expressions from the list of possible expressions.
 // For example it could hold one of "+", "-" operator tokens
 // Use of []Expr is unfortunate and doesn't reflect well the data type but it mitigates recursive struct inclusion problem
-Group :: struct #all_or_none {
-	expressions: []Expr `json:"Expression"`,
-}
+Group :: distinct []Expr
 
 // Can hold one or zero expressions
 // Use of []Expr is unfortunate and doesn't reflect well the data type but it mitigates recursive struct inclusion problem
-Option :: struct #all_or_none {
-	expression: []Expr `json:"Expression"`,
-}
+Option :: distinct []Expr
 Opt :: Option
 
 // Can hold zero or many expression
-Repetition :: struct #all_or_none {
-	expressions: []Expr `json:"Expression"`,
-}
+Repetition :: distinct []Expr
 Rep :: Repetition
 
 ProductionGroup :: []Production
@@ -77,36 +71,30 @@ Declarations: ProdG = {
 			alternative = Alternative {
 				term = Term{value = Token{type = .KEYWORD, kind = Keyword.INT}},
 				terms = Repetition {
-					expressions = {
-						Expression {
-							alternative = Alternative {
-								term = Term{value = Token{type = .IDENTIFIER}},
-								terms = Repetition{expressions = {}},
-							},
-							alternatives = Repetition{expressions = {}},
+					Expression {
+						alternative = Alternative {
+							term = Term{value = Token{type = .IDENTIFIER}},
+							terms = Repetition{},
 						},
-						Expression {
-							alternative = Alternative {
-								term = Term {
-									value = Token{type = .OPERATOR, kind = Operator.EQUAL},
-								},
-								terms = Repetition{expressions = {}},
-							},
-							alternatives = Repetition{expressions = {}},
+						alternatives = {},
+					},
+					Expression {
+						alternative = Alternative {
+							term = Term{value = Token{type = .OPERATOR, kind = Operator.EQUAL}},
+							terms = {},
 						},
-						Expression {
-							alternative = Alternative {
-								term = Term {
-									value = Token{type = .LITERAL, kind = Literal.DECIMAL},
-								},
-								terms = Repetition{expressions = {}},
-							},
-							alternatives = Repetition{expressions = {}},
+						alternatives = {},
+					},
+					Expression {
+						alternative = Alternative {
+							term = Term{value = Token{type = .LITERAL, kind = Literal.DECIMAL}},
+							terms = {},
 						},
+						alternatives = {},
 					},
 				},
 			},
-			alternatives = Repetition{expressions = {}},
+			alternatives = {},
 		},
 	},
 }
