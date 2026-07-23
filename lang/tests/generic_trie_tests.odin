@@ -340,3 +340,23 @@ Trie_Contains_test :: proc(t: ^testing.T) {
 	exp(t, Trie_Contains(int, &trie, []int{1, 2, 3, 4, 5, 6}))
 
 }
+
+@(test)
+Trie_Delete_nil_test :: proc(t: ^testing.T) {
+	testing.expect_assert(t, "nilptr")
+	Trie_Delete(int, nil)
+}
+
+@(test)
+Trie_Delete_test :: proc(t: ^testing.T) {
+	trie := Trie_Initialize(int)
+	defer Trie_Delete(int, &trie)
+
+	Trie_AppendWord(int, &trie, []int{1, 2, 3})
+	Trie_AppendWord(int, &trie, []int{3, 2, 1, 0})
+	exp(t, len(trie.root.children) != 0)
+	exp(t, trie.size != 0)
+	Trie_Delete(int, &trie)
+	exp(t, len(trie.root.children) == 0)
+	exp(t, trie.size == 0)
+}
