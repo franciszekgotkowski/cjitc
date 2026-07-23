@@ -78,18 +78,6 @@ tokenDynamicArrayAndSliceMatch :: proc(a: [dynamic]lang.Token, b: []lang.Token) 
 		if !lang.Token_Match(a[i], b[i]) do return false
 	}
 
-	// for i in 0 ..< len(a) {
-	// 	if a[i].type != b[i].type do return false
-	// 	if a[i].type != .LITERAL && a[i].type != .IDENTIFIER {
-	// 		if a[i].kind != b[i].kind do return false
-	// 	} else {
-	// 		if len(a[i].lexeme) != len(b[i].lexeme) do return false
-	// 		for j in 0 ..< len(a[i].lexeme) {
-	// 			if a[i].lexeme[j] != b[i].lexeme[j] do return false
-	// 		}
-	// 	}
-	// }
-
 	return true
 }
 

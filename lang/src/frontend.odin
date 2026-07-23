@@ -86,19 +86,9 @@ main :: proc() {
 		delete(t2)
 	}
 
-	for v, i in t {
-		arr: [dynamic]RuneWithToken
-		for w, j in v.lexeme {
-			append(
-				&arr,
-				RuneWithToken {
-					w,
-					j == len(v.lexeme) - 1 ? Token{kind = v.kind, type = v.type} : {},
-				},
-			)
-		}
+	for v, _ in t {
+		arr := RuneWithTokenArr(v)
 		append(&t2, arr)
-
 	}
 
 	for v, i in t2 {
@@ -106,15 +96,15 @@ main :: proc() {
 		Trie_AppendWord(RuneWithToken, &trie, slice)
 	}
 
-	js, _ := json.marshal(trie, {pretty = true, use_enum_names = true})
-	fmt.printfln("%s", js)
-
-	// code: []rune = utf8.string_to_runes("  x=	a+b;ifa<=b{x=a;}")
-	// // code: []rune = utf8.string_to_runes("s")
-	// tokens := Tokenise(code, &trie)
-	// defer delete(tokens)
-	// js, _ = json.marshal(tokens, {pretty = true, use_enum_names = true})
+	// js, _ := json.marshal(trie, {pretty = true, use_enum_names = true})
 	// fmt.printfln("%s", js)
+
+	code: []rune = utf8.string_to_runes("  x=	a+b;ifa<=b{x=a;}")
+	// code: []rune = utf8.string_to_runes("s")
+	tokens := Tokenise(code, &trie)
+	defer delete(tokens)
+	js, _ := json.marshal(tokens, {pretty = true, use_enum_names = true})
+	fmt.printfln("%s", js)
 
 
 }

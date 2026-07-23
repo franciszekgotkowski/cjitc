@@ -36,7 +36,7 @@ Token_Match :: proc(a, b: Token) -> bool {
 // It does not serve the purpose to check if the word is alredy inside trie
 // If there is a word with a subword inside it, procedure will return the larger word
 // If returned []rune is nil it means, procedure didn't find any word. In such case TokenType and TokenKind values are meaningless
-IdentifyWord :: proc(code: []rune, words: ^Trie) -> ([]rune, TokenType, TokenKind) {
+IdentifyWord :: proc(code: []rune, words: ^Trie(RuneWithToken)) -> Token {
 	assert(code != nil)
 	assert(words != nil)
 
@@ -44,11 +44,11 @@ IdentifyWord :: proc(code: []rune, words: ^Trie) -> ([]rune, TokenType, TokenKin
 
 	wordFound := false
 	wordFinalCharacter := 0
-	wordFinalNode: ^TrieNode = nil
+	wordFinalNode: ^TrieNode(RuneWithToken) = nil
 
 	node := &words.root
 	for v, i in code {
-		tempNode, err := TrieNode_FetchChild(node, v)
+		tempNode, err := TrieNode_FetchChild(RuneWithToken, node, RuneWithToken{v, nil})
 		if err == .OK {
 			wordLenght += 1
 			node = tempNode
@@ -62,17 +62,30 @@ IdentifyWord :: proc(code: []rune, words: ^Trie) -> ([]rune, TokenType, TokenKin
 			assert(err == .CHILD_DOES_NOT_EXIST)
 			// assert(wordLenght > 0)
 			if wordFound {
-				return code[:wordLenght], wordFinalNode.tokenType, wordFinalNode.tokenKind
+				// return code[:wordLenght], wordFinalNode.tokenType, wordFinalNode.tokenKind
+				token, ok := wordFinalNode.value.token.?
+				assert(ok)
+				return Token{lexeme = code[:wordLenght], type = token.type, kind = token.kind}
 			} else {
-				return nil, .IDENTIFIER, Keyword.INT
+				// return nil, .IDENTIFIER, Keyword.INT
+				return Token{}
 			}
 		}
 	}
 
+	// if wordFound {
+	// 	return code[:wordLenght], wordFinalNode.tokenType, wordFinalNode.tokenKind
+	// } else {
+	// 	return nil, .IDENTIFIER, Keyword.INT
+	// }
 	if wordFound {
-		return code[:wordLenght], wordFinalNode.tokenType, wordFinalNode.tokenKind
+		// return code[:wordLenght], wordFinalNode.tokenType, wordFinalNode.tokenKind
+		token, ok := wordFinalNode.value.token.?
+		assert(ok)
+		return Token{lexeme = code[:wordLenght], type = token.type, kind = token.kind}
 	} else {
-		return nil, .IDENTIFIER, Keyword.INT
+		// return nil, .IDENTIFIER, Keyword.INT
+		return Token{}
 	}
 
 	// assert(false)
@@ -84,7 +97,7 @@ IdentifyWord :: proc(code: []rune, words: ^Trie) -> ([]rune, TokenType, TokenKin
 // .OK						if everything went fine
 // .NOT_A_LITERAL			if string is not a literal (it does not start with ", ', or a digit)
 // .NOT_A_TOKEN				if token starts with " or ' but does not close with such rune
-IdentifyLiteral :: proc(code: []rune) -> ([]rune, Literal, LexerError) {
+IdentifyLiteral :: proc(code: []rune) -> (Token, LexerError) {
 	assert(code != nil)
 
 	literalType: Literal
@@ -96,7 +109,8 @@ IdentifyLiteral :: proc(code: []rune) -> ([]rune, Literal, LexerError) {
 	} else if IsDigit(code[0]) {
 		literalType = .DECIMAL
 	} else {
-		return nil, .DECIMAL, .NOT_A_LITERAL
+		// return nil, .DECIMAL, .NOT_A_LITERAL
+		return Token{}, .NOT_A_LITERAL
 	}
 
 	IdentifyCharLiteral :: proc(code: []rune) -> ([]rune, LexerError) {
@@ -161,78 +175,90 @@ IdentifyLiteral :: proc(code: []rune) -> ([]rune, Literal, LexerError) {
 	case .CHARACTER:
 		lexeme, err := IdentifyCharLiteral(code)
 		if err == .OK {
-			return lexeme, .CHARACTER, .OK
+			// return lexeme, .CHARACTER, .OK
+			return Token{lexeme = lexeme, type = .LITERAL, kind = Literal.CHARACTER}, .OK
 		} else {
-			return nil, .CHARACTER, .NOT_A_TOKEN
+			// return nil, .CHARACTER, .NOT_A_TOKEN
+			return Token{}, .NOT_A_TOKEN
 		}
 	case .TEXT:
 		lexeme, err := IdentifyTextLiteral(code)
 		if err == .OK {
-			return lexeme, .TEXT, .OK
+			// return lexeme, .TEXT, .OK
+			return Token{lexeme = lexeme, type = .LITERAL, kind = Literal.TEXT}, .OK
 		} else {
-			return nil, .TEXT, .NOT_A_TOKEN
+			// return nil, .TEXT, .NOT_A_TOKEN
+			return Token{}, .NOT_A_TOKEN
 		}
 	case .DECIMAL:
 		lexeme, err := IdentifyDecimalLiteral(code)
 		if err == .OK {
-			return lexeme, .DECIMAL, .OK
+			// return lexeme, .DECIMAL, .OK
+			return Token{lexeme = lexeme, type = .LITERAL, kind = Literal.DECIMAL}, .OK
 		} else {
-			return nil, .DECIMAL, .NOT_A_TOKEN
+			// return nil, .DECIMAL, .NOT_A_TOKEN
+			return Token{}, .NOT_A_TOKEN
 		}
 	}
 
 	assert(false)
-	return nil, .CHARACTER, .NOT_A_TOKEN
+	// return nil, .CHARACTER, .NOT_A_TOKEN
+	return Token{}, .NOT_A_TOKEN
 }
 
 // This procedure creates an identifier looking at the start of code
 // It will make an identifier from string of consecutive runes that are not  omitables, operators and delmiters
 // Procedure will also check if string doesn't start with any of words inside of trie or if Identifier isn't a literal
 // If it cannot create an identifier from the given code it will return nil []rune
-CreateIdentifier :: proc(code: []rune, trie: ^Trie) -> []rune {
+CreateIdentifier :: proc(code: []rune, trie: ^Trie(RuneWithToken)) -> Token {
 	assert(code != nil)
-	if Trie_Contains(trie, code) {
-		return nil
+	runes := RuneWithTokenArr(Token{lexeme = code})
+	defer delete(runes)
+	if Trie_Contains(RuneWithToken, trie, runes[:]) {
+		return Token{}
 	}
-	if IsDigit(code[0]) || IsOmitable(code[0]) {
-		return nil
-	}
-	if op, err := IsOperator(code[0]); err == .OK {
-		return nil
-	}
-	if op, err := IsDelimiter(code[0]); err == .OK {
-		return nil
-	}
-	if r, literal, err := IdentifyLiteral(code); err == .OK || err == .NOT_A_TOKEN {
-		return nil
+	// if IsDigit(code[0]) || IsOmitable(code[0]) {
+	// 	return nil
+	// }
+	// if op, err := IsOperator(code[0]); err == .OK {
+	// 	return nil
+	// }
+	// if op, err := IsDelimiter(code[0]); err == .OK {
+	// 	return nil
+	// }
+	if token, err := IdentifyLiteral(code); err == .OK || err == .NOT_A_TOKEN {
+		return Token{}
 	} else {
 		assert(err == .NOT_A_LITERAL)
 	}
 
-	lexeme: []rune
+	// lexeme: []rune
+	token := Token {
+		type = .LITERAL,
+	}
 
 	for v, i in code {
 		if IsOmitable(v) {
-			lexeme = code[:i]
+			token.lexeme = code[:i]
 			break
 		}
 		if op, err := IsOperator(v); err == .OK {
-			lexeme = code[:i]
+			token.lexeme = code[:i]
 			break
 		}
 		if op, err := IsDelimiter(v); err == .OK {
-			lexeme = code[:i]
+			token.lexeme = code[:i]
 			break
 		}
-		lexeme = code[:i + 1]
+		token.lexeme = code[:i + 1]
 	}
 
-	return lexeme
+	return token
 }
 
 // This procedure creates array of tokens made from the code and words Trie it was given
 // If a tokenisation could not be finished array will be nil
-Tokenise :: proc(code: []rune, words: ^Trie) -> [dynamic]Token {
+Tokenise :: proc(code: []rune, words: ^Trie(RuneWithToken)) -> [dynamic]Token {
 	assert(code != nil)
 
 	c := code
@@ -240,12 +266,12 @@ Tokenise :: proc(code: []rune, words: ^Trie) -> [dynamic]Token {
 	tokens: [dynamic]Token = {}
 
 	for len(c) > 0 {
-		lexeme, type, kind := IdentifyWord(c, words)
+		token := IdentifyWord(c, words)
 
 		// sprawdzam czy nie mam do czynia ze znanym słowem
-		if len(lexeme) > 0 {
-			append(&tokens, Token{type = type, kind = kind, lexeme = lexeme})
-			c = c[len(lexeme):]
+		if len(token.lexeme) > 0 {
+			append(&tokens, Token{type = token.type, kind = token.kind, lexeme = token.lexeme})
+			c = c[len(token.lexeme):]
 			continue
 		}
 
@@ -256,13 +282,13 @@ Tokenise :: proc(code: []rune, words: ^Trie) -> [dynamic]Token {
 		}
 
 		// sprawdzam czy to nie jest literal
-		literal: Literal
+		// literal: Literal
 		err: LexerError
-		lexeme, literal, err = IdentifyLiteral(c)
+		token, err = IdentifyLiteral(c)
 		assert(err == .OK || err == .NOT_A_TOKEN || err == .NOT_A_LITERAL)
 		if err == .OK {
-			append(&tokens, Token{type = .LITERAL, kind = literal, lexeme = lexeme})
-			c = c[len(lexeme):]
+			append(&tokens, Token{type = .LITERAL, kind = token.kind, lexeme = token.lexeme})
+			c = c[len(token.lexeme):]
 			continue
 		} else if err == .NOT_A_TOKEN {
 			fmt.println("Tokenisation Error!")
@@ -271,14 +297,14 @@ Tokenise :: proc(code: []rune, words: ^Trie) -> [dynamic]Token {
 		}
 
 		// muszę mieć do czynienia z identifierem
-		lexeme = CreateIdentifier(c, words)
-		if len(lexeme) == 0 {
+		token = CreateIdentifier(c, words)
+		if len(token.lexeme) == 0 {
 			fmt.println("Tokenisation Error!")
 			delete(tokens)
 			return nil
 		} else {
-			append(&tokens, Token{type = .IDENTIFIER, kind = literal, lexeme = lexeme})
-			c = c[len(lexeme):]
+			append(&tokens, Token{type = .IDENTIFIER, lexeme = token.lexeme})
+			c = c[len(token.lexeme):]
 			continue
 		}
 
