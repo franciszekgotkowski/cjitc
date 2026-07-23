@@ -16,8 +16,6 @@ Trie_Initialize :: lang.Trie_Initialize
 TrieInt :: lang.Trie(int)
 NodeInt :: lang.TrieNode(int)
 
-exp :: testing.expect
-
 @(test)
 Node_Contains_nil_test :: proc(t: ^testing.T) {
 	testing.expect_assert(t, "nilptr")

@@ -4,7 +4,7 @@ import "core:encoding/json"
 import "core:fmt"
 import "core:unicode/utf8"
 
-make_tokentree :: proc() -> [dynamic]Token {
+make_token_array :: proc() -> [dynamic]Token {
 	t: [dynamic]Token = {}
 
 	for v, i in TokenType {
@@ -36,6 +36,29 @@ make_tokentree :: proc() -> [dynamic]Token {
 	}
 
 	return t
+}
+
+make_token_trie :: proc() -> Trie(RuneWithToken) {
+	token_array: [dynamic]Token = make_token_array()
+	defer delete(token_array)
+
+	arr: [dynamic][dynamic]RuneWithToken
+	defer {
+		for v, i in arr {
+			delete(arr[i])
+		}
+		delete(arr)
+	}
+	for v, i in token_array {
+		append(&arr, RuneWithTokenArr(v))
+	}
+
+	trie := Trie_Initialize(RuneWithToken)
+	for v, i in arr {
+		err := Trie_AppendWord(RuneWithToken, &trie, arr[i][:])
+		assert(err == .OK)
+	}
+	return trie
 }
 
 RuneWithToken :: struct {
@@ -75,7 +98,7 @@ main :: proc() {
 	// js, _ := json.marshal(ValueDeclaration, {pretty = true, use_enum_names = true})
 	// fmt.printfln("%s", js)
 
-	t: [dynamic]Token = make_tokentree()
+	t: [dynamic]Token = make_token_array()
 	defer delete(t)
 
 	t2: [dynamic][dynamic]RuneWithToken
