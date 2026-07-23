@@ -75,7 +75,7 @@ tokenDynamicArrayAndSliceMatch :: proc(a: [dynamic]lang.Token, b: []lang.Token) 
 	if len(a) != len(b) do return false
 
 	for i in 0 ..< len(a) {
-		if !tokensMatch(a[i], b[i]) do return false
+		if !lang.Token_Match(a[i], b[i]) do return false
 	}
 
 	// for i in 0 ..< len(a) {
@@ -93,25 +93,12 @@ tokenDynamicArrayAndSliceMatch :: proc(a: [dynamic]lang.Token, b: []lang.Token) 
 	return true
 }
 
-tokensMatch :: proc(a, b: lang.Token) -> bool {
-	if a.type != b.type do return false
-	if a.type != .LITERAL && a.type != .IDENTIFIER {
-		if a.kind != b.kind do return false
-	} else {
-		if len(a.lexeme) != len(b.lexeme) do return false
-		for j in 0 ..< len(a.lexeme) {
-			if a.lexeme[j] != b.lexeme[j] do return false
-		}
-	}
-	return true
-}
-
 tokenDynamicArraysMatch :: proc(a, b: [dynamic]lang.Token) -> bool {
 
 	if len(a) != len(b) do return false
 
 	for i in 0 ..< len(a) {
-		if !tokensMatch(a[i], b[i]) do return false
+		if !lang.Token_Match(a[i], b[i]) do return false
 	}
 
 	return true
@@ -151,7 +138,7 @@ IdentifyWord_test :: proc(t: ^testing.T) {
 		kind   = kind,
 		lexeme = r,
 	}
-	exp(t, tokensMatch(token, tokens[0]))
+	exp(t, lang.Token_Match(token, tokens[0]))
 	code = code[8:]
 	r, type, kind = lang.IdentifyWord(code, &trie)
 	token = lang.Token {
@@ -167,7 +154,7 @@ IdentifyWord_test :: proc(t: ^testing.T) {
 		kind   = kind,
 		lexeme = r,
 	}
-	exp(t, tokensMatch(token, tokens[2]))
+	exp(t, lang.Token_Match(token, tokens[2]))
 	code = code[3:]
 	r, type, kind = lang.IdentifyWord(code, &trie)
 	token = lang.Token {
@@ -175,7 +162,7 @@ IdentifyWord_test :: proc(t: ^testing.T) {
 		kind   = kind,
 		lexeme = r,
 	}
-	exp(t, tokensMatch(token, tokens[3]))
+	exp(t, lang.Token_Match(token, tokens[3]))
 
 
 }

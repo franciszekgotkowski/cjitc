@@ -18,6 +18,20 @@ Token :: struct {
 	lexeme: []rune,
 }
 
+Token_Match :: proc(a, b: Token) -> bool {
+	if a.type != b.type do return false
+	if a.type != .LITERAL && a.type != .IDENTIFIER {
+		if a.kind != b.kind do return false
+	} else {
+		if len(a.lexeme) != len(b.lexeme) do return false
+		for j in 0 ..< len(a.lexeme) {
+			if a.lexeme[j] != b.lexeme[j] do return false
+		}
+	}
+	return true
+}
+
+
 // Idenifies first word in code, that is present in words.
 // It does not serve the purpose to check if the word is alredy inside trie
 // If there is a word with a subword inside it, procedure will return the larger word
@@ -294,4 +308,22 @@ IsDelimiter :: proc(r: rune) -> (Delimiter, LexerError) {
 		}
 	}
 	return .SEMICOLUMN, .NOT_A_DELIMITER
+}
+
+IsDigit :: proc(r: rune) -> bool {
+	for v, _ in Digit {
+		if r == v {
+			return true
+		}
+	}
+	return false
+}
+
+IsOmitable :: proc(r: rune) -> bool {
+	for v, _ in Omitable {
+		if r == v {
+			return true
+		}
+	}
+	return false
 }

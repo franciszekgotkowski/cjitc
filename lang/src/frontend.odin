@@ -38,35 +38,83 @@ make_tokentree :: proc() -> [dynamic]Token {
 	return t
 }
 
+RuneWithToken :: struct {
+	rune:  rune,
+	token: Maybe(Token),
+}
+
+RuneWithToken_Match :: proc(a, b: RuneWithToken) -> bool {
+	av, aok := a.token.?
+	bv, bok := b.token.?
+
+	if aok != bok do return false
+
+	if aok == false && bok == false {
+		return a.rune == b.rune
+	} else {
+		return match(av, bv)
+	}
+}
+
+RuneWithTokenArr :: proc(token: Token) -> [dynamic]RuneWithToken {
+	arr: [dynamic]RuneWithToken
+
+	for v, i in token.lexeme {
+		append(&arr, RuneWithToken{v, i == len(token.lexeme) - 1 ? token : {}})
+	}
+
+	return arr
+}
+
 main :: proc() {
 
-	trie := Trie_Initialize()
+	trie := Trie_Initialize(RuneWithToken)
 
-	fmt.println(size_of(Production))
+	// fmt.println(size_of(Production))
 
-	js, _ := json.marshal(ValueDeclaration, {pretty = true, use_enum_names = true})
-	fmt.printfln("%s", js)
+	// js, _ := json.marshal(ValueDeclaration, {pretty = true, use_enum_names = true})
+	// fmt.printfln("%s", js)
 
 	t: [dynamic]Token = make_tokentree()
 	defer delete(t)
 
-	for v, i in t {
-		Trie_AppendWord(&trie, v.lexeme, v.type, v.kind)
+	t2: [dynamic][dynamic]RuneWithToken
+	defer {
+		for v, i in t2 {
+			delete(t2[i])
+		}
+		delete(t2)
 	}
 
-	code: []rune = utf8.string_to_runes("  x=	a+b;ifa<=b{x=a;}")
-	// code: []rune = utf8.string_to_runes("s")
-	tokens := Tokenise(code, &trie)
-	defer delete(tokens)
-	js, _ = json.marshal(tokens, {pretty = true, use_enum_names = true})
+	for v, i in t {
+		arr: [dynamic]RuneWithToken
+		for w, j in v.lexeme {
+			append(
+				&arr,
+				RuneWithToken {
+					w,
+					j == len(v.lexeme) - 1 ? Token{kind = v.kind, type = v.type} : {},
+				},
+			)
+		}
+		append(&t2, arr)
+
+	}
+
+	for v, i in t2 {
+		slice: []RuneWithToken = v[:]
+		Trie_AppendWord(RuneWithToken, &trie, slice)
+	}
+
+	js, _ := json.marshal(trie, {pretty = true, use_enum_names = true})
 	fmt.printfln("%s", js)
 
-	pi := para_new(int, 10)
-	pf := para_new(f32, 9)
+	// code: []rune = utf8.string_to_runes("  x=	a+b;ifa<=b{x=a;}")
+	// // code: []rune = utf8.string_to_runes("s")
+	// tokens := Tokenise(code, &trie)
+	// defer delete(tokens)
+	// js, _ = json.marshal(tokens, {pretty = true, use_enum_names = true})
+	// fmt.printfln("%s", js)
 
-	fmt.println(para_check(int, &pi, 10))
-	fmt.println(para_check(f32, &pf, 9.0))
-	fmt.println(para_check(int, &pi, 9))
-	fmt.println(para_check(f32, &pf, 10.0))
 
 }

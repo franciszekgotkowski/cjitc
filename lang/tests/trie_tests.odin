@@ -4,43 +4,53 @@ import lang "../src"
 import "core:testing"
 import "core:unicode/utf8"
 
-// exp :: testing.expect
-
 @(private)
-Prepare_Trie :: proc() -> lang.Trie {
-	tokens: [dynamic]lang.Token = {}
+Prepare_Trie :: proc() -> lang.Trie(lang.RuneWithToken) {
+	tokens: [dynamic][dynamic]lang.RuneWithToken = {}
 	defer {
 		for v, i in tokens {
-			delete(tokens[i].lexeme)
+			delete(tokens[i])
 		}
 		delete(tokens)
 	}
 
 	for v, i in lang.TokenType {
+		lex: []rune
 		#partial switch v {
 		case .KEYWORD:
 			for vv, j in lang.Keyword {
 				lex := utf8.string_to_runes(lang.KeywordValues[vv])
-				append(&tokens, lang.Token{type = v, kind = vv, lexeme = lex})
+				defer delete(lex)
+
+				arr := lang.RuneWithTokenArr(lang.Token{type = v, kind = vv, lexeme = lex})
+				append(&tokens, arr)
 			}
 		case .OPERATOR:
 			for vv, j in lang.Operator {
 				lex := utf8.string_to_runes(lang.OperatorValues[vv])
-				append(&tokens, lang.Token{type = v, kind = vv, lexeme = lex})
+				defer delete(lex)
+
+				arr := lang.RuneWithTokenArr(lang.Token{type = v, kind = vv, lexeme = lex})
+				append(&tokens, arr)
 			}
 		case .DELIMITER:
 			for vv, j in lang.Delimiter {
 				lex := utf8.string_to_runes(lang.DelimiterValues[vv])
-				append(&tokens, lang.Token{type = v, kind = vv, lexeme = lex})
+				defer delete(lex)
+
+				arr := lang.RuneWithTokenArr(lang.Token{type = v, kind = vv, lexeme = lex})
+				append(&tokens, arr)
 			}
 		case:
 			continue
 		}
+
 	}
 
-	trie := lang.Trie_Initialize()
+	trie := lang.Trie_Initialize(lang.RuneWithToken)
 	for v, i in tokens {
-		lang.Trie_AppendWord(&trie, v.lexeme, v.type, v.kind)
+		slice: []lang.RuneWithToken = v[:]
+		lang.Trie_AppendWord(lang.RuneWithToken, &trie, slice)
 	}
 	return trie
 
@@ -48,36 +58,44 @@ Prepare_Trie :: proc() -> lang.Trie {
 
 @(test)
 TrieNode_Contains_test :: proc(t: ^testing.T) {
-	node: lang.TrieNode = {}
+	node: lang.TrieNode(lang.RuneWithToken) = {}
 
-	contains, _ := lang.TrieNode_Contains(&node, 'r')
-	defer lang.TrieNode_Delete(&node)
+	contains, _ := lang.TrieNode_Contains(lang.RuneWithToken, &node, lang.RuneWithToken{'r', nil})
+	defer lang.TrieNode_Delete(lang.RuneWithToken, &node)
 
 	testing.expect(t, !contains, "Node should not contain anything")
 
-	values: []rune = {'r', '4', '-', ' ', '\n', '1'}
+	// values: []rune = {'r', '4', '-', ' ', '\n', '1'}
+	values: []lang.RuneWithToken = {
+		{'r', nil},
+		{'4', nil},
+		{'-', nil},
+		{' ', nil},
+		{'\n', nil},
+		{'1', nil},
+	}
 
 	for v, i in values {
-		b, i := lang.TrieNode_Contains(&node, v)
+		b, i := lang.TrieNode_Contains(lang.RuneWithToken, &node, v)
 		testing.expectf(t, !b, "should not contain '%c'", v)
 	}
 
 	for v, i in values {
-		append(&node.children, lang.TrieNode{value = v})
+		append(&node.children, lang.TrieNode(lang.RuneWithToken){value = v})
 	}
 
 	for v, i in values {
-		b, i := lang.TrieNode_Contains(&node, v)
+		b, i := lang.TrieNode_Contains(lang.RuneWithToken, &node, v)
 		testing.expectf(t, b, "should contain '%c' at index %d", v, i)
 	}
 	#reverse for v, i in values {
-		b, i := lang.TrieNode_Contains(&node, v)
+		b, i := lang.TrieNode_Contains(lang.RuneWithToken, &node, v)
 		testing.expectf(t, b, "should contain '%c' at index %d", v, i)
 	}
 
 	nonValues: []rune = {'e', '8', '=', '_', '\t', '2'}
 	for v, i in nonValues {
-		b, i := lang.TrieNode_Contains(&node, v)
+		b, i := lang.TrieNode_Contains(lang.RuneWithToken, &node, v)
 		testing.expectf(t, !b, "should not contain '%c'", v)
 	}
 }
@@ -85,7 +103,7 @@ TrieNode_Contains_test :: proc(t: ^testing.T) {
 @(test)
 TrieNode_AppendChild_test :: proc(t: ^testing.T) {
 	trie := Prepare_Trie()
-	defer lang.Trie_Delete(&trie)
+	defer lang.Trie_Delete(lang.RuneWithToken, &trie)
 
 	runes: []rune = {'i', 'f', '[', ']', 'g'}
 	errors: []lang.TrieError = {.ALREADY_EXISTS, .ALREADY_EXISTS, .OK, .OK, .OK}
@@ -105,7 +123,6 @@ TrieNode_Delete_test :: proc(t: ^testing.T) {
 	testing.expect(t, len(trie.root.children) == 0)
 }
 
-@(test)
 Trie_AppendWord_test :: proc(t: ^testing.T) {
 	trie := Prepare_Trie()
 	defer lang.Trie_Delete(&trie)

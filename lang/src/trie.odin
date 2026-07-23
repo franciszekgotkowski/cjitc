@@ -9,20 +9,18 @@ TrieError :: enum {
 	CHILD_DOES_NOT_EXIST,
 }
 
-TrieNode :: struct {
-	isWord:    bool `json:"is word"`,
-	children:  [dynamic]TrieNode `json:"children"`,
-	value:     rune `json:"value"`,
-	tokenType: TokenType `json:"token type"`,
-	tokenKind: TokenKind `json:"token kind"`,
+TrieNode :: struct($T: typeid) {
+	isWord:   bool `json:"is word"`,
+	value:    T,
+	children: [dynamic]TrieNode(T) `json:"children"`,
 }
 
 // Checks if TrieNode has a child with r value. If it has such child it will return true and index to this child
-TrieNode_Contains :: proc(node: ^TrieNode, r: rune) -> (bool, int) {
+TrieNode_Contains :: proc($T: typeid, node: ^TrieNode(T), val: T) -> (bool, int) {
 	contains := false
 
 	for v, i in node.children {
-		if v.value == r {
+		if match(val, v.value) {
 			return true, i
 		}
 	}
@@ -36,25 +34,21 @@ TrieNode_Contains :: proc(node: ^TrieNode, r: rune) -> (bool, int) {
 // TrieError.ALLOCATION_ERROR	if memory could not be allocated
 // TrieError.ALREADY_EXISTS		if child of such value already exists
 TrieNode_AppendChild :: proc(
-	node: ^TrieNode,
+	$T: typeid,
+	node: ^TrieNode(T),
 	isWord: bool,
-	val: rune,
-	type: TokenType,
-	kind: TokenKind,
+	val: T,
 ) -> (
 	int,
 	TrieError,
 ) {
 	assert(node != nil)
 
-	if b, i := TrieNode_Contains(node, val); b {
+	if b, i := TrieNode_Contains(T, node, val); b {
 		return i, .ALREADY_EXISTS
 	}
 
-	_, err := append(
-		&node.children,
-		TrieNode{isWord = isWord, children = {}, value = val, tokenType = type, tokenKind = kind},
-	)
+	_, err := append(&node.children, TrieNode(T){isWord = isWord, children = {}, value = val})
 
 	if err != runtime.Allocator_Error.None {
 		return -1, .ALLOCATION_ERROR
@@ -67,11 +61,11 @@ TrieNode_AppendChild :: proc(
 // Can return errors:
 // .OK 							if everything went fine
 // .CHILD_DOES_NOT_EXIST		if such child does not exist
-TrieNode_FetchChild :: proc(node: ^TrieNode, r: rune) -> (^TrieNode, TrieError) {
+TrieNode_FetchChild :: proc($T: typeid, node: ^TrieNode(T), val: T) -> (^TrieNode(T), TrieError) {
 	assert(node != nil)
 
 	for v, i in node.children {
-		if v.value == r {
+		if match(val, node.value) {
 			return &node.children[i], .OK
 		}
 	}
@@ -79,11 +73,11 @@ TrieNode_FetchChild :: proc(node: ^TrieNode, r: rune) -> (^TrieNode, TrieError) 
 }
 
 // Deletes nodes children and sets their array to len 0
-TrieNode_Delete :: proc(node: ^TrieNode) {
+TrieNode_Delete :: proc($T: typeid, node: ^TrieNode(T)) {
 	assert(node != nil)
 
 	for _, i in node.children {
-		TrieNode_Delete(&node.children[i])
+		TrieNode_Delete(T, &node.children[i])
 	}
 
 	if len(node.children) > 0 {
@@ -92,21 +86,13 @@ TrieNode_Delete :: proc(node: ^TrieNode) {
 	}
 }
 
-Trie :: struct {
+Trie :: struct($T: typeid) {
 	size: int,
-	root: TrieNode,
+	root: TrieNode(T),
 }
 
-Trie_Initialize :: proc() -> Trie {
-	return Trie {
-		size = 0,
-		root = TrieNode {
-			isWord = false,
-			tokenType = .KEYWORD,
-			tokenKind = Keyword(.INT),
-			children = {},
-		},
-	}
+Trie_Initialize :: proc($T: typeid) -> Trie(T) {
+	return Trie(T){size = 0, root = TrieNode(T){isWord = false, children = {}, value = {}}}
 }
 
 // Allows for appending new words to the trie. It is made to accomodate tokens words so it takes in additional parameters
@@ -114,16 +100,11 @@ Trie_Initialize :: proc() -> Trie {
 // .OK							if everything went well
 // .ALLOCATION_ERROR			if memory could not be allocated
 // .ALREADY_EXISTS				if word was already inside trie
-Trie_AppendWord :: proc(
-	trie: ^Trie,
-	word: []rune,
-	type: TokenType = .LITERAL,
-	kind: TokenKind = Keyword.INT,
-) -> TrieError {
+Trie_AppendWord :: proc($T: typeid, trie: ^Trie(T), word: []T) -> TrieError {
 	currentNode := &trie.root
 
 	for i in 0 ..< len(word) {
-		idx, err := TrieNode_AppendChild(currentNode, i == len(word) - 1, word[i], type, kind)
+		idx, err := TrieNode_AppendChild(T, currentNode, i == len(word) - 1, word[i])
 		assert(err == .OK || err == .ALREADY_EXISTS || err == .ALLOCATION_ERROR)
 		if err == .ALLOCATION_ERROR {
 			return .ALLOCATION_ERROR
@@ -134,12 +115,10 @@ Trie_AppendWord :: proc(
 					return .ALREADY_EXISTS
 				} else {
 					children := currentNode.children
-					currentNode^ = TrieNode {
-						isWord    = true,
-						children  = children,
-						tokenType = type,
-						tokenKind = kind,
-						value     = word[i],
+					currentNode^ = TrieNode(T) {
+						isWord   = true,
+						children = children,
+						value    = word[i],
 					}
 				}
 			}
@@ -155,21 +134,21 @@ Trie_AppendWord :: proc(
 }
 
 // Deletes whole content of trie
-Trie_Delete :: proc(trie: ^Trie) {
+Trie_Delete :: proc($T: typeid, trie: ^Trie(T)) {
 	trie.size = 0
-	TrieNode_Delete(&trie.root)
+	TrieNode_Delete(T, &trie.root)
 }
 
 // Checks if word is already a word inside a trie
-Trie_Contains :: proc(trie: ^Trie, word: []rune) -> bool {
+Trie_Contains :: proc($T: typeid, trie: ^Trie(T), word: []T) -> bool {
 	assert(word != nil)
 	assert(trie != nil)
 
-	node: ^TrieNode = &trie.root
+	node: ^TrieNode(T) = &trie.root
 
 	for v, i in word {
 
-		if c, idx := TrieNode_Contains(node, v); c {
+		if c, idx := TrieNode_Contains(T, node, v); c {
 			node = &node.children[idx]
 
 			if i == len(word) - 1 {
@@ -189,20 +168,7 @@ Trie_Contains :: proc(trie: ^Trie, word: []rune) -> bool {
 
 }
 
-IsDigit :: proc(r: rune) -> bool {
-	for v, _ in Digit {
-		if r == v {
-			return true
-		}
-	}
-	return false
-}
-
-IsOmitable :: proc(r: rune) -> bool {
-	for v, _ in Omitable {
-		if r == v {
-			return true
-		}
-	}
-	return false
+match :: proc {
+	Token_Match,
+	RuneWithToken_Match,
 }
