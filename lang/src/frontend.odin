@@ -61,5 +61,12 @@ main :: proc() {
 	js, _ = json.marshal(tokens, {pretty = true, use_enum_names = true})
 	fmt.printfln("%s", js)
 
+	pi := para_new(int, 10)
+	pf := para_new(f32, 9)
+
+	fmt.println(para_check(int, &pi, 10))
+	fmt.println(para_check(f32, &pf, 9.0))
+	fmt.println(para_check(int, &pi, 9))
+	fmt.println(para_check(f32, &pf, 10.0))
 
 }
