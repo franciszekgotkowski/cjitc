@@ -65,7 +65,7 @@ TrieNode_FetchChild :: proc($T: typeid, node: ^TrieNode(T), val: T) -> (^TrieNod
 	assert(node != nil)
 
 	for v, i in node.children {
-		if match(val, node.value) {
+		if match(val, v.value) {
 			return &node.children[i], .OK
 		}
 	}
@@ -103,15 +103,18 @@ Trie_Initialize :: proc($T: typeid) -> Trie(T) {
 Trie_AppendWord :: proc($T: typeid, trie: ^Trie(T), word: []T) -> TrieError {
 	currentNode := &trie.root
 
+	addSize := 0
 	for i in 0 ..< len(word) {
 		idx, err := TrieNode_AppendChild(T, currentNode, i == len(word) - 1, word[i])
 		assert(err == .OK || err == .ALREADY_EXISTS || err == .ALLOCATION_ERROR)
 		if err == .ALLOCATION_ERROR {
+			trie.size += addSize
 			return .ALLOCATION_ERROR
 		} else if err == .ALREADY_EXISTS {
 			currentNode = &currentNode.children[idx]
 			if i == len(word) - 1 {
 				if currentNode.isWord {
+					trie.size += addSize
 					return .ALREADY_EXISTS
 				} else {
 					children := currentNode.children
@@ -124,12 +127,13 @@ Trie_AppendWord :: proc($T: typeid, trie: ^Trie(T), word: []T) -> TrieError {
 			}
 			continue
 		} else {
-			trie.size += 1
+			addSize += 1
 			currentNode = &currentNode.children[idx]
 		}
 
 	}
 
+	trie.size += addSize
 	return .OK
 }
 
@@ -168,7 +172,12 @@ Trie_Contains :: proc($T: typeid, trie: ^Trie(T), word: []T) -> bool {
 
 }
 
+Int_Match :: proc(a, b: int) -> bool {
+	return a == b
+}
+
 match :: proc {
 	Token_Match,
 	RuneWithToken_Match,
+	Int_Match,
 }
