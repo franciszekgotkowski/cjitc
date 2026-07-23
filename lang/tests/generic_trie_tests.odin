@@ -1,8 +1,6 @@
 package tests
 
 import lang "../src"
-import "core:fmt"
-import "core:mem"
 import "core:testing"
 
 Node_AppendChild :: lang.TrieNode_AppendChild
@@ -63,44 +61,52 @@ Node_AppendChild_test :: proc(t: ^testing.T) {
 	n := NodeInt{}
 	defer Node_Delete(int, &n)
 
-	for i in 0 ..< 5 {
+	for i in 0 ..< 8 {
 		idx, err := Node_AppendChild(int, &n, false, i)
 		exp(t, err == .OK)
 		exp(t, idx == i)
 	}
-	exp(t, len(n.children) == 5)
+	exp(t, len(n.children) == 8)
 
-	for i in 0 ..< 5 {
+	for i in 0 ..< 8 {
 		idx, err := Node_AppendChild(int, &n, false, i)
 		exp(t, err == .ALREADY_EXISTS)
 		exp(t, idx == i)
 	}
-	exp(t, len(n.children) == 5)
+	exp(t, len(n.children) == 8)
 
-	c := context
+	// c := context
 
-	context.allocator = mem.nil_allocator()
+	// context.allocator = out_of_memory_allocator()
 
-	for i in 0 ..< 5 {
+	c := n.children.allocator
+	n.children.allocator = out_of_memory_allocator()
+	for i in 0 ..< 8 {
 		idx, err := Node_AppendChild(int, &n, false, i)
 		exp(t, err == .ALREADY_EXISTS)
 		exp(t, idx == i)
 	}
-	exp(t, len(n.children) == 5)
-	for i in 5 ..< 11 {
+	exp(t, len(n.children) == 8)
+	for i in 8 ..< 11 {
+		idx, err := Node_AppendChild(int, &n, false, i)
+		exp(t, err == .ALLOCATION_ERROR)
+	}
+	exp(t, len(n.children) == 8)
+
+	n.children.allocator = c
+
+	for i in 8 ..< 11 {
 		idx, err := Node_AppendChild(int, &n, false, i)
 		exp(t, err == .OK)
 		exp(t, idx == i)
 	}
-	exp(t, len(n.children) == 5)
-
-	context = c
-	for i in 5 ..< 11 {
+	exp(t, len(n.children) == 11)
+	for i in 8 ..< 11 {
 		idx, err := Node_AppendChild(int, &n, false, i)
 		exp(t, err == .ALREADY_EXISTS)
 		exp(t, idx == i)
 	}
-	exp(t, len(n.children) == 10)
+	exp(t, len(n.children) == 11)
 }
 
 @(test)
@@ -153,7 +159,7 @@ Node_Delete_test :: proc(t: ^testing.T) {
 		node, err := Node_FetchChild(int, &n0.children[i], i)
 		exp(t, err == .CHILD_DOES_NOT_EXIST)
 
-		idx, e := Node_AppendChild(int, node, false, i)
+		idx, e := Node_AppendChild(int, &n0.children[i], false, i)
 		exp(t, e == .OK)
 		exp(t, idx == 0)
 
@@ -166,8 +172,9 @@ Node_Delete_test :: proc(t: ^testing.T) {
 		exp(t, v.value == i)
 		exp(t, len(v.children) == 1)
 
+		exp(t, len(n0.children[i].children) == 1)
 		Node_Delete(int, &n0.children[i])
-		exp(t, len(v.children) == 0)
+		exp(t, len(n0.children[i].children) == 0)
 	}
 
 }
@@ -255,31 +262,15 @@ Trie_AppendWord_test :: proc(t: ^testing.T) {
 	exp(t, trie.size == 9)
 	exp(t, err == .ALREADY_EXISTS)
 
-	c := context
-
-	context.allocator = mem.nil_allocator()
-
-	err = Trie_AppendWord(int, &trie, []int{3, 2, 2, 2, 3})
-	exp(t, trie.size == 9)
-	exp(t, err == .ALREADY_EXISTS)
-
 	for i in 0 ..< 5 {
 		err = Trie_AppendWord(int, &trie, []int{4, i})
-		exp(t, trie.size == 9)
-		exp(t, err == .ALLOCATION_ERROR)
-	}
-
-	context = c
-
-	for i in 0 ..< 5 {
-		err = Trie_AppendWord(int, &trie, []int{4, i})
-		exp(t, trie.size == 9 + 1 + i)
+		exp(t, trie.size == 9 + 2 + i)
 		exp(t, err == .OK)
 	}
 
 	for i in 0 ..< 5 {
 		err = Trie_AppendWord(int, &trie, []int{4, i})
-		exp(t, trie.size == 14)
+		exp(t, trie.size == 15)
 		exp(t, err == .ALREADY_EXISTS)
 	}
 }

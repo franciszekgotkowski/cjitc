@@ -17,6 +17,7 @@ TrieNode :: struct($T: typeid) {
 
 // Checks if TrieNode has a child with r value. If it has such child it will return true and index to this child
 TrieNode_Contains :: proc($T: typeid, node: ^TrieNode(T), val: T) -> (bool, int) {
+	assert(node != nil, "nilptr")
 	contains := false
 
 	for v, i in node.children {
@@ -42,7 +43,7 @@ TrieNode_AppendChild :: proc(
 	int,
 	TrieError,
 ) {
-	assert(node != nil)
+	assert(node != nil, "nilptr")
 
 	if b, i := TrieNode_Contains(T, node, val); b {
 		return i, .ALREADY_EXISTS
@@ -62,7 +63,7 @@ TrieNode_AppendChild :: proc(
 // .OK 							if everything went fine
 // .CHILD_DOES_NOT_EXIST		if such child does not exist
 TrieNode_FetchChild :: proc($T: typeid, node: ^TrieNode(T), val: T) -> (^TrieNode(T), TrieError) {
-	assert(node != nil)
+	assert(node != nil, "nilptr")
 
 	for v, i in node.children {
 		if match(val, v.value) {
@@ -74,7 +75,7 @@ TrieNode_FetchChild :: proc($T: typeid, node: ^TrieNode(T), val: T) -> (^TrieNod
 
 // Deletes nodes children and sets their array to len 0
 TrieNode_Delete :: proc($T: typeid, node: ^TrieNode(T)) {
-	assert(node != nil)
+	assert(node != nil, "nilptr")
 
 	for _, i in node.children {
 		TrieNode_Delete(T, &node.children[i])
@@ -101,6 +102,8 @@ Trie_Initialize :: proc($T: typeid) -> Trie(T) {
 // .ALLOCATION_ERROR			if memory could not be allocated
 // .ALREADY_EXISTS				if word was already inside trie
 Trie_AppendWord :: proc($T: typeid, trie: ^Trie(T), word: []T) -> TrieError {
+	assert(trie != nil, "nilptr")
+	assert(word != nil, "nilptr")
 	currentNode := &trie.root
 
 	addSize := 0
@@ -139,14 +142,15 @@ Trie_AppendWord :: proc($T: typeid, trie: ^Trie(T), word: []T) -> TrieError {
 
 // Deletes whole content of trie
 Trie_Delete :: proc($T: typeid, trie: ^Trie(T)) {
+	assert(trie != nil, "nilptr")
 	trie.size = 0
 	TrieNode_Delete(T, &trie.root)
 }
 
 // Checks if word is already a word inside a trie
 Trie_Contains :: proc($T: typeid, trie: ^Trie(T), word: []T) -> bool {
-	assert(word != nil)
-	assert(trie != nil)
+	assert(trie != nil, "nilptr")
+	assert(word != nil, "nilptr")
 
 	node: ^TrieNode(T) = &trie.root
 

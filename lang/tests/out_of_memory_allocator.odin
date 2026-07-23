@@ -3,7 +3,6 @@ package tests
 
 import "base:runtime"
 
-@(private)
 out_of_memory_allocator_proc :: proc(
 	allocator_data: rawptr,
 	mode: runtime.Allocator_Mode,
@@ -47,7 +46,6 @@ out_of_memory_allocator_proc :: proc(
 	return nil, .None
 }
 
-@(private)
 out_of_memory_allocator :: proc() -> runtime.Allocator {
 	return runtime.Allocator{procedure = out_of_memory_allocator_proc, data = nil}
 }
