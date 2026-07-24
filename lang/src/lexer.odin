@@ -43,7 +43,8 @@ IdentifyWord :: proc(code: []rune, words: ^Trie(RuneWithToken)) -> Token {
 	wordLenght := 0
 
 	wordFound := false
-	wordFinalCharacter := 0
+	wordFinalCharacter := rune(0)
+	wordFinalLen := 0
 	wordFinalNode: ^TrieNode(RuneWithToken) = nil
 
 	node := &words.root
@@ -55,41 +56,41 @@ IdentifyWord :: proc(code: []rune, words: ^Trie(RuneWithToken)) -> Token {
 
 			if node.isWord {
 				wordFound = true
-				wordFinalCharacter := v
+				wordFinalCharacter = v
+				wordFinalLen = wordFinalLen
 				wordFinalNode = node
 			}
 		} else {
 			assert(err == .CHILD_DOES_NOT_EXIST)
-			// assert(wordLenght > 0)
 			if wordFound {
-				// return code[:wordLenght], wordFinalNode.tokenType, wordFinalNode.tokenKind
-				token, ok := wordFinalNode.value.token.?
-				assert(ok)
-				return Token{lexeme = code[:wordLenght], type = token.type, kind = token.kind}
+
+				// token, ok := wordFinalNode.value.token.?
+				// assert(ok)
+				// return Token{lexeme = code[:wordLenght], type = token.type, kind = token.kind}
+
+				_, del_err := IsDelimiter(v)
+				_, op_err := IsOperator(v)
+				omitable := IsOmitable(v)
+				if del_err == .OK || op_err == .OK || omitable {
+					token, ok := wordFinalNode.value.token.?
+					assert(ok)
+					return Token{lexeme = code[:wordLenght], type = token.type, kind = token.kind}
+				}
+				return Token{}
+
 			} else {
-				// return nil, .IDENTIFIER, Keyword.INT
 				return Token{}
 			}
 		}
 	}
 
-	// if wordFound {
-	// 	return code[:wordLenght], wordFinalNode.tokenType, wordFinalNode.tokenKind
-	// } else {
-	// 	return nil, .IDENTIFIER, Keyword.INT
-	// }
 	if wordFound {
-		// return code[:wordLenght], wordFinalNode.tokenType, wordFinalNode.tokenKind
 		token, ok := wordFinalNode.value.token.?
 		assert(ok)
 		return Token{lexeme = code[:wordLenght], type = token.type, kind = token.kind}
 	} else {
-		// return nil, .IDENTIFIER, Keyword.INT
 		return Token{}
 	}
-
-	// assert(false)
-	// return nil, .IDENTIFIER, Keyword.INT
 }
 
 // This procedure will try to identify literal which starts at code[0]. Currently it can identify char literal (with ''), text literal (with "") or decimal literal (comprised of digits)

@@ -581,18 +581,38 @@ Tokenise_test :: proc(t: ^testing.T) {
 		},
 	}
 
-	for v, i in tokenArrays {
-		arr := lang.Tokenise(runes[i], &trie)
-		if !tokenArrMatch(arr, v) {
+	// for v, i in tokenArrays {
 
-			js, ok := json.marshal(arr, json.Marshal_Options{pretty = true, use_enum_names = true})
-			fmt.printf("%c\n", js)
-			js, ok = json.marshal(v, json.Marshal_Options{pretty = true, use_enum_names = true})
-			fmt.printf("%c\n", js)
+	// 	if i == 17 {
+	// 		fmt.printf("17\n")
+	// 	}
 
-		}
+	// 	arr := lang.Tokenise(runes[i], &trie)
+	// 	if !tokenArrMatch(arr, v) {
 
-		exp(t, tokenArrMatch(arr, v))
-		delete(arr)
+	// 		js, ok := json.marshal(arr, json.Marshal_Options{pretty = true, use_enum_names = true})
+	// 		fmt.printf("%c\n", js)
+	// 		js, ok = json.marshal(v, json.Marshal_Options{pretty = true, use_enum_names = true})
+	// 		fmt.printf("%c\n", js)
+
+	// 	}
+
+	// 	exp(t, tokenArrMatch(arr, v))
+	// 	delete(arr)
+	// }
+
+	i := 17
+	v := tokenArrays[i]
+	arr := lang.Tokenise(runes[i], &trie)
+	if !tokenArrMatch(arr, v) {
+
+		js, ok := json.marshal(arr, json.Marshal_Options{pretty = true, use_enum_names = true})
+		fmt.printf("%c\n", js)
+		js, ok = json.marshal(v, json.Marshal_Options{pretty = true, use_enum_names = true})
+		fmt.printf("%c\n", js)
+
 	}
+
+	exp(t, tokenArrMatch(arr, v))
+	delete(arr)
 }
