@@ -88,8 +88,8 @@ TrieNode_Delete :: proc($T: typeid, node: ^TrieNode(T)) {
 }
 
 Trie :: struct($T: typeid) {
-	size: int,
-	root: TrieNode(T),
+	size: int `json="size"`,
+	root: TrieNode(T) `json="root"`,
 }
 
 Trie_Initialize :: proc($T: typeid) -> Trie(T) {

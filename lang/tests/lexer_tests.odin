@@ -79,7 +79,9 @@ setupTestArrays :: proc() -> [dynamic][]rune {
 
 tokenDynamicArrayAndSliceMatch :: proc(a: [dynamic]lang.Token, b: []lang.Token) -> bool {
 
-	if len(a) != len(b) do return false
+	if len(a) != len(b) {
+		return false
+	}
 
 	for i in 0 ..< len(a) {
 		if !lang.Token_Match(a[i], b[i]) do return false
@@ -145,443 +147,452 @@ IdentifyWord_test :: proc(t: ^testing.T) {
 
 }
 
-// @(test)
-// IdentifyLiteral_test :: proc(t: ^testing.T) {
-// 	trie := Prepare_Trie()
-// 	defer lang.Trie_Delete(&trie)
+@(test)
+IdentifyLiteral_test :: proc(t: ^testing.T) {
+	trie := lang.make_token_trie()
+	defer lang.Trie_Delete(RuneWithToken, &trie)
 
-// 	str: []string = {"000", "13", "sdf", " ", "\t", "\"", "\"\"", "\"sdf\"", "'sdf'", "'"}
-// 	errs: []lang.LexerError = {
-// 		.OK,
-// 		.OK,
-// 		.NOT_A_LITERAL,
-// 		.NOT_A_LITERAL,
-// 		.NOT_A_LITERAL,
-// 		.NOT_A_TOKEN,
-// 		.OK,
-// 		.OK,
-// 		.OK,
-// 		.NOT_A_TOKEN,
-// 	}
-// 	literals: []lang.Literal = {
-// 		.DECIMAL,
-// 		.DECIMAL,
-// 		.DECIMAL,
-// 		.DECIMAL,
-// 		.DECIMAL,
-// 		.DECIMAL,
-// 		.TEXT,
-// 		.TEXT,
-// 		.CHARACTER,
-// 		.CHARACTER,
-// 	}
-// 	runes: [dynamic][]rune
-// 	defer {
-// 		for _, i in runes {
-// 			delete(runes[i])
-// 		}
-// 		delete(runes)
-// 	}
+	str: []string = {"000", "13", "sdf", " ", "\t", "\"", "\"\"", "\"sdf\"", "'sdf'", "'"}
+	errs: []lang.LexerError = {
+		.OK,
+		.OK,
+		.NOT_A_LITERAL,
+		.NOT_A_LITERAL,
+		.NOT_A_LITERAL,
+		.NOT_A_TOKEN,
+		.OK,
+		.OK,
+		.OK,
+		.NOT_A_TOKEN,
+	}
+	literals: []lang.Literal = {
+		.DECIMAL,
+		.DECIMAL,
+		.DECIMAL,
+		.DECIMAL,
+		.DECIMAL,
+		.DECIMAL,
+		.TEXT,
+		.TEXT,
+		.CHARACTER,
+		.CHARACTER,
+	}
+	runes: [dynamic][]rune
+	defer {
+		for _, i in runes {
+			delete(runes[i])
+		}
+		delete(runes)
+	}
 
-// 	for v, _ in str {
-// 		append(&runes, utf8.string_to_runes(v))
-// 	}
+	for v, _ in str {
+		append(&runes, utf8.string_to_runes(v))
+	}
 
-// 	for v, i in runes {
-// 		_, literal, err := lang.IdentifyLiteral(v)
-// 		exp(t, err == errs[i])
-// 		if err == .OK {
-// 			exp(t, literal == literals[i])
-// 		}
-// 	}
+	for v, i in runes {
+		token, err := lang.IdentifyLiteral(v)
+		exp(t, err == errs[i])
+		if err == .OK {
+			exp(t, token.kind == literals[i])
+		}
+	}
 
-// }
+}
 
-// @(test)
-// CreateIdentifier_test :: proc(t: ^testing.T) {
-// 	str: []string = {"}", "sdf", "func", "function", "return", "returnn", "0", "|", "\""}
-// 	lengths: []int = {0, 3, 4, 0, 0, 7, 0, 1, 0}
+@(test)
+CreateIdentifier_test :: proc(t: ^testing.T) {
+	str: []string = {"}", "sdf", "func", "function", "return", "returnn", "0", "|", "\""}
+	lengths: []int = {0, 3, 4, 0, 0, 7, 0, 1, 0}
 
-// 	trie := Prepare_Trie()
-// 	defer lang.Trie_Delete(&trie)
+	trie := lang.make_token_trie()
+	defer lang.Trie_Delete(RuneWithToken, &trie)
 
-// 	runes: [dynamic][]rune
-// 	defer {
-// 		for _, i in runes {
-// 			delete(runes[i])
-// 		}
-// 		delete(runes)
-// 	}
-// 	for v, i in str {
-// 		append(&runes, utf8.string_to_runes(v))
-// 	}
+	runes: [dynamic][]rune
+	defer {
+		for _, i in runes {
+			delete(runes[i])
+		}
+		delete(runes)
+	}
+	for v, i in str {
+		append(&runes, utf8.string_to_runes(v))
+	}
 
-// 	for v, i in runes {
-// 		id := lang.CreateIdentifier(v, &trie)
-// 		exp(t, len(id) == lengths[i])
-// 	}
-// }
+	for v, i in runes {
+		id := lang.CreateIdentifier(v, &trie)
+		exp(t, len(id.lexeme) == lengths[i])
+	}
+}
 
 
-// @(test)
-// Tokenise_test :: proc(t: ^testing.T) {
-// 	runes := setupTestArrays()
-// 	defer {
-// 		for _, i in runes {
-// 			delete(runes[i])
-// 		}
-// 		delete(runes)
-// 	}
+@(test)
+Tokenise_test :: proc(t: ^testing.T) {
+	runes := setupTestArrays()
+	defer {
+		for _, i in runes {
+			delete(runes[i])
+		}
+		delete(runes)
+	}
 
-// 	trie := Prepare_Trie()
-// 	defer lang.Trie_Delete(&trie)
+	trie := lang.make_token_trie()
+	defer lang.Trie_Delete(RuneWithToken, &trie)
 
-// 	// "declare x int;"
-// 	tokenArrays: [][]lang.Token = {
-// 		{
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'f'}},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.FUNCTION, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1', '1'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.DOT, lexeme = nil},
-// 			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'2'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.PLUS, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.MINUS, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token {
-// 				type = .LITERAL,
-// 				kind = lang.Literal.TEXT,
-// 				lexeme = []rune{'"', 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '"'},
-// 			},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token {
-// 				type = .LITERAL,
-// 				kind = lang.Literal.CHARACTER,
-// 				lexeme = []rune{'\'', 'a', '\''},
-// 			},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'f'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'f'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.PAREN_OPEN, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.COMMA, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.PAREN_CLOSE, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.LESS, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.MORE, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.LESS_EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.PLUS, lexeme = nil},
-// 			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.MORE_EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.MINUS, lexeme = nil},
-// 			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL_EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
-// 		},
-// 		{
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'y'}},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1', '1'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'y'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'2', '5'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.PLUS, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'y'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.MORE_EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'y'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
-// 		},
+	// "declare x int;"
+	tokenArrays: [][]lang.Token = {
+		{
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+		{
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'f'}},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.FUNCTION, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+		{
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1', '1'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+		{
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.DOT, lexeme = nil},
+			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'2'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+		{
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.PLUS, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+		{
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.MINUS, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+		{
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token {
+				type = .LITERAL,
+				kind = lang.Literal.TEXT,
+				lexeme = []rune{'"', 'h', 'e', 'l', 'l', 'o', ' ', 'w', 'o', 'r', 'l', 'd', '"'},
+			},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+		{
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token {
+				type = .LITERAL,
+				kind = lang.Literal.CHARACTER,
+				lexeme = []rune{'\'', 'a', '\''},
+			},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+		{
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'f'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+		{
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'f'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.PAREN_OPEN, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.COMMA, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.PAREN_CLOSE, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+		{
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+		{
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.LESS, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+		},
+		{
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.MORE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+		},
+		{
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.LESS_EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.PLUS, lexeme = nil},
+			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+		},
+		{
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.MORE_EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.MINUS, lexeme = nil},
+			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+		},
+		{
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL_EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+		},
+		{
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'y'}},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1', '1'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'y'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'2', '5'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.PLUS, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'y'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.MORE_EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'y'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+		},
 
-// 		// Second source string
-// 		{
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
-// 			lang.Token {
-// 				type = .IDENTIFIER,
-// 				kind = lang.Literal.DECIMAL,
-// 				lexeme = []rune{'m', 'e', 's', 's', 'a', 'g', 'e'},
-// 			},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
-// 			lang.Token {
-// 				type = .IDENTIFIER,
-// 				kind = lang.Literal.DECIMAL,
-// 				lexeme = []rune{'c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r'},
-// 			},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
-// 			lang.Token {
-// 				type = .IDENTIFIER,
-// 				kind = lang.Literal.DECIMAL,
-// 				lexeme = []rune{'n', 'u', 'm', 'b', 'e', 'r'},
-// 			},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token {
-// 				type = .IDENTIFIER,
-// 				kind = lang.Literal.DECIMAL,
-// 				lexeme = []rune{'m', 'e', 's', 's', 'a', 'g', 'e'},
-// 			},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token {
-// 				type = .LITERAL,
-// 				kind = lang.Literal.TEXT,
-// 				lexeme = []rune {
-// 					'"',
-// 					'h',
-// 					'e',
-// 					'l',
-// 					'l',
-// 					'o',
-// 					' ',
-// 					'p',
-// 					'a',
-// 					'r',
-// 					's',
-// 					'e',
-// 					'r',
-// 					'"',
-// 				},
-// 			},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token {
-// 				type = .IDENTIFIER,
-// 				kind = lang.Literal.DECIMAL,
-// 				lexeme = []rune{'c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r'},
-// 			},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token {
-// 				type = .LITERAL,
-// 				kind = lang.Literal.CHARACTER,
-// 				lexeme = []rune{'\'', 'x', '\''},
-// 			},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token {
-// 				type = .IDENTIFIER,
-// 				kind = lang.Literal.DECIMAL,
-// 				lexeme = []rune{'n', 'u', 'm', 'b', 'e', 'r'},
-// 			},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1', '2'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.DOT, lexeme = nil},
-// 			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'7', '5'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token {
-// 				type = .IDENTIFIER,
-// 				kind = lang.Literal.DECIMAL,
-// 				lexeme = []rune{'n', 'u', 'm', 'b', 'e', 'r'},
-// 			},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL_EQUAL, lexeme = nil},
-// 			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1', '2'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.DOT, lexeme = nil},
-// 			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'7', '5'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
-// 			lang.Token {
-// 				type = .IDENTIFIER,
-// 				kind = lang.Literal.DECIMAL,
-// 				lexeme = []rune{'m', 'e', 's', 's', 'a', 'g', 'e'},
-// 			},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
-// 		},
+		// Second source string
+		{
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token {
+				type = .IDENTIFIER,
+				kind = lang.Literal.DECIMAL,
+				lexeme = []rune{'m', 'e', 's', 's', 'a', 'g', 'e'},
+			},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token {
+				type = .IDENTIFIER,
+				kind = lang.Literal.DECIMAL,
+				lexeme = []rune{'c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r'},
+			},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token {
+				type = .IDENTIFIER,
+				kind = lang.Literal.DECIMAL,
+				lexeme = []rune{'n', 'u', 'm', 'b', 'e', 'r'},
+			},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token {
+				type = .IDENTIFIER,
+				kind = lang.Literal.DECIMAL,
+				lexeme = []rune{'m', 'e', 's', 's', 'a', 'g', 'e'},
+			},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token {
+				type = .LITERAL,
+				kind = lang.Literal.TEXT,
+				lexeme = []rune {
+					'"',
+					'h',
+					'e',
+					'l',
+					'l',
+					'o',
+					' ',
+					'p',
+					'a',
+					'r',
+					's',
+					'e',
+					'r',
+					'"',
+				},
+			},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token {
+				type = .IDENTIFIER,
+				kind = lang.Literal.DECIMAL,
+				lexeme = []rune{'c', 'h', 'a', 'r', 'a', 'c', 't', 'e', 'r'},
+			},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token {
+				type = .LITERAL,
+				kind = lang.Literal.CHARACTER,
+				lexeme = []rune{'\'', 'x', '\''},
+			},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token {
+				type = .IDENTIFIER,
+				kind = lang.Literal.DECIMAL,
+				lexeme = []rune{'n', 'u', 'm', 'b', 'e', 'r'},
+			},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1', '2'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.DOT, lexeme = nil},
+			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'7', '5'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token {
+				type = .IDENTIFIER,
+				kind = lang.Literal.DECIMAL,
+				lexeme = []rune{'n', 'u', 'm', 'b', 'e', 'r'},
+			},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL_EQUAL, lexeme = nil},
+			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'1', '2'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.DOT, lexeme = nil},
+			lang.Token{type = .LITERAL, kind = lang.Literal.DECIMAL, lexeme = []rune{'7', '5'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN, lexeme = nil},
+			lang.Token {
+				type = .IDENTIFIER,
+				kind = lang.Literal.DECIMAL,
+				lexeme = []rune{'m', 'e', 's', 's', 'a', 'g', 'e'},
+			},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+		},
 
-// 		// Third source string
-// 		{
-// 			// if a<b {}
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.LESS, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+		// Third source string
+		{
+			// if a<b {}
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.LESS, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
 
-// 			// if a<=b {}
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.LESS_EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+			// if a<=b {}
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.LESS_EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
 
-// 			// if a>b {}
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.MORE, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+			// if a>b {}
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.MORE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
 
-// 			// if a>=b {}
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.MORE_EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+			// if a>=b {}
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.MORE_EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
 
-// 			// if a==b {}
-// 			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL_EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
+			// if a==b {}
+			lang.Token{type = .KEYWORD, kind = lang.Keyword.IF, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL_EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_OPEN, lexeme = nil},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
 
-// 			// a=b;
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			// a=b;
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
 
-// 			// a=a+b;
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.PLUS, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+			// a=a+b;
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.PLUS, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
 
-// 			// a=a-b;
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
-// 			lang.Token{type = .OPERATOR, kind = lang.Operator.MINUS, lexeme = nil},
-// 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
-// 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-// 		},
-// 	}
+			// a=a-b;
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.EQUAL, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'a'}},
+			lang.Token{type = .OPERATOR, kind = lang.Operator.MINUS, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'b'}},
+			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
+		},
+	}
 
-// 	for v, i in tokenArrays {
-// 		arr := lang.Tokenise(runes[i], &trie)
-// 		exp(t, tokenArrMatch(arr, v))
-// 		delete(arr)
-// 	}
-// }
+	for v, i in tokenArrays {
+		arr := lang.Tokenise(runes[i], &trie)
+		if !tokenArrMatch(arr, v) {
+
+			js, ok := json.marshal(arr, json.Marshal_Options{pretty = true, use_enum_names = true})
+			fmt.printf("%c\n", js)
+			js, ok = json.marshal(v, json.Marshal_Options{pretty = true, use_enum_names = true})
+			fmt.printf("%c\n", js)
+
+		}
+
+		exp(t, tokenArrMatch(arr, v))
+		delete(arr)
+	}
+}

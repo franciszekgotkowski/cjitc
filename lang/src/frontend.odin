@@ -40,7 +40,12 @@ make_token_array :: proc() -> [dynamic]Token {
 
 make_token_trie :: proc() -> Trie(RuneWithToken) {
 	token_array: [dynamic]Token = make_token_array()
-	defer delete(token_array)
+	defer {
+		for v, i in token_array {
+			delete(token_array[i].lexeme)
+		}
+		delete(token_array)
+	}
 
 	arr: [dynamic][dynamic]RuneWithToken
 	defer {
@@ -67,16 +72,18 @@ RuneWithToken :: struct {
 }
 
 RuneWithToken_Match :: proc(a, b: RuneWithToken) -> bool {
-	av, aok := a.token.?
-	bv, bok := b.token.?
+	return a.rune == b.rune
 
-	if aok != bok do return false
+	// av, aok := a.token.?
+	// bv, bok := b.token.?
 
-	if aok == false && bok == false {
-		return a.rune == b.rune
-	} else {
-		return match(av, bv)
-	}
+	// if aok != bok do return false
+
+	// if aok == false && bok == false {
+	// return a.rune == b.rune
+	// } else {
+	// return match(av, bv)
+	// }
 }
 
 RuneWithTokenArr :: proc(token: Token) -> [dynamic]RuneWithToken {
@@ -91,35 +98,36 @@ RuneWithTokenArr :: proc(token: Token) -> [dynamic]RuneWithToken {
 
 main :: proc() {
 
-	trie := Trie_Initialize(RuneWithToken)
+	// trie := Trie_Initialize(RuneWithToken)
 
 	// fmt.println(size_of(Production))
 
 	// js, _ := json.marshal(ValueDeclaration, {pretty = true, use_enum_names = true})
 	// fmt.printfln("%s", js)
 
-	t: [dynamic]Token = make_token_array()
-	defer delete(t)
+	// t: [dynamic]Token = make_token_array()
+	// defer delete(t)
 
-	t2: [dynamic][dynamic]RuneWithToken
-	defer {
-		for v, i in t2 {
-			delete(t2[i])
-		}
-		delete(t2)
-	}
+	// t2: [dynamic][dynamic]RuneWithToken
+	// defer {
+	// 	for v, i in t2 {
+	// 		delete(t2[i])
+	// 	}
+	// 	delete(t2)
+	// }
 
-	for v, _ in t {
-		arr := RuneWithTokenArr(v)
-		append(&t2, arr)
-	}
+	// for v, _ in t {
+	// 	arr := RuneWithTokenArr(v)
+	// 	append(&t2, arr)
+	// }
 
-	for v, i in t2 {
-		slice: []RuneWithToken = v[:]
-		Trie_AppendWord(RuneWithToken, &trie, slice)
-	}
+	// for v, i in t2 {
+	// 	slice: []RuneWithToken = v[:]
+	// 	Trie_AppendWord(RuneWithToken, &trie, slice)
+	// }
+	trie := make_token_trie()
 
-	// js, _ := json.marshal(trie, {pretty = true, use_enum_names = true})
+	// js, _ := json.marshal(trie, json.Marshal_Options{pretty = true, use_enum_names = true})
 	// fmt.printfln("%s", js)
 
 	code: []rune = utf8.string_to_runes("  x=	a+b;ifa<=b{x=a;}")

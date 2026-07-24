@@ -234,7 +234,7 @@ CreateIdentifier :: proc(code: []rune, trie: ^Trie(RuneWithToken)) -> Token {
 
 	// lexeme: []rune
 	token := Token {
-		type = .LITERAL,
+		type = .IDENTIFIER,
 	}
 
 	for v, i in code {
@@ -303,7 +303,7 @@ Tokenise :: proc(code: []rune, words: ^Trie(RuneWithToken)) -> [dynamic]Token {
 			delete(tokens)
 			return nil
 		} else {
-			append(&tokens, Token{type = .IDENTIFIER, lexeme = token.lexeme})
+			append(&tokens, token)
 			c = c[len(token.lexeme):]
 			continue
 		}
