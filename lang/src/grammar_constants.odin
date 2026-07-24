@@ -4,9 +4,9 @@ package langlang
 // Expression = Alternative { "|", Alternative }
 // Alternative = Term { Term }
 // Term = name | Token | Group | Option | Repetition
-// Group = "(" Expression ")"
-// Option = "[" Expression "]"
-// Repetition = "{" Expression "}"
+// Group = "(" Expression ")" // dla każdej możliwości tworzy nowe pod drzewo
+// Option = "[" Expression "]" // tworzy możliwość dla wartości opcji oraz dla jej braku
+// Repetition = "{" Expression "}" // tworzy możliwość dla wartości opcji oraz dla jej braku oraz dla wartości tworzy kontynuację z tą opcją
 
 ProductionName :: enum {
 	DECLARATION,
@@ -141,7 +141,7 @@ ValueDeclaration: ProductionGroup = {
 		.DECLARATION_WITH_ASSIGNMENT,
 		Expression {
 			Alternative {
-				Term{Repetition{Types}},
+				Term{Group{Types}},
 				Repetition {
 					Expression {
 						Alternative {
@@ -174,7 +174,7 @@ ValueDeclaration: ProductionGroup = {
 		.DECLARATION,
 		Expression {
 			Alternative {
-				Term{Repetition{Types}},
+				Term{Group{Types}},
 				Repetition {
 					Expression {
 						Alternative {
