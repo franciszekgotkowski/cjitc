@@ -201,8 +201,23 @@ IdentifyLiteral_test :: proc(t: ^testing.T) {
 
 @(test)
 CreateIdentifier_test :: proc(t: ^testing.T) {
-	str: []string = {"}", "sdf", "func", "function", "return", "returnn", "0", "|", "\""}
-	lengths: []int = {0, 3, 4, 0, 0, 7, 0, 1, 0}
+	str: []string = {
+		"_",
+		"__",
+		"_sd_",
+		"0",
+		"_0",
+		"}",
+		"sdf",
+		"func",
+		"function",
+		"return",
+		"returnn",
+		"0",
+		"|",
+		"\"",
+	}
+	lengths: []int = {1, 2, 4, 0, 2, 0, 3, 4, 0, 0, 7, 0, 0, 0}
 
 	trie := lang.make_token_trie()
 	defer lang.Trie_Delete(RuneWithToken, &trie)
@@ -220,7 +235,10 @@ CreateIdentifier_test :: proc(t: ^testing.T) {
 
 	for v, i in runes {
 		id := lang.CreateIdentifier(v, &trie)
-		exp(t, len(id.lexeme) == lengths[i])
+
+		if len(id.lexeme) != lengths[i] {
+			exp(t, len(id.lexeme) == lengths[i])
+		}
 	}
 }
 

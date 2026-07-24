@@ -31,6 +31,19 @@ Token_Match :: proc(a, b: Token) -> bool {
 	return true
 }
 
+IsIdentifierRune :: proc(r: rune) -> bool {
+	if r == Underscore do return true
+	for v, _ in CapitalLetter {
+		if r == v do return true
+	}
+	for v, _ in Letter {
+		if r == v do return true
+	}
+	for v, _ in Digit {
+		if r == v do return true
+	}
+	return false
+}
 
 // Idenifies first word in code, that is present in words.
 // It does not serve the purpose to check if the word is alredy inside trie
@@ -68,10 +81,11 @@ IdentifyWord :: proc(code: []rune, words: ^Trie(RuneWithToken)) -> Token {
 				// assert(ok)
 				// return Token{lexeme = code[:wordLenght], type = token.type, kind = token.kind}
 
-				_, del_err := IsDelimiter(v)
-				_, op_err := IsOperator(v)
-				omitable := IsOmitable(v)
-				if del_err == .OK || op_err == .OK || omitable {
+				// _, del_err := IsDelimiter(v)
+				// _, op_err := IsOperator(v)
+				// omitable := IsOmitable(v)
+				// if del_err == .OK || op_err == .OK || omitable {
+				if !IsIdentifierRune(v) || IsDigit(v) {
 					token, ok := wordFinalNode.value.token.?
 					assert(ok)
 					return Token{lexeme = code[:wordLenght], type = token.type, kind = token.kind}
@@ -218,15 +232,6 @@ CreateIdentifier :: proc(code: []rune, trie: ^Trie(RuneWithToken)) -> Token {
 	if Trie_Contains(RuneWithToken, trie, runes[:]) {
 		return Token{}
 	}
-	// if IsDigit(code[0]) || IsOmitable(code[0]) {
-	// 	return nil
-	// }
-	// if op, err := IsOperator(code[0]); err == .OK {
-	// 	return nil
-	// }
-	// if op, err := IsDelimiter(code[0]); err == .OK {
-	// 	return nil
-	// }
 	if token, err := IdentifyLiteral(code); err == .OK || err == .NOT_A_TOKEN {
 		return Token{}
 	} else {
@@ -239,18 +244,31 @@ CreateIdentifier :: proc(code: []rune, trie: ^Trie(RuneWithToken)) -> Token {
 	}
 
 	for v, i in code {
-		if IsOmitable(v) {
-			token.lexeme = code[:i]
-			break
+
+		if i == 0 {
+			if !IsIdentifierRune(v) || IsDigit(v) {
+				token.lexeme = code[:i]
+				break
+			}
+		} else {
+			if !IsIdentifierRune(v) {
+				token.lexeme = code[:i]
+				break
+			}
 		}
-		if op, err := IsOperator(v); err == .OK {
-			token.lexeme = code[:i]
-			break
-		}
-		if op, err := IsDelimiter(v); err == .OK {
-			token.lexeme = code[:i]
-			break
-		}
+
+		// if IsOmitable(v) {
+		// 	token.lexeme = code[:i]
+		// 	break
+		// }
+		// if op, err := IsOperator(v); err == .OK {
+		// 	token.lexeme = code[:i]
+		// 	break
+		// }
+		// if op, err := IsDelimiter(v); err == .OK {
+		// 	token.lexeme = code[:i]
+		// 	break
+		// }
 		token.lexeme = code[:i + 1]
 	}
 
