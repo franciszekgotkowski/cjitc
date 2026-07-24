@@ -77,15 +77,9 @@ IdentifyWord :: proc(code: []rune, words: ^Trie(RuneWithToken)) -> Token {
 			assert(err == .CHILD_DOES_NOT_EXIST)
 			if wordFound {
 
-				// token, ok := wordFinalNode.value.token.?
-				// assert(ok)
-				// return Token{lexeme = code[:wordLenght], type = token.type, kind = token.kind}
-
-				// _, del_err := IsDelimiter(v)
-				// _, op_err := IsOperator(v)
-				// omitable := IsOmitable(v)
-				// if del_err == .OK || op_err == .OK || omitable {
-				if !IsIdentifierRune(v) || IsDigit(v) {
+				token, ok := node.value.token.?
+				assert(ok)
+				if !IsIdentifierRune(v) || IsDigit(v) || token.type != .KEYWORD {
 					token, ok := wordFinalNode.value.token.?
 					assert(ok)
 					return Token{lexeme = code[:wordLenght], type = token.type, kind = token.kind}

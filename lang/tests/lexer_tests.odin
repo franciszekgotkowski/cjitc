@@ -119,9 +119,6 @@ IdentifyWord_test :: proc(t: ^testing.T) {
 	trie := lang.make_token_trie()
 	defer lang.Trie_Delete(RuneWithToken, &trie)
 
-	// js, _ := json.marshal(trie.root, json.Marshal_Options{pretty = true, use_enum_names = true})
-	// fmt.printf("%s\n", js)
-
 	tokens: []lang.Token = {
 		lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE},
 		lang.Token{type = .IDENTIFIER, lexeme = []rune{'x'}},
@@ -599,38 +596,23 @@ Tokenise_test :: proc(t: ^testing.T) {
 		},
 	}
 
-	// for v, i in tokenArrays {
+	for v, i in tokenArrays {
 
-	// 	if i == 17 {
-	// 		fmt.printf("17\n")
-	// 	}
+		// if i == 9 || i == 18 {
+		arr := lang.Tokenise(runes[i], &trie)
 
-	// 	arr := lang.Tokenise(runes[i], &trie)
-	// 	if !tokenArrMatch(arr, v) {
+		if !tokenArrMatch(arr, v) {
 
-	// 		js, ok := json.marshal(arr, json.Marshal_Options{pretty = true, use_enum_names = true})
-	// 		fmt.printf("%c\n", js)
-	// 		js, ok = json.marshal(v, json.Marshal_Options{pretty = true, use_enum_names = true})
-	// 		fmt.printf("%c\n", js)
+			fmt.printf("i = %d\n", i)
 
-	// 	}
+			js, ok := json.marshal(arr, json.Marshal_Options{pretty = true, use_enum_names = true})
+			fmt.printf("%s\n", js)
+			js, ok = json.marshal(v, json.Marshal_Options{pretty = true, use_enum_names = true})
+			fmt.printf("%s\n", js)
 
-	// 	exp(t, tokenArrMatch(arr, v))
-	// 	delete(arr)
-	// }
+		}
 
-	i := 17
-	v := tokenArrays[i]
-	arr := lang.Tokenise(runes[i], &trie)
-	if !tokenArrMatch(arr, v) {
-
-		js, ok := json.marshal(arr, json.Marshal_Options{pretty = true, use_enum_names = true})
-		fmt.printf("%c\n", js)
-		js, ok = json.marshal(v, json.Marshal_Options{pretty = true, use_enum_names = true})
-		fmt.printf("%c\n", js)
-
+		exp(t, tokenArrMatch(arr, v))
+		delete(arr)
 	}
-
-	exp(t, tokenArrMatch(arr, v))
-	delete(arr)
 }
