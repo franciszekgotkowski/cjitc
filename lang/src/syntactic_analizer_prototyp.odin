@@ -1,135 +1,84 @@
 package langlang
 
-GTree_Error :: enum {
+import "core:fmt"
+import "core:mem"
+
+GGraphError :: enum {
 	OK,
+	ALLOCATOR_ERROR,
 }
 
-GrammarValue :: union {
-	ProductionGroup,
-	Production,
-	Expression,
-	Alternative,
-	Term,
-	Group,
-	Option,
-	Repetition,
-}
+UnrolledProduction :: []GrammarNode
 
 GrammarNode :: struct {
-	value: Token,
-	nodes: [dynamic]^GrammarNode,
+	value:   union {
+		Token,
+		UnrolledProduction,
+	} `json="value"`,
+	nodes:   [dynamic]^GrammarNode `json="nodes"`,
+	deleted: bool,
 }
 GNode :: GrammarNode
 
-GrammarTrie :: struct {
-	root: GrammarNode,
+GNode_Initialize :: proc(token: Token) -> GNode {
+	return GNode{value = token, nodes = {}}
 }
-GTrie :: GrammarTrie
 
-// GTrie_Delete :: proc(trie: ^GTrie) {
-// 	Trie_Delete(Token, trie)
-// }
+GNode_AppendNodeRef :: proc(node: ^GNode, appended: ^GNode) -> (int, GGraphError) {
+	assert(node != nil, "nilptr")
+	assert(appended != nil, "nilptr")
 
-// GTrie_Initialize :: proc() -> GTrie {
-// 	return Trie_Initialize(Token)
-// }
+	_, ok := append(&node.nodes, appended)
+	if ok != .None do return -1, .ALLOCATOR_ERROR
 
-// GTrie_Contains :: proc(trie: ^GTrie, word: []Token) -> bool {
-// 	return Trie_Contains(Token, trie, word)
-// }
+	return len(node.nodes) - 1, .OK
+}
 
-// GTrie_AppendWord :: proc(trie: ^GTrie, word: []Token) -> TrieError {
-// 	return Trie_AppendWord(Token, trie, word)
-// }
+GNode_AppendNodeVal :: proc(node: ^GNode, appended: Token) -> (int, GGraphError) {
+	assert(node != nil, "nilptr")
 
+	ref, err := new(GNode)
+	if err != .None do return -1, .ALLOCATOR_ERROR
+	ref^ = GNode {
+		value   = appended,
+		nodes   = {},
+		deleted = false,
+	}
 
-// UnrollProductionGroup :: proc(prodg: ^ProductionGroup, arr: ^[dynamic]Token) {
-// 	assert(prodg != nil, "nilptr")
-// 	assert(arr != nil, "nilptr")
+	_, ok := append(&node.nodes, ref)
+	if ok != .None do return -1, .ALLOCATOR_ERROR
 
-// 	for v, i in prodg {
-// 		UnrollProduction(&prodg[i], arr)
-// 	}
-// }
+	return len(node.nodes) - 1, .OK
+}
 
-// UnrollProduction :: proc(prod: ^Production, arr: ^[dynamic]Token) {
-// 	assert(prod != nil, "nilptr")
-// 	assert(arr != nil, "nilptr")
+GNode_AppendNode :: proc {
+	GNode_AppendNodeRef,
+	GNode_AppendNodeVal,
+}
 
-// 	UnrollExpression(&prod.expression, arr)
-// }
+GNode_Delete :: proc(node: ^GNode) {
+	assert(node != nil)
 
-// UnrollExpression :: proc(expr: ^Expression, arr: ^[dynamic]Token) {
-// 	assert(expr != nil, "nilptr")
-// 	assert(arr != nil, "nilptr")
+	for v, i in node.nodes {
+		if !v.deleted {
+			v.deleted = true
+			GNode_Delete(node.nodes[i])
+			free(node.nodes[i])
+		}
+	}
 
-// 	UnrollAlternative(&expr.alternative, arr)
-// 	UnrollRepetition(&expr.alternatives, arr)
-// }
+	switch v in node.value {
+	case Token:
+		break
+	case UnrolledProduction:
+		delete(node.value.(UnrolledProduction))
+	}
 
-// UnrollAlternative :: proc(alt: ^Alternative, arr: ^[dynamic]Token) {
-// 	assert(alt != nil, "nilptr")
-// 	assert(arr != nil, "nilptr")
+	delete(node.nodes)
+	clear(&node.nodes)
+}
 
-// 	UnrollTerm(&alt.term, arr)
-// 	UnrollRepetition(&alt.terms, arr)
-// }
-
-// UnrollTerm :: proc(term: ^Term, arr: ^[dynamic]Token) {
-// 	assert(term != nil, "nilptr")
-// 	assert(arr != nil, "nilptr")
-
-// 	switch v in term.value {
-// 	case ProductionName:
-// 		// TODO: jakoś zadbać o wyszukiwanie odpowiednich Produkcji, lub nawet zmianę na ProductionGroup
-// 		assert(false)
-// 	case Token:
-// 		UnrollToken(&term.value.(Token), arr)
-// 	case Group:
-// 		UnrollGroup(&term.value.(Group), arr)
-// 	case Option:
-// 		UnrollOption(&term.value.(Option), arr)
-// 	case Repetition:
-// 		UnrollRepetition(&term.value.(Repetition), arr)
-// 	}
-// }
-
-// UnrollGroup :: proc(group: ^Group, arr: ^[dynamic]Token) {
-// 	assert(group != nil, "nilptr")
-// 	assert(arr != nil, "nilptr")
-
-// 	for val, i in group {
-// 		switch v in val {
-// 		case Expression:
-// 			UnrollExpression(&group[i].(Expression), arr)
-// 		case ProductionGroup:
-// 			UnrollProductionGroup(&group[i].(ProductionGroup), arr)
-// 		}
-// 	}
-
-// }
-
-// UnrollOption :: proc(opt: ^Option, arr: ^[dynamic]Token) {
-// 	assert(opt != nil, "nilptr")
-// 	assert(arr != nil, "nilptr")
-// }
-
-// UnrollRepetition :: proc(rep: ^Repetition, arr: ^[dynamic]Token) {
-// 	assert(rep != nil, "nilptr")
-// 	assert(arr != nil, "nilptr")
-// }
-
-// UnrollToken :: proc(token: ^Token, arr: ^[dynamic]Token) {
-// 	assert(token != nil, "nilptr")
-// 	assert(arr != nil, "nilptr")
-// }
-
-// ProductionGroup_Serialize :: proc(group: ^ProductionGroup) -> GTrie {
-// 	assert(group != nil, "nilptr")
-
-// 	trie := GTrie_Initialize()
-// 	arr: [dynamic]Token
-
-
-// 	return trie
-// }
+GrammarGraph :: struct {
+	arr: [ProductionName]GNode,
+}
+GGraph :: GrammarGraph
