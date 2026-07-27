@@ -2,6 +2,7 @@ package langlang
 
 import "core:encoding/json"
 import "core:fmt"
+import "core:mem"
 import "core:unicode/utf8"
 
 make_token_array :: proc() -> [dynamic]Token {
@@ -125,17 +126,39 @@ main :: proc() {
 	// 	slice: []RuneWithToken = v[:]
 	// 	Trie_AppendWord(RuneWithToken, &trie, slice)
 	// }
-	trie := make_token_trie()
+	// trie := make_token_trie()
 
 	// js, _ := json.marshal(trie, json.Marshal_Options{pretty = true, use_enum_names = true})
 	// fmt.printfln("%s", js)
 
-	code: []rune = utf8.string_to_runes("  x=	a+b;ifa<=b{x=a;}")
+	// code: []rune = utf8.string_to_runes("  x=	a+b;ifa<=b{x=a;}")
 	// code: []rune = utf8.string_to_runes("s")
-	tokens := Tokenise(code, &trie)
-	defer delete(tokens)
-	js, _ := json.marshal(tokens, {pretty = true, use_enum_names = true})
-	fmt.printfln("%s", js)
+	// tokens := Tokenise(code, &trie)
+	// defer delete(tokens)
+	// js, _ := json.marshal(tokens, {pretty = true, use_enum_names = true})
+	// fmt.printfln("%s", js)
 
+	alloc := context.allocator
+	arena: mem.Dynamic_Arena
+	// mem.arena_init(&arena, bytes)
+	mem.dynamic_arena_init(&arena)
+	// for v, i in Productions {
+	// 	prod := UnrollProduction(v)
+	// 	js, _ := json.marshal(prod, json.Marshal_Options{pretty = true, use_enum_names = true})
+	// 	fmt.printf("%s\n", js)
+	// 	GNode_print(prod)
+	// }
+	{
+		// prod := UnrollProduction(Productions[.DECIMAL_TYPE])
+		// GNode_print(prod)
+		// prod = UnrollProduction(Productions[.FLOAT_TYPE])
+		// GNode_print(prod)
+		// prod := UnrollProduction(Productions[.TYPES])
+		// GNode_print(prod)
+		prod := UnrollProduction(Productions[.DECLARATION])
+		GNode_print(prod)
+	}
+	mem.dynamic_arena_destroy(&arena)
+	context.allocator = alloc
 
 }

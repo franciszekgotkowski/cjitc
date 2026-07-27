@@ -36,7 +36,7 @@ GNode_Delete_test :: proc(t: ^testing.T) {
 
 	ptr := new(GNode)
 	exp(t, ptr != nil)
-	vals := make(lang.UnrolledProduction, 5)
+	vals := make(lang.DoArray, 5)
 
 	ptr^ = GNode {
 		value   = vals,
