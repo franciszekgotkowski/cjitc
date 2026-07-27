@@ -1,7 +1,5 @@
 package langlang
 
-import "core:encoding/json"
-import "core:fmt"
 import "core:mem"
 import "core:unicode/utf8"
 
@@ -149,14 +147,17 @@ main :: proc() {
 	// 	GNode_print(prod)
 	// }
 	{
-		// prod := UnrollProduction(Productions[.DECIMAL_TYPE])
+		prod := Unroll_Production(Productions[.DECLARATION_WITH_ASSIGNMENT])
+		GNode_Print(&prod)
+		// js, ok := json.marshal(prod, json.Marshal_Options{pretty = true, use_enum_names = true})
+		// fmt.printf("%s\n", js)
 		// GNode_print(prod)
 		// prod = UnrollProduction(Productions[.FLOAT_TYPE])
 		// GNode_print(prod)
 		// prod := UnrollProduction(Productions[.TYPES])
 		// GNode_print(prod)
-		prod := UnrollProduction(Productions[.DECLARATION])
-		GNode_print(prod)
+		// prod := UnrollProduction(Productions[.DECLARATION])
+		// GNode_print(prod)
 	}
 	mem.dynamic_arena_destroy(&arena)
 	context.allocator = alloc

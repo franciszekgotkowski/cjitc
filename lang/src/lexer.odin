@@ -13,9 +13,9 @@ LexerError :: enum {
 }
 
 Token :: struct {
-	type:   TokenType,
-	kind:   TokenKind,
-	lexeme: []rune,
+	type:   TokenType `json="type"`,
+	kind:   TokenKind `json="kind"`,
+	lexeme: []rune `json="lexeme"`,
 }
 
 Token_Match :: proc(a, b: Token) -> bool {

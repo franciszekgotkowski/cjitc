@@ -9,9 +9,12 @@ package langlang
 // Repetition = "{" Expression "}" // tworzy możliwość dla wartości opcji oraz dla jej braku oraz dla wartości tworzy kontynuację z tą opcjąć
 
 
+// Will always have Token or DoArray.
+// On Initialization it will not have any children
 Production :: distinct Expression
 
 // Minimum lenght = 1
+// Can have DoArray or Token
 Expression :: distinct []Alternative
 
 // Minimum lenght = 1
@@ -43,7 +46,7 @@ ProductionName :: enum {
 	// CHARACTER_TYPE,
 	LITERALS,
 	DECIMAL_LITERAL,
-	FLOAT_LITERAL,
+	CHAR_LITERAL,
 	// TEXT_LITERAL,
 	// CHARACTER_LITERAL,
 }
@@ -51,10 +54,10 @@ ProductionName :: enum {
 UnrolledProductions: [ProductionName]Maybe(GNode) = {}
 
 Productions: [ProductionName]Production = {
-	.DECIMAL_LITERAL             = {Alternative{Token{type = .KEYWORD, kind = Keyword.INT}}},
-	.FLOAT_LITERAL               = {Alternative{Token{type = .KEYWORD, kind = Keyword.FLOAT}}},
+	.DECIMAL_LITERAL             = {Alternative{Token{type = .LITERAL, kind = Literal.DECIMAL}}},
+	.CHAR_LITERAL                = {Alternative{Token{type = .LITERAL, kind = Literal.CHARACTER}}},
 	.LITERALS                    = {
-		Alternative{ProductionName.DECIMAL_LITERAL, ProductionName.FLOAT_LITERAL},
+		Alternative{ProductionName.DECIMAL_LITERAL, ProductionName.CHAR_LITERAL},
 	},
 	.DECIMAL_TYPE                = {Alternative{Token{type = .KEYWORD, kind = Keyword.INT}}},
 	.FLOAT_TYPE                  = {Alternative{Token{type = .KEYWORD, kind = Keyword.FLOAT}}},
