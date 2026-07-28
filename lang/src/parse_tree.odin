@@ -1,5 +1,7 @@
 package langlang
 
+import "core:fmt"
+
 ParseError :: enum {
 	OK,
 	ALLOCATOR_ERROR,
@@ -19,5 +21,31 @@ ParseTree :: struct {
 	root: ParseNode `json="root"`,
 }
 
-ParseNode_AttachNext :: proc(p: ^PNode, g: ^GNode) -> (^PNode, ^GNode, ParseError) {
+ParseTokens :: proc(tokens: []Token) -> (PTree, ParseError) {
+	assert(tokens != nil, "nilptr")
+
+	tree := PTree{}
+
+	ConsumeToken :: proc(
+		pnode: ^PNode,
+		gnode: ^GNode,
+		tokens: []Token,
+		idx: int,
+	) -> (
+		PNode,
+		ParseError,
+	) {
+		assert(pnode != nil, "nilptr")
+		assert(gnode != nil, "nilptr")
+		assert(tokens != nil, "nilptr")
+
+		token := tokens[idx]
+
+		assert(false, "not implemented")
+		return {}, .OK
+
+	}
+
+	assert(false, "not implemented")
+	return {}, .OK
 }

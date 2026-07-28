@@ -36,6 +36,7 @@ Option :: distinct []Expression
 Repetition :: distinct []Expression
 
 ProductionName :: enum {
+	CODE_ENTRY,
 	DECLS,
 	DECLARATION,
 	DECLARATION_WITH_ASSIGNMENT,
@@ -49,15 +50,26 @@ ProductionName :: enum {
 	CHAR_LITERAL,
 	// TEXT_LITERAL,
 	// CHARACTER_LITERAL,
+	STATEMENT,
+	FUNCTION_CALL,
 }
+
+ParseEntryPoint: ProductionName : .CODE_ENTRY
 
 UnrolledProductions: [ProductionName]Maybe(GNode) = {}
 
 Productions: [ProductionName]Production = {
+	.CODE_ENTRY                  = {
+		Alternative{Repetition{Expression{Alternative{ProductionName.STATEMENT}}}},
+	},
+	.STATEMENT                   = {
+		Alternative{ProductionName.DECLS, ProductionName.FUNCTION_CALL},
+	},
 	.DECIMAL_LITERAL             = {Alternative{Token{type = .LITERAL, kind = Literal.DECIMAL}}},
 	.CHAR_LITERAL                = {Alternative{Token{type = .LITERAL, kind = Literal.CHARACTER}}},
 	.LITERALS                    = {
-		Alternative{ProductionName.DECIMAL_LITERAL, ProductionName.CHAR_LITERAL},
+		Alternative{ProductionName.CHAR_LITERAL},
+		Alternative{ProductionName.DECIMAL_LITERAL},
 	},
 	.DECIMAL_TYPE                = {Alternative{Token{type = .KEYWORD, kind = Keyword.INT}}},
 	.FLOAT_TYPE                  = {Alternative{Token{type = .KEYWORD, kind = Keyword.FLOAT}}},
@@ -84,5 +96,26 @@ Productions: [ProductionName]Production = {
 	.DECLS                       = {
 		Alternative{ProductionName.DECLARATION},
 		Alternative{ProductionName.DECLARATION_WITH_ASSIGNMENT},
+	},
+	.FUNCTION_CALL               = {
+		Alternative {
+			Token{type = .IDENTIFIER},
+			Token{type = .DELIMITER, kind = Delimiter.PAREN_OPEN},
+			Option {
+				Expression {
+					Alternative {
+						ProductionName.LITERALS,
+						Repetition {
+							Expression {
+								Alternative{Token{type = .DELIMITER, kind = Delimiter.COMMA}},
+							},
+							Expression{Alternative{ProductionName.LITERALS}},
+						},
+					},
+				},
+			},
+			Token{type = .DELIMITER, kind = Delimiter.PAREN_CLOSE},
+			Token{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
+		},
 	},
 }

@@ -27,6 +27,7 @@ GNode :: GrammarNode
 
 GNode_Print :: GrammarNode_Print
 
+@(private = "file")
 GrammarNode_SearchInAddArray :: proc(node: ^GNode, token: Token) -> ^GNode {
 	_, ok := node.value.(DoArray)
 	if !ok do return nil
@@ -49,7 +50,7 @@ GrammarNode_SearchInAddArray :: proc(node: ^GNode, token: Token) -> ^GNode {
 	return ret
 }
 
-GrammarNode_MatchPNode :: proc(node: ^GNode, token: Token) -> (^GNode, ParseError) {
+GrammarNode_MatchToken :: proc(node: ^GNode, token: Token) -> (^GNode, ParseError) {
 	_, ok := node.value.(Token)
 	assert(ok)
 
@@ -159,7 +160,9 @@ Unroll_Alternative :: proc(alt: Alternative) -> GNode {
 
 	for v, i in alt {
 		arr[i] = Unroll_Term(v)
-		append(&arr[i].nodes, &arr[(i + 1) % len(arr)])
+		if i != len(alt) - 2 {
+			append(&arr[i].nodes, &arr[(i + 1) % len(arr)])
+		}
 	}
 
 	node := GNode {

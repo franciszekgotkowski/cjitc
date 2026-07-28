@@ -97,69 +97,40 @@ RuneWithTokenArr :: proc(token: Token) -> [dynamic]RuneWithToken {
 
 main :: proc() {
 
-	// trie := Trie_Initialize(RuneWithToken)
-
-	// fmt.println(size_of(Production))
-
-	// js, _ := json.marshal(ValueDeclaration, {pretty = true, use_enum_names = true})
-	// fmt.printfln("%s", js)
-
-	// t: [dynamic]Token = make_token_array()
-	// defer delete(t)
-
-	// t2: [dynamic][dynamic]RuneWithToken
-	// defer {
-	// 	for v, i in t2 {
-	// 		delete(t2[i])
-	// 	}
-	// 	delete(t2)
-	// }
-
-	// for v, _ in t {
-	// 	arr := RuneWithTokenArr(v)
-	// 	append(&t2, arr)
-	// }
-
-	// for v, i in t2 {
-	// 	slice: []RuneWithToken = v[:]
-	// 	Trie_AppendWord(RuneWithToken, &trie, slice)
-	// }
-	// trie := make_token_trie()
+	trie := make_token_trie()
 
 	// js, _ := json.marshal(trie, json.Marshal_Options{pretty = true, use_enum_names = true})
 	// fmt.printfln("%s", js)
 
 	// code: []rune = utf8.string_to_runes("  x=	a+b;ifa<=b{x=a;}")
-	// code: []rune = utf8.string_to_runes("s")
-	// tokens := Tokenise(code, &trie)
-	// defer delete(tokens)
+	code: []rune = utf8.string_to_runes(
+		`
+		int x;
+		int xxx = 2;
+		float f = 3.4;
+		func(4, 5, 1.2);
+		float fl = 3;
+		`,
+	)
+	tokens := Tokenise(code, &trie)
+	defer delete(tokens)
 	// js, _ := json.marshal(tokens, {pretty = true, use_enum_names = true})
 	// fmt.printfln("%s", js)
 
 	alloc := context.allocator
 	arena: mem.Dynamic_Arena
 	// mem.arena_init(&arena, bytes)
+
 	mem.dynamic_arena_init(&arena)
-	// for v, i in Productions {
-	// 	prod := UnrollProduction(v)
-	// 	js, _ := json.marshal(prod, json.Marshal_Options{pretty = true, use_enum_names = true})
-	// 	fmt.printf("%s\n", js)
-	// 	GNode_print(prod)
-	// }
-	{
-		prod := Unroll_Production(Productions[.DECLARATION_WITH_ASSIGNMENT])
-		GNode_Print(&prod)
-		// js, ok := json.marshal(prod, json.Marshal_Options{pretty = true, use_enum_names = true})
-		// fmt.printf("%s\n", js)
-		// GNode_print(prod)
-		// prod = UnrollProduction(Productions[.FLOAT_TYPE])
-		// GNode_print(prod)
-		// prod := UnrollProduction(Productions[.TYPES])
-		// GNode_print(prod)
-		// prod := UnrollProduction(Productions[.DECLARATION])
-		// GNode_print(prod)
+	for v, i in UnrolledProductions {
+		if v == nil {
+			UnrolledProductions[i] = Unroll_Production(Productions[i])
+		}
 	}
+	GNode_Print(&UnrolledProductions[ParseEntryPoint].?)
 	mem.dynamic_arena_destroy(&arena)
 	context.allocator = alloc
+
+	pt, err := ParseTokens(tokens[:])
 
 }
