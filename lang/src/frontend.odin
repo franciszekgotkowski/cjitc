@@ -1,5 +1,6 @@
 package langlang
 
+import "base:runtime"
 import "core:mem"
 import "core:unicode/utf8"
 
@@ -117,20 +118,22 @@ main :: proc() {
 	// js, _ := json.marshal(tokens, {pretty = true, use_enum_names = true})
 	// fmt.printfln("%s", js)
 
-	alloc := context.allocator
+	alloc: runtime.Allocator = context.allocator
 	arena: mem.Dynamic_Arena
-	// mem.arena_init(&arena, bytes)
 
 	mem.dynamic_arena_init(&arena)
+
+	context.allocator = mem.dynamic_arena_allocator(&arena)
+
 	for v, i in UnrolledProductions {
 		if v == nil {
-			UnrolledProductions[i] = Unroll_Production(Productions[i])
+			UnrolledProductions[i] = Unroll_Production(Productions[i], i)
 		}
 	}
 	GNode_Print(&UnrolledProductions[ParseEntryPoint].?)
-	defer mem.dynamic_arena_destroy(&arena)
+	mem.dynamic_arena_destroy(&arena)
 	context.allocator = alloc
 
-	pt, err := ParseTokens(tokens[:])
+	// pt, err := ParseTokens(tokens[:])
 
 }

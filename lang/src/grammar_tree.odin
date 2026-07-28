@@ -14,27 +14,21 @@ DoArray :: struct {
 }
 Deletable :: bool
 
-ProdState :: ProductionState
-ProductionState :: enum byte {
-	START,
-	MIDDLE,
-	END,
-}
-
 GrammarNode :: struct {
-	value:   union {
+	value:           union {
 		Token,
 		DoArray,
 	} `json="value"`,
-	nodes:   [dynamic]^GrammarNode `json="nodes"`,
-	printed: bool,
-	state:   ProdState,
+	nodes:           [dynamic]^GrammarNode `json="nodes"`,
+	endOfRepetition: bool `json="end of repetition"`,
+	prodStart:       Maybe(ProductionName) `json="Production start:"`,
+	printed:         bool,
 }
 GNode :: GrammarNode
 
 GNode_Print :: GrammarNode_Print
 
-@(private = "file")
+// @(private = "file")
 GrammarNode_SearchInAddArray :: proc(node: ^GNode, token: Token) -> ^GNode {
 	_, ok := node.value.(DoArray)
 	if !ok do return nil
@@ -120,7 +114,7 @@ GrammarNode_Print :: proc(node: ^GNode) {
 	}
 }
 
-Unroll_Production :: proc(prod: Production) -> GNode {
+Unroll_Production :: proc(prod: Production, name: ProductionName) -> GNode {
 	assert(prod != nil)
 	assert(len(prod) > 0)
 
@@ -128,6 +122,7 @@ Unroll_Production :: proc(prod: Production) -> GNode {
 	t := Unroll_Expression(Expression(prod))
 
 	node = t
+	node.prodStart = name
 	return node
 
 	// switch val in t.value {
@@ -199,7 +194,7 @@ Unroll_Term :: proc(term: Term) -> GNode {
 		if val, ok := UnrolledProductions[v].?; ok {
 			node = val
 		} else {
-			UnrolledProductions[v] = Unroll_Production(Productions[v])
+			UnrolledProductions[v] = Unroll_Production(Productions[v], v)
 			val, ok := UnrolledProductions[v].?
 			assert(ok)
 			node = val
@@ -283,6 +278,7 @@ Unroll_Repetition :: proc(rep: Repetition) -> GNode {
 		arr[i] = Unroll_Expression(v)
 		append(&arr[i].nodes, &arr[(i + 1) % len(arr)])
 	}
+	arr[len(arr) - 1].endOfRepetition = true
 
 	node := GNode {
 		value = DoArray{skippable = false, value = make([]^GrammarNode, len(arr))},

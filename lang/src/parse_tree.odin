@@ -12,7 +12,10 @@ ParseError :: enum {
 PNode :: ParseNode
 
 ParseNode :: struct {
-	token: Token `json="token"`,
+	value: union {
+		Token,
+		ProductionName,
+	} `json="value"`,
 	next:  []Token `json="next"`,
 }
 
@@ -22,9 +25,8 @@ ParseTree :: struct {
 	root: ParseNode `json="root"`,
 }
 
-ParseProduction :: proc(prod: ProductionName, tokens: [dynamic]Token) -> ParseError {
-
-}
+// ParseProduction :: proc(prod: ProductionName, tokens: [dynamic]Token) -> ParseError {
+// }
 
 // ParseTokens :: proc(tokens: []Token) -> (PTree, ParseError) {
 // 	assert(tokens != nil, "nilptr")
