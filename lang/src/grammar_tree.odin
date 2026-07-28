@@ -14,14 +14,21 @@ DoArray :: struct {
 }
 Deletable :: bool
 
+ProdState :: ProductionState
+ProductionState :: enum byte {
+	START,
+	MIDDLE,
+	END,
+}
+
 GrammarNode :: struct {
-	value:    union {
+	value:   union {
 		Token,
 		DoArray,
 	} `json="value"`,
-	nodes:    [dynamic]^GrammarNode `json="nodes"`,
-	printed:  bool,
-	consumed: bool,
+	nodes:   [dynamic]^GrammarNode `json="nodes"`,
+	printed: bool,
+	state:   ProdState,
 }
 GNode :: GrammarNode
 
@@ -33,15 +40,22 @@ GrammarNode_SearchInAddArray :: proc(node: ^GNode, token: Token) -> ^GNode {
 	if !ok do return nil
 
 	ret: ^GNode
-	for v, i in node.value.(DoArray).value {
+
+	loop: for v, i in node.value.(DoArray).value {
 		switch val in v.value {
 		case DoArray:
-			ret = GrammarNode_SearchInAddArray(node.value.(DoArray).value[i], token)
-			break
+			t := GrammarNode_SearchInAddArray(node.value.(DoArray).value[i], token)
+			if t != nil {
+				ret = t
+				break loop
+			}
 		case Token:
 			if match(v.value.(Token), token) {
-				ret = node
-				break
+				t := node.value.(DoArray).value[i]
+				if t != nil {
+					ret = t
+					break loop
+				}
 			}
 		}
 
@@ -51,22 +65,23 @@ GrammarNode_SearchInAddArray :: proc(node: ^GNode, token: Token) -> ^GNode {
 }
 
 GrammarNode_MatchToken :: proc(node: ^GNode, token: Token) -> (^GNode, ParseError) {
-	_, ok := node.value.(Token)
-	assert(ok)
+	// _, ok := node.value.(Token)
+	// assert(ok)
 
 	ret: ^GNode
 
-	for v, i in node.nodes {
+
+	loop: for v, i in node.nodes {
 		switch val in v.value {
 		case Token:
 			if match(token, val) {
 				ret = node.nodes[i]
-				break
+				break loop
 			}
 		case DoArray:
 			if ptr := GrammarNode_SearchInAddArray(v, token); ptr != nil {
 				ret = ptr
-				break
+				break loop
 			}
 		}
 

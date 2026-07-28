@@ -23,10 +23,10 @@ Token_Match :: proc(a, b: Token) -> bool {
 	if a.type != .LITERAL && a.type != .IDENTIFIER {
 		if a.kind != b.kind do return false
 	} else {
-		if len(a.lexeme) != len(b.lexeme) do return false
-		for j in 0 ..< len(a.lexeme) {
-			if a.lexeme[j] != b.lexeme[j] do return false
-		}
+		return true
+
+		// 	if a.lexeme[j] != b.lexeme[j] do return false
+		// }
 	}
 	return true
 }

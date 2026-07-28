@@ -128,7 +128,7 @@ main :: proc() {
 		}
 	}
 	GNode_Print(&UnrolledProductions[ParseEntryPoint].?)
-	mem.dynamic_arena_destroy(&arena)
+	defer mem.dynamic_arena_destroy(&arena)
 	context.allocator = alloc
 
 	pt, err := ParseTokens(tokens[:])
