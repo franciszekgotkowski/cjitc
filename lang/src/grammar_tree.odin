@@ -118,11 +118,9 @@ Unroll_Production :: proc(prod: Production, name: ProductionName) -> GNode {
 	assert(prod != nil)
 	assert(len(prod) > 0)
 
-	node: GNode
-	t := Unroll_Expression(Expression(prod))
-
-	node = t
+	node := Unroll_Expression(Expression(prod))
 	node.prodStart = name
+
 	return node
 
 	// switch val in t.value {

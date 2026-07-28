@@ -104,15 +104,16 @@ main :: proc() {
 	// fmt.printfln("%s", js)
 
 	// code: []rune = utf8.string_to_runes("  x=	a+b;ifa<=b{x=a;}")
-	code: []rune = utf8.string_to_runes(
-		`
-		int x;
-		int xxx = 2;
-		float f = 3.4;
-		func(4, 5, 1.2);
-		float fl = 3;
-		`,
-	)
+	// code: []rune = utf8.string_to_runes(
+	// 	`
+	// 	int x;
+	// 	int xxx = 2;
+	// 	float f = 3.4;
+	// 	func(4, 5, 1.2);
+	// 	float fl = 3;
+	// 	`,
+	// )
+	code: []rune = utf8.string_to_runes("float f;")
 	tokens := Tokenise(code, &trie)
 	defer delete(tokens)
 	// js, _ := json.marshal(tokens, {pretty = true, use_enum_names = true})
@@ -122,8 +123,12 @@ main :: proc() {
 	arena: mem.Dynamic_Arena
 
 	mem.dynamic_arena_init(&arena)
-
 	context.allocator = mem.dynamic_arena_allocator(&arena)
+
+	defer {
+		mem.dynamic_arena_destroy(&arena)
+		context.allocator = alloc
+	}
 
 	for v, i in UnrolledProductions {
 		if v == nil {
@@ -131,9 +136,6 @@ main :: proc() {
 		}
 	}
 	GNode_Print(&UnrolledProductions[ParseEntryPoint].?)
-	mem.dynamic_arena_destroy(&arena)
-	context.allocator = alloc
 
-	// pt, err := ParseTokens(tokens[:])
-
+	ParseProduction(.DECLARATION, tokens[:], 0)
 }
