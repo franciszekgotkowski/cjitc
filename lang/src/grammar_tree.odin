@@ -168,17 +168,19 @@ Unroll_Alternative :: proc(alt: Alternative) -> GNode {
 
 	for v, i in alt {
 		arr[i] = Unroll_Term(v)
-		if i != len(alt) - 2 {
+		if i != len(alt) - 1 {
 			append(&arr[i].nodes, &arr[(i + 1) % len(arr)])
 		}
 	}
 
 	node := GNode {
-		value = DoArray{skippable = false, value = make([]^GrammarNode, len(arr))},
+		// value = DoArray{skippable = false, value = make([]^GrammarNode, len(arr))},
+		value = DoArray{skippable = false, value = make([]^GrammarNode, 1)},
 	}
-	for v, i in arr {
-		node.value.(DoArray).value[i] = &arr[i]
-	}
+	node.value.(DoArray).value[0] = &arr[0]
+	// for v, i in arr {
+	// node.value.(DoArray).value[i] = &arr[i]
+	// }
 
 	return node
 }

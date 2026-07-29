@@ -58,6 +58,22 @@ ParseProduction :: proc(
 			p, i, err := ParseProduction(name, tokens, i)
 			if err == .OK {
 				append(&pnode.next, p)
+
+				found := false
+				for v, ii in gnode.nodes {
+					p, j, err := ConsumeGNode(pnode, gnode.nodes[ii], tokens, i + 1)
+					if err == .OK {
+						append(&pnode.next, p)
+						i = j
+						found = true
+						// } else {
+						// 	return {}, -1, .COULD_NOT_MATCH
+					}
+				}
+				if !found {
+					return {}, -1, .COULD_NOT_MATCH
+				}
+
 				return pnode, i, .OK
 			} else {
 				return {}, -1, .COULD_NOT_MATCH
@@ -75,26 +91,29 @@ ParseProduction :: proc(
 			append(&pnode.next, PNode{value = val})
 			json, _ := json.marshal(val, json.Marshal_Options{use_enum_names = true})
 			fmt.printf("Matching token:\t%s\n", json)
-			for v, i in gnode.nodes {
-				p, j, err := ConsumeGNode(pnode, gnode.nodes[i], tokens, i + 1)
+			for v, ii in gnode.nodes {
+				p, j, err := ConsumeGNode(pnode, gnode.nodes[ii], tokens, i + 1)
 				if err == .OK {
 					return pnode, j, .OK
 				}
 			}
-			if gnode.endOfRepetition {
-				return pnode, i + 1, .OK
+			if gnode.endOfRepetition || len(gnode.nodes) == 0 {
+				return pnode, i, .OK
 			}
+
 			return {}, -1, .COULD_NOT_MATCH
 		case DoArray:
+			found := false
 			loop: for v, ii in val.value {
 				p, j, err := ConsumeGNode(pnode, val.value[ii], tokens, i + 1)
 				if err == .OK {
 					pnode = p
 					i = j
+					found = true
 					break loop
 				}
 			}
-			if val.skippable {
+			if found || val.skippable {
 				for v, ii in gnode.nodes {
 					p, j, err := ConsumeGNode(pnode, gnode.nodes[ii], tokens, i + 1)
 					if err != .OK {
@@ -120,12 +139,13 @@ ParseProduction :: proc(
 	found := false
 	switch val in gprod.value {
 	case DoArray:
-		for v, ii in val.value {
+		loop: for v, ii in val.value {
 			p, j, err := ConsumeGNode(newp, val.value[ii], tokens, i)
 			if err == .OK {
 				found = true
 				newp = p
-				// break
+				i = j
+				break loop
 			}
 		}
 	case Token:
@@ -140,6 +160,15 @@ ParseProduction :: proc(
 			fmt.printf("Matching token:\t%s\n", json)
 		}
 	}
+
+	// if !found {
+	// 	return {}, -1, .COULD_NOT_MATCH
+	// }
+	// for v, ii in gprod.nodes {
+	// 	p, j, err := ConsumeGNode(newp, gprod.nodes[ii], tokens, i + 1)
+	// 	if err != .OK {
+	// 	}
+	// }
 
 	if found {
 		return newp, i, .OK

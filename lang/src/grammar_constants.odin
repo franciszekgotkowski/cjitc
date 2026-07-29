@@ -48,8 +48,8 @@ ProductionName :: enum {
 	LITERALS,
 	DECIMAL_LITERAL,
 	CHAR_LITERAL,
+	FLOAT_LITERAL,
 	// TEXT_LITERAL,
-	// CHARACTER_LITERAL,
 	STATEMENT,
 	FUNCTION_CALL,
 }
@@ -67,9 +67,17 @@ Productions: [ProductionName]Production = {
 	},
 	.DECIMAL_LITERAL             = {Alternative{Token{type = .LITERAL, kind = Literal.DECIMAL}}},
 	.CHAR_LITERAL                = {Alternative{Token{type = .LITERAL, kind = Literal.CHARACTER}}},
+	.FLOAT_LITERAL               = {
+		Alternative {
+			Token{type = .LITERAL, kind = Literal.DECIMAL},
+			Token{type = .OPERATOR, kind = Operator.DOT},
+			Token{type = .LITERAL, kind = Literal.DECIMAL},
+		},
+	},
 	.LITERALS                    = {
 		Alternative{ProductionName.CHAR_LITERAL},
 		Alternative{ProductionName.DECIMAL_LITERAL},
+		Alternative{ProductionName.FLOAT_LITERAL},
 	},
 	.DECIMAL_TYPE                = {Alternative{Token{type = .KEYWORD, kind = Keyword.INT}}},
 	.FLOAT_TYPE                  = {Alternative{Token{type = .KEYWORD, kind = Keyword.FLOAT}}},

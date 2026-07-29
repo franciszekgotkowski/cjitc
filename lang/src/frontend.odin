@@ -113,7 +113,7 @@ main :: proc() {
 	// 	float fl = 3;
 	// 	`,
 	// )
-	code: []rune = utf8.string_to_runes("float f;")
+	code: []rune = utf8.string_to_runes("float f = 5.0;")
 	tokens := Tokenise(code, &trie)
 	defer delete(tokens)
 	// js, _ := json.marshal(tokens, {pretty = true, use_enum_names = true})
@@ -130,12 +130,14 @@ main :: proc() {
 		context.allocator = alloc
 	}
 
-	for v, i in UnrolledProductions {
-		if v == nil {
-			UnrolledProductions[i] = Unroll_Production(Productions[i], i)
-		}
-	}
-	GNode_Print(&UnrolledProductions[ParseEntryPoint].?)
+	// for v, i in UnrolledProductions {
+	// if v == nil {
+	// UnrolledProductions[i] = Unroll_Production(Productions[i], i)
+	// }
+	// }
+	// GNode_Print(&UnrolledProductions[ParseEntryPoint].?)
+	p: ProductionName = .DECLS
+	UnrolledProductions[p] = Unroll_Production(Productions[p], p)
 
-	ParseProduction(.DECLARATION, tokens[:], 0)
+	ParseProduction(p, tokens[:], 0)
 }
