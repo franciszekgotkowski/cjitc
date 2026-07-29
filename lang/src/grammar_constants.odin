@@ -112,6 +112,7 @@ Productions: [ProductionName]Production = {
 			Token{type = .DELIMITER, kind = Delimiter.PAREN_OPEN},
 			Option {
 				Expression {
+					Alternative{ProductionName.LITERALS},
 					Alternative {
 						ProductionName.LITERALS,
 						Repetition {
