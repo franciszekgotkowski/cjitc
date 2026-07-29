@@ -59,15 +59,19 @@ ParseProduction :: proc(
 			if err == .OK {
 				append(&pnode.next, p)
 
+				if len(gnode.nodes) == 0 {
+					return pnode, i, .OK
+				}
+				assert(len(gnode.nodes) > 0)
+
 				found := false
 				for v, ii in gnode.nodes {
 					p, j, err := ConsumeGNode(pnode, gnode.nodes[ii], tokens, i + 1)
 					if err == .OK {
-						append(&pnode.next, p)
+						// append(&pnode.next, p)
+						pnode = p
 						i = j
 						found = true
-						// } else {
-						// 	return {}, -1, .COULD_NOT_MATCH
 					}
 				}
 				if !found {
@@ -84,20 +88,28 @@ ParseProduction :: proc(
 		switch val in gnode.value {
 		case Token:
 			if !match(val, tokens[i]) {
-				json, _ := json.marshal(val, json.Marshal_Options{use_enum_names = true})
-				fmt.printf("Could not match token:\t%s\n", json)
+				{
+					json, _ := json.marshal(val, json.Marshal_Options{use_enum_names = true})
+					fmt.printf("Could not match token:\t%s\n", json)
+				}
 				return {}, -1, .COULD_NOT_MATCH
 			}
+			{
+				json, _ := json.marshal(val, json.Marshal_Options{use_enum_names = true})
+				fmt.printf("Matching token:\t%s\n", json)
+			}
 			append(&pnode.next, PNode{value = val})
-			json, _ := json.marshal(val, json.Marshal_Options{use_enum_names = true})
-			fmt.printf("Matching token:\t%s\n", json)
+			if len(gnode.nodes) == 0 {
+				return pnode, i, .OK
+			}
+
 			for v, ii in gnode.nodes {
 				p, j, err := ConsumeGNode(pnode, gnode.nodes[ii], tokens, i + 1)
 				if err == .OK {
-					return pnode, j, .OK
+					return p, j, .OK
 				}
 			}
-			if gnode.endOfRepetition || len(gnode.nodes) == 0 {
+			if gnode.endOfRepetition {
 				return pnode, i, .OK
 			}
 
@@ -107,22 +119,31 @@ ParseProduction :: proc(
 			loop: for v, ii in val.value {
 				p, j, err := ConsumeGNode(pnode, val.value[ii], tokens, i + 1)
 				if err == .OK {
-					pnode = p
+					append(&pnode.next, p)
+					// pnode = p
 					i = j
 					found = true
 					break loop
 				}
 			}
-			if found || val.skippable {
-				for v, ii in gnode.nodes {
-					p, j, err := ConsumeGNode(pnode, gnode.nodes[ii], tokens, i + 1)
-					if err != .OK {
-						return {}, -1, .COULD_NOT_MATCH
-					} else {
-						return p, j, .OK
-					}
+			if !found && !val.skippable {
+				return {}, -1, .COULD_NOT_MATCH
+			}
+			assert(found || val.skippable)
+			if len(gnode.nodes) == 0 {
+				if found {
+					return pnode, i, .OK
+				} else {
+					return {}, -1, .COULD_NOT_MATCH
 				}
 			}
+			for v, ii in gnode.nodes {
+				p, j, err := ConsumeGNode(pnode, gnode.nodes[ii], tokens, i + 1)
+				if err == .OK {
+					return p, j, .OK
+				}
+			}
+			return {}, -1, .COULD_NOT_MATCH
 		}
 
 		assert(false, "should never happen")
@@ -150,9 +171,11 @@ ParseProduction :: proc(
 		}
 	case Token:
 		if !match(val, tokens[i]) {
-			json, _ := json.marshal(val, json.Marshal_Options{use_enum_names = true})
-			fmt.printf("Could not match token:\t%s\n", json)
-			// return {}, -1, .COULD_NOT_MATCH
+			{
+				json, _ := json.marshal(val, json.Marshal_Options{use_enum_names = true})
+				fmt.printf("Could not match token:\t%s\n", json)
+			}
+			return {}, -1, .COULD_NOT_MATCH
 		} else {
 			found = true
 			append(&newp.next, PNode{value = val})
@@ -160,15 +183,6 @@ ParseProduction :: proc(
 			fmt.printf("Matching token:\t%s\n", json)
 		}
 	}
-
-	// if !found {
-	// 	return {}, -1, .COULD_NOT_MATCH
-	// }
-	// for v, ii in gprod.nodes {
-	// 	p, j, err := ConsumeGNode(newp, gprod.nodes[ii], tokens, i + 1)
-	// 	if err != .OK {
-	// 	}
-	// }
 
 	if found {
 		return newp, i, .OK

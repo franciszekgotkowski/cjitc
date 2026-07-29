@@ -75,9 +75,9 @@ Productions: [ProductionName]Production = {
 		},
 	},
 	.LITERALS                    = {
+		Alternative{ProductionName.FLOAT_LITERAL},
 		Alternative{ProductionName.CHAR_LITERAL},
 		Alternative{ProductionName.DECIMAL_LITERAL},
-		Alternative{ProductionName.FLOAT_LITERAL},
 	},
 	.DECIMAL_TYPE                = {Alternative{Token{type = .KEYWORD, kind = Keyword.INT}}},
 	.FLOAT_TYPE                  = {Alternative{Token{type = .KEYWORD, kind = Keyword.FLOAT}}},

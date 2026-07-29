@@ -1,6 +1,8 @@
 package langlang
 
 import "base:runtime"
+import "core:encoding/json"
+import "core:fmt"
 import "core:mem"
 import "core:unicode/utf8"
 
@@ -139,5 +141,9 @@ main :: proc() {
 	p: ProductionName = .DECLS
 	UnrolledProductions[p] = Unroll_Production(Productions[p], p)
 
-	ParseProduction(p, tokens[:], 0)
+	pnode, _, err := ParseProduction(p, tokens[:], 0)
+	if err == .OK {
+		js, _ := json.marshal(pnode, json.Marshal_Options{pretty = true, use_enum_names = true})
+		fmt.printf("%s\n", js)
+	}
 }
