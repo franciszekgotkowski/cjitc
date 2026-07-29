@@ -281,11 +281,16 @@ Unroll_Repetition :: proc(rep: Repetition) -> GNode {
 	arr[len(arr) - 1].endOfRepetition = true
 
 	node := GNode {
-		value = DoArray{skippable = false, value = make([]^GrammarNode, len(arr))},
+		value = DoArray{skippable = true, value = make([]^GrammarNode, 1)},
 	}
-	for v, i in arr {
-		node.value.(DoArray).value[i] = &arr[i]
-	}
+	node.value.(DoArray).value[0] = &arr[0]
+
+	// node := GNode {
+	// value = DoArray{skippable = false, value = make([]^GrammarNode, len(arr))},
+	// }
+	// for v, i in arr {
+	// node.value.(DoArray).value[i] = &arr[i]
+	// }
 
 	return node
 }

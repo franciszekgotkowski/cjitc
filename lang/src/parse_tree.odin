@@ -9,6 +9,8 @@ ParseError :: enum {
 	COULD_NOT_MATCH,
 	LOGICAL_ERROR,
 	INCORRECT_INPUT,
+	NO_CHILDREN,
+	// TOKENS_PARSED,
 }
 
 PNode :: ParseNode
@@ -29,191 +31,92 @@ ParseTree :: struct {
 
 ParseTokens :: proc(pnode: PNode, gnode: ^GNode, tokens: []Token) -> (PNode, []Token, ParseError) {
 
+	ParseGnodeChildren :: proc(
+		pnode: PNode,
+		gnode: ^GNode,
+		tokens: []Token,
+	) -> (
+		PNode,
+		[]Token,
+		ParseError,
+	) {
+		assert(len(gnode.nodes) > 0)
+		for v, i in gnode.nodes {
+			p, toks, err := ParseTokens(pnode, gnode.nodes[i], tokens)
+			if err == .OK {
+				return p, toks, .OK
+			}
+		}
+		return {}, {}, .COULD_NOT_MATCH
+	}
+
+	assert(gnode != nil, "nilptr")
+
+	// jeżeli trafi na produkcję to tworzy dla niej nowy pnode, jeżeli zostanie stworzony z sukcesem, może ją dodać, w przeciwnym wypadku zawsze dodajemy do pnode'a
+	// zawsze przed wykonaniem sprawdzamy czy tokens nie jest puste
+
+	if len(tokens) == 0 {
+		return pnode, nil, .INCORRECT_INPUT
+	}
+	pnode := pnode
+
+	// if v, ok := gnode.prodStart.?; ok {
+	// 	newp := PNode {
+	// 		value = v,
+	// 	}
+	// 	assert(false, "not implemented")
+	// }
+
+	switch val in gnode.value {
+	case Token:
+		if match(val, tokens[0]) {
+			append(&pnode.next, PNode{value = val})
+			if len(gnode.nodes) == 0 do return pnode, tokens, .OK
+
+			p, t, err := ParseGnodeChildren(pnode, gnode, tokens[1:])
+			if err == .OK {
+				return p, t, .OK
+			} else {
+				if gnode.endOfRepetition {
+					return pnode, tokens, .OK
+				}
+				return {}, nil, err
+			}
+		} else {
+			return {}, nil, .COULD_NOT_MATCH
+		}
+	case DoArray:
+		// valuesMatched := false
+		for v, i in val.value {
+			p, t, err := ParseTokens(pnode, val.value[i], tokens[:])
+			if err == .OK {
+				// valuesMatched = true
+				if len(gnode.nodes) == 0 do return p, t, .OK
+
+				p2, t2, err2 := ParseGnodeChildren(p, gnode, t[1:])
+				if err2 == .OK {
+					return p2, t2, .OK
+				}
+				if gnode.endOfRepetition {
+					return p, t, .OK
+				}
+			}
+		}
+		if val.skippable {
+			// if len(gnode.nodes) == 0 do return {}, nil, .COULD_NOT_MATCH
+			if len(gnode.nodes) == 0 do return pnode, tokens, .OK
+			p, t, err := ParseGnodeChildren(pnode, gnode, tokens[:])
+			if err == .OK {
+				return p, t, .OK
+			} else {
+				return {}, nil, .COULD_NOT_MATCH
+			}
+		} else {
+			return {}, nil, .COULD_NOT_MATCH
+		}
+
+	}
 
 	assert(false, "not implemented")
 	return {}, {}, .LOGICAL_ERROR
 }
-
-// ParseProduction :: proc(
-// 	productionName: ProductionName,
-// 	tokens: []Token,
-// 	i: int,
-// ) -> (
-// 	PNode,
-// 	int,
-// 	ParseError,
-// ) {
-// 	assert(tokens != nil, "nilptr")
-
-// 	ConsumeGNode :: proc(
-// 		pnode: PNode,
-// 		gnode: ^GNode,
-// 		tokens: []Token,
-// 		i: int,
-// 	) -> (
-// 		PNode,
-// 		int,
-// 		ParseError,
-// 	) {
-// 		assert(gnode != nil, "nilptr")
-// 		assert(tokens != nil, "nilptr")
-// 		assert(i >= 0)
-
-// 		pnode := pnode
-// 		i := i
-
-// 		if name, ok := gnode.prodStart.?; ok {
-// 			p, j, err := ParseProduction(name, tokens, i)
-// 			if err == .OK {
-// 				i = j
-// 				append(&pnode.next, p)
-
-// 				if len(gnode.nodes) == 0 {
-// 					return pnode, i, .OK
-// 				}
-// 				assert(len(gnode.nodes) > 0)
-
-// 				found := false
-// 				for v, ii in gnode.nodes {
-// 					if len(tokens) - 1 == i {
-// 						if gnode.endOfRepetition {
-// 							return pnode, i, .OK
-// 						} else {
-// 							return {}, -1, .INCORRECT_INPUT
-// 						}
-// 					}
-// 					p, j, err := ConsumeGNode(pnode, gnode.nodes[ii], tokens, i + 1)
-// 					if err == .OK {
-// 						// append(&pnode.next, p)
-// 						pnode = p
-// 						i = j
-// 						found = true
-// 						break
-// 					} else if err == .INCORRECT_INPUT {
-// 						return {}, -1, .INCORRECT_INPUT
-// 					}
-// 				}
-// 				if !found {
-// 					return {}, -1, .COULD_NOT_MATCH
-// 				}
-
-// 				return pnode, i, .OK
-// 			} else {
-// 				return {}, -1, .COULD_NOT_MATCH
-// 			}
-// 		}
-
-
-// 		switch val in gnode.value {
-// 		case Token:
-// 			if !match(val, tokens[i]) {
-// 				{
-// 					json, _ := json.marshal(val, json.Marshal_Options{use_enum_names = true})
-// 					fmt.printf("Could not match token:\t%s\n", json)
-// 				}
-// 				return {}, -1, .COULD_NOT_MATCH
-// 			}
-// 			{
-// 				json, _ := json.marshal(val, json.Marshal_Options{use_enum_names = true})
-// 				fmt.printf("Matching token:\t%s\n", json)
-// 			}
-// 			append(&pnode.next, PNode{value = val})
-// 			if len(gnode.nodes) == 0 {
-// 				return pnode, i, .OK
-// 			}
-
-// 			for v, ii in gnode.nodes {
-// 				p, j, err := ConsumeGNode(pnode, gnode.nodes[ii], tokens, i + 1)
-// 				if err == .OK {
-// 					return p, j, .OK
-// 				} else if err == .INCORRECT_INPUT {
-// 					return {}, -1, .INCORRECT_INPUT
-// 				}
-// 			}
-// 			if gnode.endOfRepetition {
-// 				return pnode, i, .OK
-// 			}
-
-// 			return {}, -1, .COULD_NOT_MATCH
-// 		case DoArray:
-// 			found := false
-// 			loop: for v, ii in val.value {
-// 				p, j, err := ConsumeGNode(pnode, val.value[ii], tokens, i + 1)
-// 				if err == .OK {
-// 					append(&pnode.next, p)
-// 					// pnode = p
-// 					i = j
-// 					found = true
-// 					break loop
-// 				} else if err == .INCORRECT_INPUT {
-// 					return {}, -1, .INCORRECT_INPUT
-// 				}
-// 			}
-// 			if !found && !val.skippable {
-// 				return {}, -1, .COULD_NOT_MATCH
-// 			}
-// 			assert(found || val.skippable)
-// 			if len(gnode.nodes) == 0 {
-// 				if found {
-// 					return pnode, i, .OK
-// 				} else {
-// 					return {}, -1, .COULD_NOT_MATCH
-// 				}
-// 			}
-// 			for v, ii in gnode.nodes {
-// 				p, j, err := ConsumeGNode(pnode, gnode.nodes[ii], tokens, i + 1)
-// 				if err == .OK {
-// 					return p, j, .OK
-// 				} else if err == .INCORRECT_INPUT {
-// 					return {}, -1, .INCORRECT_INPUT
-// 				}
-// 			}
-// 			return {}, -1, .COULD_NOT_MATCH
-// 		}
-
-// 		assert(false, "should never happen")
-// 		return {}, -1, .LOGICAL_ERROR
-// 	}
-
-// 	i := i
-// 	newp := PNode {
-// 		value = productionName,
-// 	}
-
-// 	gprod, ok := UnrolledProductions[productionName].?
-
-// 	found := false
-// 	switch val in gprod.value {
-// 	case DoArray:
-// 		loop: for v, ii in val.value {
-// 			p, j, err := ConsumeGNode(newp, val.value[ii], tokens, i)
-// 			if err == .OK {
-// 				found = true
-// 				newp = p
-// 				i = j
-// 				break loop
-// 			} else if err == .INCORRECT_INPUT {
-// 				return {}, -1, .INCORRECT_INPUT
-// 			}
-// 		}
-// 	case Token:
-// 		if !match(val, tokens[i]) {
-// 			{
-// 				json, _ := json.marshal(val, json.Marshal_Options{use_enum_names = true})
-// 				fmt.printf("Could not match token:\t%s\n", json)
-// 			}
-// 			return {}, -1, .COULD_NOT_MATCH
-// 		} else {
-// 			found = true
-// 			append(&newp.next, PNode{value = val})
-// 			json, _ := json.marshal(val, json.Marshal_Options{use_enum_names = true})
-// 			fmt.printf("Matching token:\t%s\n", json)
-// 		}
-// 	}
-
-// 	if found {
-// 		return newp, i, .OK
-// 	} else {
-// 		return {}, -1, .COULD_NOT_MATCH
-// 	}
-// }
