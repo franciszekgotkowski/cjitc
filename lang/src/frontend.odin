@@ -115,7 +115,7 @@ main :: proc() {
 	// 	float fl = 3;
 	// 	`,
 	// )
-	code: []rune = utf8.string_to_runes("float f = 5.0;")
+	code: []rune = utf8.string_to_runes("float f = 5.0; func(); funx(4.5); fu(3); fu(4, 4.4);")
 	tokens := Tokenise(code, &trie)
 	defer delete(tokens)
 	// js, _ := json.marshal(tokens, {pretty = true, use_enum_names = true})
@@ -138,12 +138,12 @@ main :: proc() {
 	// }
 	// }
 	// GNode_Print(&UnrolledProductions[ParseEntryPoint].?)
-	p: ProductionName = .DECLS
+	p: ProductionName = .CODE_ENTRY
 	UnrolledProductions[p] = Unroll_Production(Productions[p], p)
 
-	pnode, _, err := ParseProduction(p, tokens[:], 0)
-	if err == .OK {
-		js, _ := json.marshal(pnode, json.Marshal_Options{pretty = true, use_enum_names = true})
-		fmt.printf("%s\n", js)
-	}
+	// pnode, _, err := ParseProduction(p, tokens[:], 0)
+	// if err == .OK {
+	// 	js, _ := json.marshal(pnode, json.Marshal_Options{pretty = true, use_enum_names = true})
+	// 	fmt.printf("%s\n", js)
+	// }
 }

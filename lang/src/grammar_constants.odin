@@ -63,7 +63,8 @@ Productions: [ProductionName]Production = {
 		Alternative{Repetition{Expression{Alternative{ProductionName.STATEMENT}}}},
 	},
 	.STATEMENT                   = {
-		Alternative{ProductionName.DECLS, ProductionName.FUNCTION_CALL},
+		Alternative{ProductionName.DECLS},
+		Alternative{ProductionName.FUNCTION_CALL},
 	},
 	.DECIMAL_LITERAL             = {Alternative{Token{type = .LITERAL, kind = Literal.DECIMAL}}},
 	.CHAR_LITERAL                = {Alternative{Token{type = .LITERAL, kind = Literal.CHARACTER}}},

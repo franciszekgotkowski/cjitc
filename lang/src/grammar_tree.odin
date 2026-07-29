@@ -22,11 +22,11 @@ GrammarNode :: struct {
 	nodes:           [dynamic]^GrammarNode `json="nodes"`,
 	endOfRepetition: bool `json="end of repetition"`,
 	prodStart:       Maybe(ProductionName) `json="Production start:"`,
-	printed:         bool,
+	// printed:         bool,
 }
 GNode :: GrammarNode
 
-GNode_Print :: GrammarNode_Print
+// GNode_Print :: GrammarNode_Print
 
 // @(private = "file")
 GrammarNode_SearchInAddArray :: proc(node: ^GNode, token: Token) -> ^GNode {
@@ -89,30 +89,30 @@ GrammarNode_MatchToken :: proc(node: ^GNode, token: Token) -> (^GNode, ParseErro
 
 // Prints out recursively contents of GNode's
 // TODO: implement setting node.printed = false
-GrammarNode_Print :: proc(node: ^GNode) {
-	if node.printed {
-		return
-	}
-	node.printed = true
+// GrammarNode_Print :: proc(node: ^GNode) {
+// 	if node.printed {
+// 		return
+// 	}
+// 	node.printed = true
 
-	switch val in node.value {
-	case Token:
-		js, _ := json.marshal(val, json.Marshal_Options{pretty = true, use_enum_names = true})
-		fmt.printf("%s\n", js)
-	case DoArray:
-		fmt.printf("DoArray:\n")
-		for v, _ in node.value.(DoArray).value {
-			GNode_Print(v)
-		}
-	}
-	if len(node.nodes) > 0 {
-		fmt.printf("Next:\n")
-		for v, _ in node.nodes {
-			GNode_Print(v)
-		}
-		fmt.printf("\n")
-	}
-}
+// 	switch val in node.value {
+// 	case Token:
+// 		js, _ := json.marshal(val, json.Marshal_Options{pretty = true, use_enum_names = true})
+// 		fmt.printf("%s\n", js)
+// 	case DoArray:
+// 		fmt.printf("DoArray:\n")
+// 		for v, _ in node.value.(DoArray).value {
+// 			GNode_Print(v)
+// 		}
+// 	}
+// 	if len(node.nodes) > 0 {
+// 		fmt.printf("Next:\n")
+// 		for v, _ in node.nodes {
+// 			GNode_Print(v)
+// 		}
+// 		fmt.printf("\n")
+// 	}
+// }
 
 Unroll_Production :: proc(prod: Production, name: ProductionName) -> GNode {
 	assert(prod != nil)
