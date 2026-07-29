@@ -102,6 +102,7 @@ ParseTokens :: proc(pnode: PNode, gnode: ^GNode, tokens: []Token) -> (PNode, []T
 				}
 			}
 		}
+
 		if val.skippable {
 			// if len(gnode.nodes) == 0 do return {}, nil, .COULD_NOT_MATCH
 			if len(gnode.nodes) == 0 do return pnode, tokens, .OK
