@@ -30,7 +30,16 @@ ParseTree :: struct {
 	root: ParseNode `json="root"`,
 }
 
-ParseTokens :: proc(pnode: PNode, gnode: ^GNode, tokens: []Token) -> (PNode, []Token, ParseError) {
+ParseTokens :: proc(
+	pnode: PNode,
+	gnode: ^GNode,
+	tokens: []Token,
+	procStart := false,
+) -> (
+	PNode,
+	[]Token,
+	ParseError,
+) {
 
 	ParseGnodeChildren :: proc(
 		pnode: PNode,
@@ -73,20 +82,19 @@ ParseTokens :: proc(pnode: PNode, gnode: ^GNode, tokens: []Token) -> (PNode, []T
 
 	assert(gnode != nil, "nilptr")
 
-	// jeżeli trafi na produkcję to tworzy dla niej nowy pnode, jeżeli zostanie stworzony z sukcesem, może ją dodać, w przeciwnym wypadku zawsze dodajemy do pnode'a
-	// zawsze przed wykonaniem sprawdzamy czy tokens nie jest puste
-
 	if len(tokens) == 0 {
 		return pnode, nil, .INCORRECT_INPUT
 	}
 	pnode := pnode
 
-	// if v, ok := gnode.prodStart.?; ok {
-	// 	newp := PNode {
-	// 		value = v,
-	// 	}
-	// 	assert(false, "not implemented")
-	// }
+	if name, ok := gnode.prodStart.?; ok && !procStart {
+		pnew, t, err := ParseTokens(PNode{}, gnode, tokens, true)
+		pnew.value = name
+		if err == .OK {
+			append(&pnode.next, pnew)
+			return pnode, t, .OK
+		}
+	}
 
 	switch val in gnode.value {
 	case Token:
