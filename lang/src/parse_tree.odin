@@ -10,6 +10,7 @@ ParseError :: enum {
 	LOGICAL_ERROR,
 	INCORRECT_INPUT,
 	NO_CHILDREN,
+	SKIPPABLE,
 	// TOKENS_PARSED,
 }
 
@@ -41,12 +42,32 @@ ParseTokens :: proc(pnode: PNode, gnode: ^GNode, tokens: []Token) -> (PNode, []T
 		ParseError,
 	) {
 		assert(len(gnode.nodes) > 0)
-		for v, i in gnode.nodes {
-			p, toks, err := ParseTokens(pnode, gnode.nodes[i], tokens)
-			if err == .OK {
-				return p, toks, .OK
+
+		if len(tokens) > 0 {
+			skippableFound := false
+			for v, i in gnode.nodes {
+				p, toks, err := ParseTokens(pnode, gnode.nodes[i], tokens)
+				if err == .OK {
+					return p, toks, .OK
+				} else if err == .SKIPPABLE {
+					skippableFound = true
+				}
 			}
+			if skippableFound {
+				return pnode, tokens, .OK
+			}
+		} else if len(tokens) == 0 {
+			for v, i in gnode.nodes {
+				p, toks, err := ParseTokens(pnode, gnode.nodes[i], tokens)
+				if err == .SKIPPABLE {
+					return pnode, tokens, .OK
+				} else if err != .INCORRECT_INPUT {
+					return {}, {}, .COULD_NOT_MATCH
+				}
+			}
+			return pnode, tokens, .OK
 		}
+
 		return {}, {}, .COULD_NOT_MATCH
 	}
 
@@ -71,14 +92,14 @@ ParseTokens :: proc(pnode: PNode, gnode: ^GNode, tokens: []Token) -> (PNode, []T
 	case Token:
 		if match(val, tokens[0]) {
 			append(&pnode.next, PNode{value = val})
-			if len(gnode.nodes) == 0 do return pnode, tokens, .OK
+			if len(gnode.nodes) == 0 do return pnode, tokens[1:], .OK
 
 			p, t, err := ParseGnodeChildren(pnode, gnode, tokens[1:])
 			if err == .OK {
 				return p, t, .OK
 			} else {
 				if gnode.endOfRepetition {
-					return pnode, tokens, .OK
+					return pnode, tokens[1:], .OK
 				}
 				return {}, nil, err
 			}
@@ -90,10 +111,20 @@ ParseTokens :: proc(pnode: PNode, gnode: ^GNode, tokens: []Token) -> (PNode, []T
 		for v, i in val.value {
 			p, t, err := ParseTokens(pnode, val.value[i], tokens[:])
 			if err == .OK {
-				// valuesMatched = true
 				if len(gnode.nodes) == 0 do return p, t, .OK
 
-				p2, t2, err2 := ParseGnodeChildren(p, gnode, t[1:])
+				p2, t2, err2 := ParseGnodeChildren(p, gnode, t)
+				if err2 == .OK {
+					return p2, t2, .OK
+				}
+				if gnode.endOfRepetition {
+					return p, t, .OK
+				}
+			}
+			if err == .SKIPPABLE {
+				if len(gnode.nodes) == 0 do return {}, nil, .COULD_NOT_MATCH
+
+				p2, t2, err2 := ParseGnodeChildren(p, gnode, tokens)
 				if err2 == .OK {
 					return p2, t2, .OK
 				}
@@ -104,9 +135,9 @@ ParseTokens :: proc(pnode: PNode, gnode: ^GNode, tokens: []Token) -> (PNode, []T
 		}
 
 		if val.skippable {
-			// if len(gnode.nodes) == 0 do return {}, nil, .COULD_NOT_MATCH
-			if len(gnode.nodes) == 0 do return pnode, tokens, .OK
-			p, t, err := ParseGnodeChildren(pnode, gnode, tokens[:])
+			if len(gnode.nodes) == 0 do return {}, nil, .SKIPPABLE
+			// if len(gnode.nodes) == 0 do return pnode, tokens, .OK
+			p, t, err := ParseGnodeChildren(pnode, gnode, tokens)
 			if err == .OK {
 				return p, t, .OK
 			} else {
