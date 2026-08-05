@@ -43,8 +43,8 @@ ProductionName :: enum {
 	TYPES,
 	DECIMAL_TYPE,
 	FLOAT_TYPE,
+	CHARACTER_TYPE,
 	// TEXT_TYPE,
-	// CHARACTER_TYPE,
 	LITERALS,
 	DECIMAL_LITERAL,
 	CHAR_LITERAL,
@@ -82,9 +82,11 @@ Productions: [ProductionName]Production = {
 	},
 	.DECIMAL_TYPE                = {Alternative{Token{type = .KEYWORD, kind = Keyword.INT}}},
 	.FLOAT_TYPE                  = {Alternative{Token{type = .KEYWORD, kind = Keyword.FLOAT}}},
+	.CHARACTER_TYPE              = {Alternative{Token{type = .KEYWORD, kind = Keyword.CHAR}}},
 	.TYPES                       = {
 		Alternative{ProductionName.DECIMAL_TYPE},
 		Alternative{ProductionName.FLOAT_TYPE},
+		Alternative{ProductionName.CHARACTER_TYPE},
 	},
 	.DECLARATION_WITH_ASSIGNMENT = {
 		Alternative {
@@ -103,8 +105,8 @@ Productions: [ProductionName]Production = {
 		},
 	},
 	.DECLS                       = {
-		Alternative{ProductionName.DECLARATION},
 		Alternative{ProductionName.DECLARATION_WITH_ASSIGNMENT},
+		Alternative{ProductionName.DECLARATION},
 	},
 	.FUNCTION_CALL               = {
 		Alternative {

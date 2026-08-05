@@ -169,9 +169,16 @@ ParseTokens :: proc(
 						return p, t, .OK
 					}
 				} else {
-					p2, t2, err2 := ParseGnodeChildren(p.(PNode), gnode, t)
-					if err2 == .OK {
-						return p2, t2, .OK
+					if gnode.prodStart != nil {
+						p2, t2, err2 := ParseGnodeChildren(PNode{}, gnode, t)
+						if err == .OK {
+							return [2]PNode{p.(PNode), p2}, t2, .OK
+						}
+					} else {
+						p2, t2, err2 := ParseGnodeChildren(p.(PNode), gnode, t)
+						if err2 == .OK {
+							return p2, t2, .OK
+						}
 					}
 				}
 			}
