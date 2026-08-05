@@ -135,16 +135,8 @@ main :: proc() {
 		context.allocator = alloc
 	}
 
-	// for v, i in UnrolledProductions {
-	// if v == nil {
-	// UnrolledProductions[i] = Unroll_Production(Productions[i], i)
-	// }
-	// }
-	// GNode_Print(&UnrolledProductions[ParseEntryPoint].?)
+	PrepareGrammarGraph()
 	p: ProductionName = .CODE_ENTRY
-	UnrolledProductions[p] = Unroll_Production(Productions[p], p)
-
-	// ParseTokens(PNode{}, &UnrolledProductions[p].?, tokens[:])
 
 	pnode, _, err := ParseTokens(PNode{}, &UnrolledProductions[p].?, tokens[:])
 	if err == .OK {

@@ -125,6 +125,8 @@ ParseTokens :: proc(
 	}
 
 	switch val in gnode.value {
+	case ProductionName:
+		assert(false, "should never happen")
 	case Token:
 		if match(val, tokens[0]) {
 			append(&pnode.next, PNode{value = val})

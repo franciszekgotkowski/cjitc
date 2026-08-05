@@ -1,8 +1,5 @@
 package langlang
 
-import "core:encoding/json"
-import "core:fmt"
-
 GGraphError :: enum {
 	OK,
 	ALLOCATOR_ERROR,
@@ -14,21 +11,52 @@ DoArray :: struct {
 }
 Deletable :: bool
 
+PrepareGrammarGraph :: proc() {
+	for v, i in ProductionName {
+		UnrolledProductions[v] = Unroll_Production(Productions[v], v)
+	}
+
+	p := &UnrolledProductions
+
+	DFSProcedureLinkind :: proc(gnode: ^GNode) {
+		if gnode.visited do return
+
+		gnode.visited = true
+		if v, ok := gnode.value.(ProductionName); ok {
+			gn, ok := UnrolledProductions[v].?
+			assert(ok)
+			if val, ok := gn.value.(ProductionName); ok do DFSProcedureLinkind(&UnrolledProductions[v].?)
+			gnode^ = gn
+		}
+		for _, i in gnode.nodes {
+			DFSProcedureLinkind(gnode.nodes[i])
+		}
+		if _, ok := gnode.value.(DoArray); ok {
+			for _, i in gnode.value.(DoArray).value {
+				DFSProcedureLinkind(gnode.value.(DoArray).value[i])
+			}
+		}
+	}
+
+	for _, i in UnrolledProductions {
+		DFSProcedureLinkind(&UnrolledProductions[i].?)
+	}
+
+}
+
 GrammarNode :: struct {
 	value:           union {
 		Token,
 		DoArray,
+		ProductionName,
 	} `json="value"`,
 	nodes:           [dynamic]^GrammarNode `json="nodes"`,
 	endOfRepetition: bool `json="end of repetition"`,
 	prodStart:       Maybe(ProductionName) `json="Production start:"`,
-	// printed:         bool,
+	visited:         bool,
 }
 GNode :: GrammarNode
 
-// GNode_Print :: GrammarNode_Print
-
-// @(private = "file")
 GrammarNode_SearchInAddArray :: proc(node: ^GNode, token: Token) -> ^GNode {
 	_, ok := node.value.(DoArray)
 	if !ok do return nil
@@ -51,6 +79,8 @@ GrammarNode_SearchInAddArray :: proc(node: ^GNode, token: Token) -> ^GNode {
 					break loop
 				}
 			}
+		case ProductionName:
+			assert(false, "should never happen")
 		}
 
 	}
@@ -59,11 +89,7 @@ GrammarNode_SearchInAddArray :: proc(node: ^GNode, token: Token) -> ^GNode {
 }
 
 GrammarNode_MatchToken :: proc(node: ^GNode, token: Token) -> (^GNode, ParseError) {
-	// _, ok := node.value.(Token)
-	// assert(ok)
-
 	ret: ^GNode
-
 
 	loop: for v, i in node.nodes {
 		switch val in v.value {
@@ -77,6 +103,8 @@ GrammarNode_MatchToken :: proc(node: ^GNode, token: Token) -> (^GNode, ParseErro
 				ret = ptr
 				break loop
 			}
+		case ProductionName:
+			assert(false, "should never happen")
 		}
 
 	}
@@ -87,33 +115,6 @@ GrammarNode_MatchToken :: proc(node: ^GNode, token: Token) -> (^GNode, ParseErro
 	return ret, .OK
 }
 
-// Prints out recursively contents of GNode's
-// TODO: implement setting node.printed = false
-// GrammarNode_Print :: proc(node: ^GNode) {
-// 	if node.printed {
-// 		return
-// 	}
-// 	node.printed = true
-
-// 	switch val in node.value {
-// 	case Token:
-// 		js, _ := json.marshal(val, json.Marshal_Options{pretty = true, use_enum_names = true})
-// 		fmt.printf("%s\n", js)
-// 	case DoArray:
-// 		fmt.printf("DoArray:\n")
-// 		for v, _ in node.value.(DoArray).value {
-// 			GNode_Print(v)
-// 		}
-// 	}
-// 	if len(node.nodes) > 0 {
-// 		fmt.printf("Next:\n")
-// 		for v, _ in node.nodes {
-// 			GNode_Print(v)
-// 		}
-// 		fmt.printf("\n")
-// 	}
-// }
-
 Unroll_Production :: proc(prod: Production, name: ProductionName) -> GNode {
 	assert(prod != nil)
 	assert(len(prod) > 0)
@@ -122,13 +123,6 @@ Unroll_Production :: proc(prod: Production, name: ProductionName) -> GNode {
 	node.prodStart = name
 
 	return node
-
-	// switch val in t.value {
-	// case Token:
-	// 	node = t
-	// case DoArray:
-
-	// }
 }
 
 Unroll_Expression :: proc(expr: Expression) -> GNode {
@@ -174,13 +168,9 @@ Unroll_Alternative :: proc(alt: Alternative) -> GNode {
 	}
 
 	node := GNode {
-		// value = DoArray{skippable = false, value = make([]^GrammarNode, len(arr))},
 		value = DoArray{skippable = false, value = make([]^GrammarNode, 1)},
 	}
 	node.value.(DoArray).value[0] = &arr[0]
-	// for v, i in arr {
-	// node.value.(DoArray).value[i] = &arr[i]
-	// }
 
 	return node
 }
@@ -191,16 +181,15 @@ Unroll_Term :: proc(term: Term) -> GNode {
 
 	switch v in term {
 	case ProductionName:
-		fmt.printf("len(UnrolledProductions) = %d\t", len(UnrolledProductions))
-		fmt.printf("v = %d\n", v)
-		if val, ok := UnrolledProductions[v].?; ok {
-			node = val
-		} else {
-			UnrolledProductions[v] = Unroll_Production(Productions[v], v)
-			val, ok := UnrolledProductions[v].?
-			assert(ok)
-			node = val
-		}
+		node.value = term.(ProductionName)
+	// if val, ok := UnrolledProductions[v].?; ok {
+	// node = val
+	// } else {
+	// UnrolledProductions[v] = Unroll_Production(Productions[v], v)
+	// val, ok := UnrolledProductions[v].?
+	// assert(ok)
+	// node = val
+	// }
 	case Token:
 		node = {
 			value = v,
@@ -240,9 +229,6 @@ Unroll_Group :: proc(group: Group) -> GNode {
 	}
 
 	return node
-
-	// assert(false, "not implemented")
-	// return {}
 }
 
 Unroll_Option :: proc(opt: Option) -> GNode {
@@ -265,9 +251,6 @@ Unroll_Option :: proc(opt: Option) -> GNode {
 	}
 
 	return node
-
-	// assert(false, "not implemented")
-	// return {}
 }
 
 Unroll_Repetition :: proc(rep: Repetition) -> GNode {
@@ -286,13 +269,6 @@ Unroll_Repetition :: proc(rep: Repetition) -> GNode {
 		value = DoArray{skippable = true, value = make([]^GrammarNode, 1)},
 	}
 	node.value.(DoArray).value[0] = &arr[0]
-
-	// node := GNode {
-	// value = DoArray{skippable = false, value = make([]^GrammarNode, len(arr))},
-	// }
-	// for v, i in arr {
-	// node.value.(DoArray).value[i] = &arr[i]
-	// }
 
 	return node
 }

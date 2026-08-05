@@ -147,7 +147,7 @@ Productions: [ProductionName]Production = {
 	},
 	.EXPRESSION                  = {
 		Alternative{ProductionName.LITERALS},
-		// Alternative{ProductionName.FUNCTION_CALL},
+		Alternative{ProductionName.FUNCTION_CALL},
 		Alternative{ProductionName.OPERATOR_EXPRESSION},
 		Alternative{ProductionName.VARIABLE_NAME},
 	},
