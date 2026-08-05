@@ -105,10 +105,21 @@ ParseTokens :: proc(
 	if name, ok := gnode.prodStart.?; ok && !procStart {
 		pnew, t, err := ParseTokens(PNode{}, gnode, tokens, true)
 		if err == .OK {
-			pnew_pnode, ok := pnew.(PNode)
-			assert(ok)
-			pnew_pnode.value = name
-			append(&pnode.next, pnew_pnode)
+
+			switch val in pnew {
+			case ParseNode:
+				v := val
+				v.value = name
+				append(&pnode.next, v)
+			case [2]ParseNode:
+				v := val[0]
+				v.value = name
+				append(&pnode.next, v)
+				for v, i in val[1].next {
+					append(&pnode.next, v)
+				}
+			}
+
 			return pnode, t, .OK
 		}
 	}
@@ -127,16 +138,18 @@ ParseTokens :: proc(
 					return [2]PNode{pnode, p}, t, .OK
 				}
 
-				return {}, nil, err
+				return PNode{}, nil, err
 
 			} else {
 				p, t, err := ParseGnodeChildren(pnode, gnode, tokens[1:])
 				if err == .OK {
 					return p, t, .OK
+				} else {
+					return PNode{}, nil, .COULD_NOT_MATCH
 				}
 			}
 		} else {
-			return {}, nil, .COULD_NOT_MATCH
+			return PNode{}, nil, .COULD_NOT_MATCH
 		}
 	case DoArray:
 		// valuesMatched := false
@@ -148,7 +161,7 @@ ParseTokens :: proc(
 				if len(gnode.nodes) == 0 do return p, t, .OK
 
 				if gnode.endOfRepetition {
-					p2, t2, err2 := ParseGnodeChildren({}, gnode, tokens)
+					p2, t2, err2 := ParseGnodeChildren({}, gnode, t)
 					if err2 == .OK {
 						return [2]PNode{p.(PNode), p2}, t2, .OK
 						// return p2, t2, .OK
@@ -156,7 +169,7 @@ ParseTokens :: proc(
 						return p, t, .OK
 					}
 				} else {
-					p2, t2, err2 := ParseGnodeChildren(p.(PNode), gnode, tokens)
+					p2, t2, err2 := ParseGnodeChildren(p.(PNode), gnode, t)
 					if err2 == .OK {
 						return p2, t2, .OK
 					}
@@ -184,20 +197,20 @@ ParseTokens :: proc(
 		}
 
 		if val.skippable {
-			if len(gnode.nodes) == 0 do return {}, nil, .SKIPPABLE
+			if len(gnode.nodes) == 0 do return PNode{}, nil, .SKIPPABLE
 			// if len(gnode.nodes) == 0 do return pnode, tokens, .OK
 			p, t, err := ParseGnodeChildren(pnode, gnode, tokens)
 			if err == .OK {
 				return p, t, .OK
 			} else {
-				return {}, nil, .COULD_NOT_MATCH
+				return PNode{}, nil, .COULD_NOT_MATCH
 			}
 		} else {
-			return {}, nil, .COULD_NOT_MATCH
+			return PNode{}, nil, .COULD_NOT_MATCH
 		}
 
 	}
 
-	assert(false, "not implemented")
-	return {}, {}, .LOGICAL_ERROR
+	assert(false, "should never happen")
+	return PNode{}, {}, .LOGICAL_ERROR
 }
