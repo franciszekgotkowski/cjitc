@@ -111,9 +111,21 @@ Operator :: enum {
 	MORE_EQUAL,
 	EQUAL,
 	EQUAL_EQUAL,
+	NOT_EQUAL,
 	DOT,
 	PLUS,
 	MINUS,
+	MUL,
+	DIV,
+	OR,
+	AND,
+	NOT,
+	PERCENT,
+	BITWISE_OR,
+	BITWISE_NOT,
+	BITWISE_AND,
+	SHIFT_LEFT,
+	SHIFT_RIGHT,
 }
 
 Delimiter :: enum {
@@ -149,9 +161,21 @@ OperatorValues: [Operator]string = {
 	.MORE_EQUAL  = ">=",
 	.EQUAL       = "=",
 	.EQUAL_EQUAL = "==",
+	.NOT_EQUAL   = "!=",
 	.DOT         = ".",
 	.PLUS        = "+",
 	.MINUS       = "-",
+	.MUL         = "*",
+	.DIV         = "/",
+	.OR          = "||",
+	.AND         = "&&",
+	.NOT         = "!",
+	.PERCENT     = "%",
+	.BITWISE_OR  = "|",
+	.BITWISE_NOT = "~",
+	.BITWISE_AND = "&",
+	.SHIFT_LEFT  = "<<",
+	.SHIFT_RIGHT = ">>",
 }
 
 DelimiterValues: [Delimiter]string = {

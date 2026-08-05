@@ -191,6 +191,8 @@ Unroll_Term :: proc(term: Term) -> GNode {
 
 	switch v in term {
 	case ProductionName:
+		fmt.printf("len(UnrolledProductions) = %d\t", len(UnrolledProductions))
+		fmt.printf("v = %d\n", v)
 		if val, ok := UnrolledProductions[v].?; ok {
 			node = val
 		} else {
