@@ -37,6 +37,7 @@ Repetition :: distinct []Expression
 
 ProductionName :: enum {
 	CODE_ENTRY,
+	STATEMENT,
 	DECLS,
 	DECLARATION,
 	DECLARATION_WITH_ASSIGNMENT,
@@ -51,7 +52,6 @@ ProductionName :: enum {
 	CHAR_LITERAL,
 	FLOAT_LITERAL,
 	TEXT_LITERAL,
-	STATEMENT,
 	FUNCTION_CALL,
 	EXPRESSION,
 	ADD_OPERATORS,
@@ -67,7 +67,7 @@ ProductionName :: enum {
 
 ParseEntryPoint: ProductionName : .CODE_ENTRY
 
-UnrolledProductions: [ProductionName]Maybe(GNode)
+UnrolledProductions: [ProductionName]GNode = {}
 
 Productions: [ProductionName]Production = {
 	.CODE_ENTRY                  = {

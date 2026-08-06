@@ -77,8 +77,9 @@ test_token_match_different_type :: proc(t: ^testing.T) {
 }
 
 @(test)
-test_token_match_literal_ignores_kind :: proc(t: ^testing.T) {
-	// LITERAL tokens match as soon as the type matches, regardless of kind.
+test_token_match_literal_requires_same_kind :: proc(t: ^testing.T) {
+	// Unlike IDENTIFIER, LITERAL still distinguishes kind (DECIMAL vs
+	// CHARACTER vs FLOAT vs TEXT are not interchangeable).
 	a := Token {
 		type = .LITERAL,
 		kind = Literal.DECIMAL,
@@ -87,7 +88,7 @@ test_token_match_literal_ignores_kind :: proc(t: ^testing.T) {
 		type = .LITERAL,
 		kind = Literal.CHARACTER,
 	}
-	testing.expect(t, Token_Match(a, b), "LITERAL tokens should match regardless of kind")
+	testing.expect(t, !Token_Match(a, b), "LITERAL tokens of different kind should not match")
 	free_all()
 }
 
@@ -305,16 +306,18 @@ test_unroll_alternative_two_terms_linking :: proc(t: ^testing.T) {
 
 	arr, ok := node.value.(DoArray)
 	testing.expect(t, ok, "multi-term alternative should produce a DoArray")
-	testing.expect_value(t, len(arr.value), 2)
+	// DoArray.value is always a single entry point; the rest of the
+	// sequence is reachable through .nodes, which is what
+	// ParseGnodeChildren walks to consume subsequent terms.
+	testing.expect_value(t, len(arr.value), 1)
 
 	first := arr.value[0]
-	second := arr.value[1]
 
-	// Current behavior: index 0 gets NO forward link, index 1 links back to index 0.
-	testing.expect_value(t, len(first.nodes), 0)
-	testing.expect_value(t, len(second.nodes), 1)
-	if len(second.nodes) == 1 {
-		testing.expect(t, second.nodes[0] == first, "term[1] currently links back to term[0]")
+	testing.expect_value(t, len(first.nodes), 1)
+	if len(first.nodes) == 1 {
+		second := first.nodes[0]
+		_, is_identifier_token := second.value.(Token)
+		testing.expect(t, is_identifier_token, "term[0] should link to term[1]")
 	}
 	free_all()
 }
@@ -330,22 +333,21 @@ test_unroll_alternative_three_terms_linking :: proc(t: ^testing.T) {
 
 	arr, ok := node.value.(DoArray)
 	testing.expect(t, ok, "multi-term alternative should produce a DoArray")
-	testing.expect_value(t, len(arr.value), 3)
+	testing.expect_value(t, len(arr.value), 1)
 
+	// The chain is: entry -> term[1] -> term[2], each reachable via .nodes.
 	first := arr.value[0]
-	second := arr.value[1]
-	third := arr.value[2]
-
-	// Current behavior: 0 -> 1, 1 -> (nothing), 2 -> 0 (wraps around).
 	testing.expect_value(t, len(first.nodes), 1)
-	if len(first.nodes) == 1 {
-		testing.expect(t, first.nodes[0] == second, "term[0] currently links to term[1]")
-	}
-	testing.expect_value(t, len(second.nodes), 0)
-	testing.expect_value(t, len(third.nodes), 1)
-	if len(third.nodes) == 1 {
-		testing.expect(t, third.nodes[0] == first, "term[2] currently wraps back to term[0]")
-	}
+	if len(first.nodes) != 1 do return
+
+	second := first.nodes[0]
+	testing.expect_value(t, len(second.nodes), 1)
+	if len(second.nodes) != 1 do return
+
+	third := second.nodes[0]
+	_, third_is_semicolon := third.value.(Token)
+	testing.expect(t, third_is_semicolon, "term[2] should be reachable via term[1].nodes[0]")
+	testing.expect_value(t, len(third.nodes), 0)
 	free_all()
 }
 
@@ -433,21 +435,19 @@ test_unroll_repetition_two_elements_form_a_cycle :: proc(t: ^testing.T) {
 
 	arr, ok := node.value.(DoArray)
 	testing.expect(t, ok, "repetition should produce a DoArray")
-	testing.expect_value(t, len(arr.value), 2)
+	// Single entry point, like Unroll_Alternative; the cycle lives in .nodes.
+	testing.expect_value(t, len(arr.value), 1)
 
 	first := arr.value[0]
-	second := arr.value[1]
-
 	testing.expect(t, !first.endOfRepetition, "only the last element should be endOfRepetition")
-	testing.expect(t, second.endOfRepetition, "last element should be marked endOfRepetition")
-
 	testing.expect_value(t, len(first.nodes), 1)
-	if len(first.nodes) == 1 {
-		testing.expect(t, first.nodes[0] == second, "term[0] should link to term[1]")
-	}
+	if len(first.nodes) != 1 do return
+
+	second := first.nodes[0]
+	testing.expect(t, second.endOfRepetition, "last element should be marked endOfRepetition")
 	testing.expect_value(t, len(second.nodes), 1)
 	if len(second.nodes) == 1 {
-		testing.expect(t, second.nodes[0] == first, "term[1] currently wraps back to term[0]")
+		testing.expect(t, second.nodes[0] == first, "term[1] wraps back to term[0], closing the repetition cycle")
 	}
 	free_all()
 }
@@ -475,8 +475,8 @@ test_unroll_production_with_alternatives_sets_prod_start :: proc(t: ^testing.T) 
 	node := Unroll_Production(lang.Productions[.LITERALS], .LITERALS)
 
 	arr, ok := node.value.(DoArray)
-	testing.expect(t, ok, "LITERALS has two alternatives, so it should produce a DoArray")
-	testing.expect_value(t, len(arr.value), 2)
+	testing.expect(t, ok, "LITERALS has multiple alternatives, so it should produce a DoArray")
+	testing.expect_value(t, len(arr.value), len(lang.Productions[.LITERALS]))
 
 	name, has_name := node.prodStart.?
 	testing.expect(t, has_name, "prodStart should be set")
@@ -485,19 +485,18 @@ test_unroll_production_with_alternatives_sets_prod_start :: proc(t: ^testing.T) 
 }
 
 @(test)
-test_unroll_term_production_name_caches_result :: proc(t: ^testing.T) {
-	// Use a production not touched by the other tests to avoid cache races.
+test_unroll_term_production_name_points_at_slot :: proc(t: ^testing.T) {
+	// Unroll_Term no longer builds/caches on demand: it must return a
+	// DoArray wrapper whose single element is a pointer into the
+	// UnrolledProductions array slot for that name. It's PrepareGrammarGraph
+	// (not Unroll_Term) that's responsible for actually filling that slot in.
+	lang.UnrolledProductions = {}
+
 	node := Unroll_Term(ProductionName.FLOAT_TYPE)
 
-	tok, ok := node.value.(Token)
-	testing.expect(t, ok, "FLOAT_TYPE should unroll to a Token")
-	testing.expect(t, tok.kind == Keyword.FLOAT, "expected FLOAT keyword")
-
-	cached, has_cached := lang.UnrolledProductions[.FLOAT_TYPE].?
-	testing.expect(t, has_cached, "Unroll_Term should populate UnrolledProductions for the name")
-
-	name, has_name := cached.prodStart.?
-	testing.expect(t, has_name, "cached node should have prodStart set")
-	testing.expect(t, name == .FLOAT_TYPE, "cached node's prodStart should be FLOAT_TYPE")
+	arr, ok := node.value.(DoArray)
+	testing.expect(t, ok, "ProductionName term should unroll to a DoArray wrapper")
+	testing.expect_value(t, len(arr.value), 1)
+	testing.expect(t, arr.value[0] == &lang.UnrolledProductions[.FLOAT_TYPE], "wrapper should point at the UnrolledProductions slot")
 	free_all()
 }

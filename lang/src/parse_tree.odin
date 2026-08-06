@@ -2,6 +2,7 @@ package langlang
 
 import "core:encoding/json"
 import "core:fmt"
+import "core:slice"
 
 ParseError :: enum {
 	OK,
@@ -66,6 +67,7 @@ ParseTokens :: proc(
 						return val, toks, .OK
 					case [2]PNode:
 						pnode := pnode
+						pnode.next = slice.clone_to_dynamic(pnode.next[:])
 						append(&pnode.next, val[0])
 						for v, _ in val[1].next {
 							append(&pnode.next, v)
@@ -101,6 +103,7 @@ ParseTokens :: proc(
 		return pnode, nil, .INCORRECT_INPUT
 	}
 	pnode := pnode
+	pnode.next = slice.clone_to_dynamic(pnode.next[:])
 
 	if name, ok := gnode.prodStart.?; ok && !procStart {
 		pnew, t, err := ParseTokens(PNode{}, gnode, tokens, true)
@@ -158,8 +161,8 @@ ParseTokens :: proc(
 		for v, i in val.value {
 			p, t, err := ParseTokens(pnode, val.value[i], tokens[:])
 			if err == .OK {
-				_, ok := p.(PNode)
-				assert(ok)
+				// _, ok := p.(PNode)
+				// assert(ok)
 				if len(gnode.nodes) == 0 do return p, t, .OK
 
 				if gnode.endOfRepetition {

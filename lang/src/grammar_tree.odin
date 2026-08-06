@@ -12,35 +12,35 @@ DoArray :: struct {
 Deletable :: bool
 
 PrepareGrammarGraph :: proc() {
+	p := &UnrolledProductions
 	for v, i in ProductionName {
 		UnrolledProductions[v] = Unroll_Production(Productions[v], v)
 	}
+	return
 
-	p := &UnrolledProductions
+	// DFSProcedureLinkind :: proc(gnode: ^GNode) {
+	// 	if gnode.visited do return
 
-	DFSProcedureLinkind :: proc(gnode: ^GNode) {
-		if gnode.visited do return
+	// 	gnode.visited = true
+	// 	if v, ok := gnode.value.(ProductionName); ok {
+	// 		gn, ok := UnrolledProductions[v].?
+	// 		assert(ok)
+	// 		if val, ok := gn.value.(ProductionName); ok do DFSProcedureLinkind(&UnrolledProductions[v].?)
+	// 		gnode^ = gn
+	// 	}
+	// 	for _, i in gnode.nodes {
+	// 		DFSProcedureLinkind(gnode.nodes[i])
+	// 	}
+	// 	if _, ok := gnode.value.(DoArray); ok {
+	// 		for _, i in gnode.value.(DoArray).value {
+	// 			DFSProcedureLinkind(gnode.value.(DoArray).value[i])
+	// 		}
+	// 	}
+	// }
 
-		gnode.visited = true
-		if v, ok := gnode.value.(ProductionName); ok {
-			gn, ok := UnrolledProductions[v].?
-			assert(ok)
-			if val, ok := gn.value.(ProductionName); ok do DFSProcedureLinkind(&UnrolledProductions[v].?)
-			gnode^ = gn
-		}
-		for _, i in gnode.nodes {
-			DFSProcedureLinkind(gnode.nodes[i])
-		}
-		if _, ok := gnode.value.(DoArray); ok {
-			for _, i in gnode.value.(DoArray).value {
-				DFSProcedureLinkind(gnode.value.(DoArray).value[i])
-			}
-		}
-	}
-
-	for _, i in UnrolledProductions {
-		DFSProcedureLinkind(&UnrolledProductions[i].?)
-	}
+	// for _, i in UnrolledProductions {
+	// 	DFSProcedureLinkind(&UnrolledProductions[i].?)
+	// }
 
 }
 
@@ -181,15 +181,11 @@ Unroll_Term :: proc(term: Term) -> GNode {
 
 	switch v in term {
 	case ProductionName:
-		node.value = term.(ProductionName)
-	// if val, ok := UnrolledProductions[v].?; ok {
-	// node = val
-	// } else {
-	// UnrolledProductions[v] = Unroll_Production(Productions[v], v)
-	// val, ok := UnrolledProductions[v].?
-	// assert(ok)
-	// node = val
-	// }
+		arr := make([]^GrammarNode, 1)
+		arr[0] = &UnrolledProductions[v]
+		node = {
+			value = DoArray{value = arr},
+		}
 	case Token:
 		node = {
 			value = v,

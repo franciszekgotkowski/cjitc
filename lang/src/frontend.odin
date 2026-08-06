@@ -138,7 +138,7 @@ main :: proc() {
 	PrepareGrammarGraph()
 	p: ProductionName = .CODE_ENTRY
 
-	pnode, _, err := ParseTokens(PNode{}, &UnrolledProductions[p].?, tokens[:])
+	pnode, _, err := ParseTokens(PNode{}, &UnrolledProductions[p], tokens[:])
 	if err == .OK {
 		js, _ := json.marshal(pnode, json.Marshal_Options{pretty = true, use_enum_names = true})
 		fmt.printf("%s\n", js)
