@@ -66,13 +66,18 @@ ParseTokens :: proc(
 					case PNode:
 						return val, toks, .OK
 					case [2]PNode:
-						pnode := pnode
-						pnode.next = slice.clone_to_dynamic(pnode.next[:])
-						append(&pnode.next, val[0])
+						// val[0] was built by extending the *same* pnode
+						// passed into ParseTokens above (not a fresh {}),
+						// so it already contains everything pnode had.
+						// Re-appending val[0] onto pnode here would
+						// duplicate that shared prefix - val[0] is the new
+						// base, val[1].next is the further continuation.
+						result := val[0]
+						result.next = slice.clone_to_dynamic(result.next[:])
 						for v, _ in val[1].next {
-							append(&pnode.next, v)
+							append(&result.next, v)
 						}
-						return pnode, toks, .OK
+						return result, toks, .OK
 					}
 
 				} else if err == .SKIPPABLE {
@@ -83,15 +88,22 @@ ParseTokens :: proc(
 				return pnode, tokens, .OK
 			}
 		} else if len(tokens) == 0 {
-			for v, i in gnode.nodes {
-				p, toks, err := ParseTokens(pnode, gnode.nodes[i], tokens)
-				if err == .SKIPPABLE {
-					return pnode, tokens, .OK
-				} else if err != .INCORRECT_INPUT {
-					return {}, {}, .COULD_NOT_MATCH
-				}
+			// Out of tokens before matching whatever comes next. That's
+			// only fine if `gnode` is the closing element of a repetition
+			// cycle (gnode.nodes loops back to try another cycle, which is
+			// optional). Otherwise `gnode.nodes` is a mandatory next step
+			// (the next term of a fixed Alternative, or a non-final step
+			// inside a repetition body) and running out of input here
+			// means the whole thing failed to match, not that it's done.
+			//
+			// (ParseTokens always returns .INCORRECT_INPUT immediately for
+			// empty tokens, regardless of what gnode.nodes[i] is, so that
+			// can never itself tell us whether stopping here was allowed -
+			// gnode.endOfRepetition is the only signal we have.)
+			if gnode.endOfRepetition {
+				return pnode, tokens, .OK
 			}
-			return pnode, tokens, .OK
+			return {}, {}, .COULD_NOT_MATCH
 		}
 
 		return {}, {}, .COULD_NOT_MATCH

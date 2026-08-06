@@ -101,6 +101,7 @@ RuneWithTokenArr :: proc(token: Token) -> [dynamic]RuneWithToken {
 main :: proc() {
 
 	trie := make_token_trie()
+	defer Trie_Delete(RuneWithToken, &trie)
 
 	// js, _ := json.marshal(trie, json.Marshal_Options{pretty = true, use_enum_names = true})
 	// fmt.printfln("%s", js)
@@ -130,15 +131,15 @@ main :: proc() {
 	mem.dynamic_arena_init(&arena)
 	context.allocator = mem.dynamic_arena_allocator(&arena)
 
-	defer {
-		mem.dynamic_arena_destroy(&arena)
-		context.allocator = alloc
-	}
+	defer mem.dynamic_arena_destroy(&arena)
 
 	PrepareGrammarGraph()
 	p: ProductionName = .CODE_ENTRY
 
+	up := &UnrolledProductions
+
 	pnode, _, err := ParseTokens(PNode{}, &UnrolledProductions[p], tokens[:])
+	context.allocator = alloc
 	if err == .OK {
 		js, _ := json.marshal(pnode, json.Marshal_Options{pretty = true, use_enum_names = true})
 		fmt.printf("%s\n", js)
