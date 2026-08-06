@@ -127,12 +127,18 @@ ParseTokens :: proc(
 				v.value = name
 				append(&pnode.next, v)
 			case [2]ParseNode:
+				// val[0] is only the *first* repetition unit (e.g. the
+				// first STATEMENT of a CODE_ENTRY); val[1].next holds the
+				// rest of them. All of it belongs to this one production,
+				// so it all needs to end up under the single node we're
+				// about to label - not as siblings of it one level up.
 				v := val[0]
 				v.value = name
-				append(&pnode.next, v)
-				for v, i in val[1].next {
-					append(&pnode.next, v)
+				v.next = slice.clone_to_dynamic(v.next[:])
+				for tail_child in val[1].next {
+					append(&v.next, tail_child)
 				}
+				append(&pnode.next, v)
 			}
 
 			return pnode, t, .OK

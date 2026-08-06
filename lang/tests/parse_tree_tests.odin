@@ -369,6 +369,23 @@ test_parse_code_entry_multiple_statements :: proc(t: ^testing.T) {
 
 	c_stmt, _ := count_labeled(&root, .STATEMENT)
 	testing.expect_value(t, c_stmt, 3)
+
+	// Regression check for a specific shape bug: the repetition merge used
+	// to only nest the *first* STATEMENT under the CODE_ENTRY node and
+	// leak the rest out as CODE_ENTRY's own siblings one level up (i.e.
+	// root.next was [CODE_ENTRY{STATEMENT_1}, STATEMENT_2, STATEMENT_3]
+	// instead of [CODE_ENTRY{STATEMENT_1, STATEMENT_2, STATEMENT_3}]).
+	testing.expect_value(t, len(root.next), 1)
+	if len(root.next) == 1 {
+		code_entry := root.next[0]
+		pn, is_pn := code_entry.value.(ProductionName)
+		testing.expect(t, is_pn && pn == .CODE_ENTRY, "root's only child should be the CODE_ENTRY node")
+		testing.expect_value(t, len(code_entry.next), 3)
+		for stmt in code_entry.next {
+			stmt_pn, stmt_is_pn := stmt.value.(ProductionName)
+			testing.expect(t, stmt_is_pn && stmt_pn == .STATEMENT, "every statement should be a direct child of CODE_ENTRY, not a sibling of it")
+		}
+	}
 	free_all()
 }
 
