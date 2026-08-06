@@ -98,8 +98,6 @@ Keyword :: enum {
 	FLOAT,
 	CHAR,
 	STRING,
-	FUNCTION,
-	DECLARE,
 	RETURN,
 	IF,
 }
@@ -115,17 +113,20 @@ Operator :: enum {
 	DOT,
 	PLUS,
 	MINUS,
+	PLUS_PLUS,
+	MINUS_MINUS,
 	MUL,
 	DIV,
 	OR,
-	AND,
+	AND_AND,
 	NOT,
 	PERCENT,
 	BITWISE_OR,
 	BITWISE_NOT,
-	BITWISE_AND,
+	AND,
 	SHIFT_LEFT,
 	SHIFT_RIGHT,
+	RIGHT_ARROW,
 }
 
 Delimiter :: enum {
@@ -144,14 +145,12 @@ Literal :: enum {
 }
 
 KeywordValues: [Keyword]string = {
-	.INT      = "int",
-	.FLOAT    = "float",
-	.CHAR     = "char",
-	.STRING   = "string",
-	.FUNCTION = "function",
-	.DECLARE  = "declare",
-	.RETURN   = "return",
-	.IF       = "if",
+	.INT    = "int",
+	.FLOAT  = "float",
+	.CHAR   = "char",
+	.STRING = "string",
+	.RETURN = "return",
+	.IF     = "if",
 }
 
 OperatorValues: [Operator]string = {
@@ -165,17 +164,20 @@ OperatorValues: [Operator]string = {
 	.DOT         = ".",
 	.PLUS        = "+",
 	.MINUS       = "-",
+	.PLUS_PLUS   = "++",
+	.MINUS_MINUS = "--",
 	.MUL         = "*",
 	.DIV         = "/",
 	.OR          = "||",
-	.AND         = "&&",
+	.AND_AND     = "&&",
 	.NOT         = "!",
 	.PERCENT     = "%",
 	.BITWISE_OR  = "|",
 	.BITWISE_NOT = "~",
-	.BITWISE_AND = "&",
+	.AND         = "&",
 	.SHIFT_LEFT  = "<<",
 	.SHIFT_RIGHT = ">>",
+	.RIGHT_ARROW = "->",
 }
 
 DelimiterValues: [Delimiter]string = {
