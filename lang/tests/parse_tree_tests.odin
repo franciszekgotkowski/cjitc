@@ -227,11 +227,46 @@ test_parse_declaration_sequence :: proc(t: ^testing.T) {
 
 @(test)
 test_parse_declaration_with_assignment :: proc(t: ^testing.T) {
+	// RHS is ProductionName.EXPRESSION (not .LITERALS directly), so a bare
+	// literal must still work by EXPRESSION resolving to LITERALS first.
 	input := []Token {
 		{type = .KEYWORD, kind = Keyword.FLOAT},
 		{type = .IDENTIFIER},
 		{type = .OPERATOR, kind = Operator.EQUAL},
 		{type = .LITERAL, kind = Literal.DECIMAL},
+		{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
+	}
+
+	root, remaining, err := parse_production(.DECLARATION_WITH_ASSIGNMENT, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+
+	leaves, _, exceeded := collect_leaf_tokens(&root)
+	testing.expect(t, !exceeded)
+	testing.expect(t, tokens_equal(leaves[:], input))
+
+	c_expr, _ := count_labeled(&root, .EXPRESSION)
+	testing.expect_value(t, c_expr, 1)
+	free_all()
+}
+
+@(test)
+test_parse_declaration_with_assignment_to_variable :: proc(t: ^testing.T) {
+	// Regression coverage for the RHS having widened from .LITERALS to
+	// .EXPRESSION: assigning from another variable (not just a literal)
+	// must now be accepted too.
+	//
+	// Note: EXPRESSION resolves a bare identifier through OPERATOR_EXPRESSION
+	// (tried before VARIABLE_NAME), since UNARY_EXPRESSIONS' third
+	// alternative accepts a lone identifier with no operator - so this
+	// checks the leaves match rather than which specific label EXPRESSION
+	// picked.
+	input := []Token {
+		{type = .KEYWORD, kind = Keyword.INT},
+		{type = .IDENTIFIER}, // x
+		{type = .OPERATOR, kind = Operator.EQUAL},
+		{type = .IDENTIFIER}, // y
 		{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
 	}
 
@@ -406,5 +441,278 @@ test_parse_empty_tokens_fails :: proc(t: ^testing.T) {
 
 	testing.expect(t, err == .INCORRECT_INPUT)
 	testing.expect(t, remaining == nil)
+	free_all()
+}
+
+// ---------------------------------------------------------------------------
+// Grammar added after the above tests were written: MEMBER_ACCESS_EXPRESSION
+// / MEMBER_ACCESS_PTR_EXPRESSION, FUNCTION_DECLARATION, PREFIX_OPERATORS /
+// POSTFIX_OPERATORS, and the reworked UNARY_EXPRESSIONS (which for the
+// first time makes COMP_EXPRESSIONS/ADD_EXPRESSIONS/MUL_EXPRESSIONS
+// actually reachable - UNARY_EXPRESSIONS used to be a Token{} stub that
+// could never match anything).
+// ---------------------------------------------------------------------------
+
+@(test)
+test_parse_member_access_expression :: proc(t: ^testing.T) {
+	input := []Token {
+		{type = .IDENTIFIER},
+		{type = .OPERATOR, kind = Operator.DOT},
+		{type = .IDENTIFIER},
+	}
+
+	root, remaining, err := parse_production(.MEMBER_ACCESS_EXPRESSION, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+
+	leaves, _, exceeded := collect_leaf_tokens(&root)
+	testing.expect(t, !exceeded)
+	testing.expect(t, tokens_equal(leaves[:], input))
+	free_all()
+}
+
+@(test)
+test_parse_member_access_ptr_expression :: proc(t: ^testing.T) {
+	input := []Token {
+		{type = .IDENTIFIER},
+		{type = .OPERATOR, kind = Operator.RIGHT_ARROW},
+		{type = .IDENTIFIER},
+	}
+
+	root, remaining, err := parse_production(.MEMBER_ACCESS_PTR_EXPRESSION, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+
+	leaves, _, exceeded := collect_leaf_tokens(&root)
+	testing.expect(t, !exceeded)
+	testing.expect(t, tokens_equal(leaves[:], input))
+	free_all()
+}
+
+@(test)
+test_parse_unary_expression_bare_identifier :: proc(t: ^testing.T) {
+	input := []Token{{type = .IDENTIFIER}}
+
+	_, remaining, err := parse_production(.UNARY_EXPRESSIONS, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+	free_all()
+}
+
+@(test)
+test_parse_unary_expression_prefix_operator :: proc(t: ^testing.T) {
+	// ++x
+	input := []Token{{type = .OPERATOR, kind = Operator.PLUS_PLUS}, {type = .IDENTIFIER}}
+
+	root, remaining, err := parse_production(.UNARY_EXPRESSIONS, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+
+	c, _ := count_labeled(&root, .PREFIX_OPERATORS)
+	testing.expect_value(t, c, 1)
+	free_all()
+}
+
+@(test)
+test_parse_unary_expression_postfix_operator :: proc(t: ^testing.T) {
+	// x++
+	input := []Token{{type = .IDENTIFIER}, {type = .OPERATOR, kind = Operator.PLUS_PLUS}}
+
+	root, remaining, err := parse_production(.UNARY_EXPRESSIONS, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+
+	c, _ := count_labeled(&root, .POSTFIX_OPERATORS)
+	testing.expect_value(t, c, 1)
+	free_all()
+}
+
+@(test)
+test_parse_add_expressions_chain :: proc(t: ^testing.T) {
+	// Regression test: MUL_EXPRESSIONS' and ADD_EXPRESSIONS' trailing
+	// `{ OPERATOR OPERAND }` repetition used to be misdiagnosed as a
+	// *mandatory* continuation whenever the operand it matched left no
+	// tokens behind, which made "x + y" only ever consume "x". This is
+	// only reachable now that UNARY_EXPRESSIONS can actually match a bare
+	// identifier at the bottom of the chain.
+	input := []Token {
+		{type = .IDENTIFIER}, // x
+		{type = .OPERATOR, kind = Operator.PLUS},
+		{type = .IDENTIFIER}, // y
+	}
+
+	root, remaining, err := parse_production(.ADD_EXPRESSIONS, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+
+	leaves, _, exceeded := collect_leaf_tokens(&root)
+	testing.expect(t, !exceeded)
+	testing.expect(t, tokens_equal(leaves[:], input))
+
+	c_add_op, _ := count_labeled(&root, .ADD_OPERATORS)
+	c_mul, _ := count_labeled(&root, .MUL_EXPRESSIONS)
+	testing.expect_value(t, c_add_op, 1)
+	testing.expect_value(t, c_mul, 2)
+	free_all()
+}
+
+@(test)
+test_parse_operator_expression_full_chain_with_prefix :: proc(t: ^testing.T) {
+	// ++x + y, all the way through
+	// OPERATOR_EXPRESSION -> COMP_EXPRESSIONS -> ADD_EXPRESSIONS ->
+	// MUL_EXPRESSIONS -> UNARY_EXPRESSIONS.
+	input := []Token {
+		{type = .OPERATOR, kind = Operator.PLUS_PLUS},
+		{type = .IDENTIFIER}, // x
+		{type = .OPERATOR, kind = Operator.PLUS},
+		{type = .IDENTIFIER}, // y
+	}
+
+	root, remaining, err := parse_production(.OPERATOR_EXPRESSION, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+
+	leaves, _, exceeded := collect_leaf_tokens(&root)
+	testing.expect(t, !exceeded)
+	testing.expect(t, tokens_equal(leaves[:], input))
+
+	c_prefix, _ := count_labeled(&root, .PREFIX_OPERATORS)
+	c_add_op, _ := count_labeled(&root, .ADD_OPERATORS)
+	testing.expect_value(t, c_prefix, 1)
+	testing.expect_value(t, c_add_op, 1)
+	free_all()
+}
+
+@(test)
+test_parse_function_declaration_no_params :: proc(t: ^testing.T) {
+	// Grammar as written: the body is exactly one mandatory STATEMENT (not
+	// a repetition), so a function body always has exactly one statement.
+	input := []Token {
+		{type = .KEYWORD, kind = Keyword.INT}, // return type
+		{type = .IDENTIFIER}, // function name
+		{type = .DELIMITER, kind = Delimiter.PAREN_OPEN},
+		{type = .DELIMITER, kind = Delimiter.PAREN_CLOSE},
+		{type = .DELIMITER, kind = Delimiter.BRACE_OPEN},
+		{type = .KEYWORD, kind = Keyword.INT}, // body: "int x;"
+		{type = .IDENTIFIER},
+		{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
+		{type = .DELIMITER, kind = Delimiter.BRACE_CLOSE},
+	}
+
+	root, remaining, err := parse_production(.FUNCTION_DECLARATION, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+
+	leaves, _, exceeded := collect_leaf_tokens(&root)
+	testing.expect(t, !exceeded)
+	testing.expect(t, tokens_equal(leaves[:], input))
+
+	c_stmt, _ := count_labeled(&root, .STATEMENT)
+	testing.expect_value(t, c_stmt, 1)
+	free_all()
+}
+
+@(test)
+test_parse_function_declaration_one_param :: proc(t: ^testing.T) {
+	input := []Token {
+		{type = .KEYWORD, kind = Keyword.INT}, // return type
+		{type = .IDENTIFIER}, // function name
+		{type = .DELIMITER, kind = Delimiter.PAREN_OPEN},
+		{type = .KEYWORD, kind = Keyword.INT}, // param type
+		{type = .IDENTIFIER}, // param name
+		{type = .DELIMITER, kind = Delimiter.PAREN_CLOSE},
+		{type = .DELIMITER, kind = Delimiter.BRACE_OPEN},
+		{type = .KEYWORD, kind = Keyword.INT}, // body: "int x;"
+		{type = .IDENTIFIER},
+		{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
+		{type = .DELIMITER, kind = Delimiter.BRACE_CLOSE},
+	}
+
+	root, remaining, err := parse_production(.FUNCTION_DECLARATION, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+
+	leaves, _, exceeded := collect_leaf_tokens(&root)
+	testing.expect(t, !exceeded)
+	testing.expect(t, tokens_equal(leaves[:], input))
+	free_all()
+}
+
+@(test)
+test_parse_function_declaration_multiple_params :: proc(t: ^testing.T) {
+	// Grammar as written: every parameter (including ones after the
+	// first) carries its own type - "," TYPES IDENTIFIER repeated.
+	input := []Token {
+		{type = .KEYWORD, kind = Keyword.INT},
+		{type = .IDENTIFIER},
+		{type = .DELIMITER, kind = Delimiter.PAREN_OPEN},
+		{type = .KEYWORD, kind = Keyword.INT},
+		{type = .IDENTIFIER}, // param 1
+		{type = .DELIMITER, kind = Delimiter.COMMA},
+		{type = .KEYWORD, kind = Keyword.FLOAT},
+		{type = .IDENTIFIER}, // param 2
+		{type = .DELIMITER, kind = Delimiter.COMMA},
+		{type = .KEYWORD, kind = Keyword.CHAR},
+		{type = .IDENTIFIER}, // param 3
+		{type = .DELIMITER, kind = Delimiter.PAREN_CLOSE},
+		{type = .DELIMITER, kind = Delimiter.BRACE_OPEN},
+		{type = .KEYWORD, kind = Keyword.INT}, // body: "int x;"
+		{type = .IDENTIFIER},
+		{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
+		{type = .DELIMITER, kind = Delimiter.BRACE_CLOSE},
+	}
+
+	root, remaining, err := parse_production(.FUNCTION_DECLARATION, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+
+	leaves, _, exceeded := collect_leaf_tokens(&root)
+	testing.expect(t, !exceeded)
+	testing.expect(t, tokens_equal(leaves[:], input))
+
+	c_types, _ := count_labeled(&root, .TYPES)
+	testing.expect_value(t, c_types, 5) // return type + 3 param types + body statement's type
+	free_all()
+}
+
+@(test)
+test_parse_decls_picks_function_declaration :: proc(t: ^testing.T) {
+	// DECLS tries DECLARATION_WITH_ASSIGNMENT then DECLARATION first, both
+	// of which require IDENTIFIER to be immediately followed by "=" or
+	// ";" - a "(" here must fail both and fall back to FUNCTION_DECLARATION.
+	input := []Token {
+		{type = .KEYWORD, kind = Keyword.INT},
+		{type = .IDENTIFIER},
+		{type = .DELIMITER, kind = Delimiter.PAREN_OPEN},
+		{type = .DELIMITER, kind = Delimiter.PAREN_CLOSE},
+		{type = .DELIMITER, kind = Delimiter.BRACE_OPEN},
+		{type = .KEYWORD, kind = Keyword.INT}, // body: "int x;" (mandatory)
+		{type = .IDENTIFIER},
+		{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
+		{type = .DELIMITER, kind = Delimiter.BRACE_CLOSE},
+	}
+
+	root, remaining, err := parse_production(.DECLS, input)
+
+	testing.expect(t, err == .OK)
+	testing.expect_value(t, len(remaining), 0)
+
+	c_fndecl, _ := count_labeled(&root, .FUNCTION_DECLARATION)
+	c_decl, _ := count_labeled(&root, .DECLARATION)
+	c_decl_assign, _ := count_labeled(&root, .DECLARATION_WITH_ASSIGNMENT)
+	testing.expect_value(t, c_fndecl, 1)
+	// the body statement ("int x;") is itself a nested DECLARATION
+	testing.expect_value(t, c_decl, 1)
+	testing.expect_value(t, c_decl_assign, 0)
 	free_all()
 }

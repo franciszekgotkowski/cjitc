@@ -120,19 +120,19 @@ IdentifyWord_test :: proc(t: ^testing.T) {
 	defer lang.Trie_Delete(RuneWithToken, &trie)
 
 	tokens: []lang.Token = {
-		lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE},
+		lang.Token{type = .KEYWORD, kind = lang.Keyword.RETURN},
 		lang.Token{type = .IDENTIFIER, lexeme = []rune{'x'}},
 		lang.Token{type = .KEYWORD, kind = lang.Keyword.INT},
 		lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN},
 	}
 
-	runes := utf8.string_to_runes(`declare x int;`)
+	runes := utf8.string_to_runes(`return x int;`)
 	defer delete(runes)
 	code := runes
 
 	token := lang.IdentifyWord(code, &trie)
 	exp(t, lang.Token_Match(token, tokens[0]))
-	code = code[8:]
+	code = code[7:]
 	token = lang.IdentifyWord(code, &trie)
 	exp(t, token.lexeme == nil)
 	code = code[2:]
@@ -214,7 +214,8 @@ CreateIdentifier_test :: proc(t: ^testing.T) {
 		"|",
 		"\"",
 	}
-	lengths: []int = {1, 2, 4, 0, 2, 0, 3, 4, 0, 0, 7, 0, 0, 0}
+	// "function" is no longer a keyword, so it's now a plain 8-char identifier.
+	lengths: []int = {1, 2, 4, 0, 2, 0, 3, 4, 8, 0, 7, 0, 0, 0}
 
 	trie := lang.make_token_trie()
 	defer lang.Trie_Delete(RuneWithToken, &trie)
@@ -256,15 +257,15 @@ Tokenise_test :: proc(t: ^testing.T) {
 	// "declare x int;"
 	tokenArrays: [][]lang.Token = {
 		{
-			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, lexeme = nil},
 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
 			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
 		},
 		{
-			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, lexeme = nil},
 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'f'}},
-			lang.Token{type = .KEYWORD, kind = lang.Keyword.FUNCTION, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, lexeme = nil},
 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
 		},
 		{
@@ -401,11 +402,11 @@ Tokenise_test :: proc(t: ^testing.T) {
 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.BRACE_CLOSE, lexeme = nil},
 		},
 		{
-			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, lexeme = nil},
 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'x'}},
 			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, lexeme = nil},
 			lang.Token{type = .IDENTIFIER, kind = lang.Literal.DECIMAL, lexeme = []rune{'y'}},
 			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
@@ -436,7 +437,7 @@ Tokenise_test :: proc(t: ^testing.T) {
 
 		// Second source string
 		{
-			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, lexeme = nil},
 			lang.Token {
 				type = .IDENTIFIER,
 				kind = lang.Literal.DECIMAL,
@@ -444,7 +445,7 @@ Tokenise_test :: proc(t: ^testing.T) {
 			},
 			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, lexeme = nil},
 			lang.Token {
 				type = .IDENTIFIER,
 				kind = lang.Literal.DECIMAL,
@@ -452,7 +453,7 @@ Tokenise_test :: proc(t: ^testing.T) {
 			},
 			lang.Token{type = .KEYWORD, kind = lang.Keyword.INT, lexeme = nil},
 			lang.Token{type = .DELIMITER, kind = lang.Delimiter.SEMICOLUMN, lexeme = nil},
-			lang.Token{type = .KEYWORD, kind = lang.Keyword.DECLARE, lexeme = nil},
+			lang.Token{type = .IDENTIFIER, lexeme = nil},
 			lang.Token {
 				type = .IDENTIFIER,
 				kind = lang.Literal.DECIMAL,

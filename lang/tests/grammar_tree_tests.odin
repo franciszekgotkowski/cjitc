@@ -34,7 +34,164 @@ Unroll_Repetition :: lang.Unroll_Repetition
 match :: lang.match
 Token_Match :: lang.Token_Match
 
-// import "core:testing"
+import "core:testing"
+
+// ---------------------------------------------------------------------------
+// PrepareGrammarGraph over the real Productions table, focused on the
+// grammar recently added to grammar_constants.odin: FUNCTION_DECLARATION,
+// MEMBER_ACCESS_EXPRESSION / MEMBER_ACCESS_PTR_EXPRESSION, PREFIX_OPERATORS
+// / POSTFIX_OPERATORS, and the reworked UNARY_EXPRESSIONS.
+//
+// These check the GNode *graph shape* (prodStart, alternative counts,
+// which ProductionName wrapper points at which slot) - i.e. that the
+// grammar as written in grammar_constants.odin got built the way it reads,
+// as opposed to parse_tree_tests.odin which checks that real token
+// sequences parse into a correct ParseNode tree.
+// ---------------------------------------------------------------------------
+
+@(test)
+test_grammar_graph_function_declaration_prod_start :: proc(t: ^testing.T) {
+	PrepareGrammarGraph()
+
+	node := lang.UnrolledProductions[.FUNCTION_DECLARATION]
+	name, ok := node.prodStart.?
+	testing.expect(t, ok)
+	testing.expect(t, name == .FUNCTION_DECLARATION)
+	free_all()
+}
+
+@(test)
+test_grammar_graph_decls_has_three_alternatives_including_function_declaration :: proc(t: ^testing.T) {
+	PrepareGrammarGraph()
+
+	decls := lang.UnrolledProductions[.DECLS]
+	arr, ok := decls.value.(DoArray)
+	testing.expect(t, ok)
+	testing.expect_value(t, len(arr.value), len(lang.Productions[.DECLS]))
+	testing.expect_value(t, len(arr.value), 3)
+
+	// third alternative should be the wrapper pointing at
+	// UnrolledProductions[.FUNCTION_DECLARATION]
+	third := arr.value[2]
+	third_arr, third_ok := third.value.(DoArray)
+	testing.expect(t, third_ok)
+	testing.expect_value(t, len(third_arr.value), 1)
+	testing.expect(t, third_arr.value[0] == &lang.UnrolledProductions[.FUNCTION_DECLARATION])
+	free_all()
+}
+
+@(test)
+test_grammar_graph_expression_includes_member_access_alternatives :: proc(t: ^testing.T) {
+	PrepareGrammarGraph()
+
+	expr := lang.UnrolledProductions[.EXPRESSION]
+	arr, ok := expr.value.(DoArray)
+	testing.expect(t, ok)
+	testing.expect_value(t, len(arr.value), len(lang.Productions[.EXPRESSION]))
+	testing.expect_value(t, len(arr.value), 6)
+
+	member_access := arr.value[4]
+	member_access_arr, ma_ok := member_access.value.(DoArray)
+	testing.expect(t, ma_ok)
+	testing.expect(t, member_access_arr.value[0] == &lang.UnrolledProductions[.MEMBER_ACCESS_EXPRESSION])
+
+	member_access_ptr := arr.value[5]
+	member_access_ptr_arr, map_ok := member_access_ptr.value.(DoArray)
+	testing.expect(t, map_ok)
+	testing.expect(t, member_access_ptr_arr.value[0] == &lang.UnrolledProductions[.MEMBER_ACCESS_PTR_EXPRESSION])
+	free_all()
+}
+
+@(test)
+test_grammar_graph_member_access_expression_is_three_term_chain :: proc(t: ^testing.T) {
+	PrepareGrammarGraph()
+
+	node := lang.UnrolledProductions[.MEMBER_ACCESS_EXPRESSION]
+	name, ok := node.prodStart.?
+	testing.expect(t, ok && name == .MEMBER_ACCESS_EXPRESSION)
+
+	// IDENTIFIER "." IDENTIFIER: a single entry point chained through
+	// .nodes, same shape as any other multi-term Alternative.
+	arr, arr_ok := node.value.(DoArray)
+	testing.expect(t, arr_ok)
+	testing.expect_value(t, len(arr.value), 1)
+
+	first := arr.value[0]
+	_, first_is_identifier := first.value.(Token)
+	testing.expect(t, first_is_identifier)
+	testing.expect_value(t, len(first.nodes), 1)
+	if len(first.nodes) != 1 do return
+
+	dot := first.nodes[0]
+	dot_tok, dot_ok := dot.value.(Token)
+	testing.expect(t, dot_ok && dot_tok.type == .OPERATOR && dot_tok.kind == Operator.DOT)
+	testing.expect_value(t, len(dot.nodes), 1)
+	free_all()
+}
+
+@(test)
+test_grammar_graph_member_access_ptr_expression_uses_right_arrow :: proc(t: ^testing.T) {
+	PrepareGrammarGraph()
+
+	node := lang.UnrolledProductions[.MEMBER_ACCESS_PTR_EXPRESSION]
+	arr, arr_ok := node.value.(DoArray)
+	testing.expect(t, arr_ok)
+
+	first := arr.value[0]
+	testing.expect_value(t, len(first.nodes), 1)
+	if len(first.nodes) != 1 do return
+
+	arrow := first.nodes[0]
+	arrow_tok, arrow_ok := arrow.value.(Token)
+	testing.expect(t, arrow_ok && arrow_tok.type == .OPERATOR && arrow_tok.kind == Operator.RIGHT_ARROW)
+	free_all()
+}
+
+@(test)
+test_grammar_graph_prefix_and_postfix_operator_counts :: proc(t: ^testing.T) {
+	PrepareGrammarGraph()
+
+	prefix := lang.UnrolledProductions[.PREFIX_OPERATORS]
+	prefix_arr, prefix_ok := prefix.value.(DoArray)
+	testing.expect(t, prefix_ok)
+	testing.expect_value(t, len(prefix_arr.value), len(lang.Productions[.PREFIX_OPERATORS]))
+
+	postfix := lang.UnrolledProductions[.POSTFIX_OPERATORS]
+	postfix_arr, postfix_ok := postfix.value.(DoArray)
+	testing.expect(t, postfix_ok)
+	testing.expect_value(t, len(postfix_arr.value), len(lang.Productions[.POSTFIX_OPERATORS]))
+	free_all()
+}
+
+@(test)
+test_grammar_graph_unary_expressions_has_three_alternatives :: proc(t: ^testing.T) {
+	PrepareGrammarGraph()
+
+	node := lang.UnrolledProductions[.UNARY_EXPRESSIONS]
+	name, ok := node.prodStart.?
+	testing.expect(t, ok && name == .UNARY_EXPRESSIONS)
+
+	arr, arr_ok := node.value.(DoArray)
+	testing.expect(t, arr_ok)
+	testing.expect_value(t, len(arr.value), len(lang.Productions[.UNARY_EXPRESSIONS]))
+	testing.expect_value(t, len(arr.value), 3)
+
+	// first alternative is a 2-term Alternative (PREFIX_OPERATORS, Group),
+	// so arr.value[0] is that alternative's own single entry point, whose
+	// one DoArray element is the actual PREFIX_OPERATORS-wrapper term,
+	// chained via .nodes to the Group term.
+	first_alt := arr.value[0]
+	first_alt_arr, first_alt_ok := first_alt.value.(DoArray)
+	testing.expect(t, first_alt_ok)
+	testing.expect_value(t, len(first_alt_arr.value), 1)
+
+	prefix_term := first_alt_arr.value[0]
+	prefix_term_arr, prefix_term_ok := prefix_term.value.(DoArray)
+	testing.expect(t, prefix_term_ok)
+	testing.expect(t, prefix_term_arr.value[0] == &lang.UnrolledProductions[.PREFIX_OPERATORS])
+	testing.expect_value(t, len(prefix_term.nodes), 1)
+	free_all()
+}
 
 // @(test)
 // test_search_in_add_array_simple :: proc(t: ^testing.T) {

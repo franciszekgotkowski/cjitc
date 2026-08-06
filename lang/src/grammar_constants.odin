@@ -114,7 +114,7 @@ Productions: [ProductionName]Production = {
 			.TYPES,
 			Token{type = .IDENTIFIER},
 			Token{type = .OPERATOR, kind = Operator.EQUAL},
-			.LITERALS,
+			.EXPRESSION,
 			Token{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
 		},
 	},
@@ -145,6 +145,7 @@ Productions: [ProductionName]Production = {
 							Expression {
 								Alternative {
 									Token{type = .DELIMITER, kind = Delimiter.COMMA},
+									ProductionName.TYPES,
 									Token{type = .IDENTIFIER},
 								},
 							},
@@ -154,7 +155,7 @@ Productions: [ProductionName]Production = {
 			},
 			Token{type = .DELIMITER, kind = Delimiter.PAREN_CLOSE},
 			Token{type = .DELIMITER, kind = Delimiter.BRACE_OPEN},
-			Repetition{Expression{Alternative{ProductionName.STATEMENT}}},
+			.STATEMENT,
 			Token{type = .DELIMITER, kind = Delimiter.BRACE_CLOSE},
 		},
 	},

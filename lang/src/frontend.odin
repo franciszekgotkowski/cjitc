@@ -116,8 +116,23 @@ main :: proc() {
 	// 	float fl = 3;
 	// 	`,
 	// )
+	// code: []rune = utf8.string_to_runes(`
+	// int ii(int x, float fl) {
+	// }
+	// `)
+	// code: []rune = utf8.string_to_runes(
+	// 	`
+	// 	float f = 5.0; float f(int i){} func(); funx(4.5); fu(3); fu(4, 4.4); fu(4, 4.4, 'd'); fu(4, 4.4, 'f', 8); fu(4, 4.4, 'g', 8, 4.4);
+
+	// 	`,
+	// )
 	code: []rune = utf8.string_to_runes(
-		"float f = 5.0; float f(int i){} func(); funx(4.5); fu(3); fu(4, 4.4); fu(4, 4.4, 'd'); fu(4, 4.4, 'f', 8); fu(4, 4.4, 'g', 8, 4.4);",
+		`
+	int ii(int x, float fl) {
+		float ff = f(fl)
+		return ff * x;
+	}
+	`,
 	)
 	// code: []rune = utf8.string_to_runes("float f = 5.6;func();")
 	tokens := Tokenise(code, &trie)
