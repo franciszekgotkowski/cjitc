@@ -53,6 +53,7 @@ ProductionName :: enum {
 	CHAR_LITERAL,
 	FLOAT_LITERAL,
 	TEXT_LITERAL,
+	FUNCTION_CALL_WITHOUT_RETURNING_VALUES,
 	FUNCTION_CALL,
 	EXPRESSION,
 	MEMBER_ACCESS_EXPRESSION,
@@ -74,42 +75,54 @@ ParseEntryPoint: ProductionName : .CODE_ENTRY
 UnrolledProductions: [ProductionName]GNode = {}
 
 Productions: [ProductionName]Production = {
-	.CODE_ENTRY                   = {
+	.CODE_ENTRY                             = {
 		Alternative{Repetition{Expression{Alternative{ProductionName.STATEMENT}}}},
 	},
-	.STATEMENT                    = {
+	.STATEMENT                              = {
 		Alternative{ProductionName.DECLS},
-		Alternative{ProductionName.FUNCTION_CALL},
+		Alternative{ProductionName.FUNCTION_CALL_WITHOUT_RETURNING_VALUES},
 	},
-	.DECIMAL_LITERAL              = {Alternative{Token{type = .LITERAL, kind = Literal.DECIMAL}}},
-	.CHAR_LITERAL                 = {
+	.DECIMAL_LITERAL                        = {
+		Alternative{Token{type = .LITERAL, kind = Literal.DECIMAL}},
+	},
+	.CHAR_LITERAL                           = {
 		Alternative{Token{type = .LITERAL, kind = Literal.CHARACTER}},
 	},
-	.FLOAT_LITERAL                = {
+	.FLOAT_LITERAL                          = {
 		Alternative {
 			Token{type = .LITERAL, kind = Literal.DECIMAL},
 			Token{type = .OPERATOR, kind = Operator.DOT},
 			Token{type = .LITERAL, kind = Literal.DECIMAL},
 		},
 	},
-	.TEXT_LITERAL                 = {Alternative{Token{type = .LITERAL, kind = Literal.TEXT}}},
-	.LITERALS                     = {
+	.TEXT_LITERAL                           = {
+		Alternative{Token{type = .LITERAL, kind = Literal.TEXT}},
+	},
+	.LITERALS                               = {
 		Alternative{ProductionName.FLOAT_LITERAL},
 		Alternative{ProductionName.CHAR_LITERAL},
 		Alternative{ProductionName.DECIMAL_LITERAL},
 		Alternative{ProductionName.TEXT_LITERAL},
 	},
-	.DECIMAL_TYPE                 = {Alternative{Token{type = .KEYWORD, kind = Keyword.INT}}},
-	.FLOAT_TYPE                   = {Alternative{Token{type = .KEYWORD, kind = Keyword.FLOAT}}},
-	.CHARACTER_TYPE               = {Alternative{Token{type = .KEYWORD, kind = Keyword.CHAR}}},
-	.TEXT_TYPE                    = {Alternative{Token{type = .KEYWORD, kind = Keyword.STRING}}},
-	.TYPES                        = {
+	.DECIMAL_TYPE                           = {
+		Alternative{Token{type = .KEYWORD, kind = Keyword.INT}},
+	},
+	.FLOAT_TYPE                             = {
+		Alternative{Token{type = .KEYWORD, kind = Keyword.FLOAT}},
+	},
+	.CHARACTER_TYPE                         = {
+		Alternative{Token{type = .KEYWORD, kind = Keyword.CHAR}},
+	},
+	.TEXT_TYPE                              = {
+		Alternative{Token{type = .KEYWORD, kind = Keyword.STRING}},
+	},
+	.TYPES                                  = {
 		Alternative{ProductionName.DECIMAL_TYPE},
 		Alternative{ProductionName.FLOAT_TYPE},
 		Alternative{ProductionName.CHARACTER_TYPE},
 		Alternative{ProductionName.TEXT_TYPE},
 	},
-	.DECLARATION_WITH_ASSIGNMENT  = {
+	.DECLARATION_WITH_ASSIGNMENT            = {
 		Alternative {
 			.TYPES,
 			Token{type = .IDENTIFIER},
@@ -118,20 +131,20 @@ Productions: [ProductionName]Production = {
 			Token{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
 		},
 	},
-	.DECLARATION                  = {
+	.DECLARATION                            = {
 		Alternative {
 			.TYPES,
 			Token{type = .IDENTIFIER},
 			Token{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
 		},
 	},
-	.DECLS                        = {
+	.DECLS                                  = {
 		Alternative{ProductionName.DECLARATION_WITH_ASSIGNMENT},
 		Alternative{ProductionName.DECLARATION},
 		Alternative{ProductionName.FUNCTION_DECLARATION},
 	},
-	.VARIABLE_NAME                = {Alternative{Token{type = .IDENTIFIER}}},
-	.FUNCTION_DECLARATION         = {
+	.VARIABLE_NAME                          = {Alternative{Token{type = .IDENTIFIER}}},
+	.FUNCTION_DECLARATION                   = {
 		Alternative {
 			ProductionName.TYPES,
 			Token{type = .IDENTIFIER},
@@ -155,11 +168,11 @@ Productions: [ProductionName]Production = {
 			},
 			Token{type = .DELIMITER, kind = Delimiter.PAREN_CLOSE},
 			Token{type = .DELIMITER, kind = Delimiter.BRACE_OPEN},
-			.STATEMENT,
+			Repetition{Expression{Alternative{.STATEMENT}}},
 			Token{type = .DELIMITER, kind = Delimiter.BRACE_CLOSE},
 		},
 	},
-	.FUNCTION_CALL                = {
+	.FUNCTION_CALL                          = {
 		Alternative {
 			Token{type = .IDENTIFIER},
 			Token{type = .DELIMITER, kind = Delimiter.PAREN_OPEN},
@@ -177,10 +190,10 @@ Productions: [ProductionName]Production = {
 				},
 			},
 			Token{type = .DELIMITER, kind = Delimiter.PAREN_CLOSE},
-			Token{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
+			// Token{type = .DELIMITER, kind = Delimiter.SEMICOLUMN},
 		},
 	},
-	.EXPRESSION                   = {
+	.EXPRESSION                             = {
 		Alternative{ProductionName.LITERALS},
 		Alternative{ProductionName.FUNCTION_CALL},
 		Alternative{ProductionName.OPERATOR_EXPRESSION},
@@ -188,21 +201,21 @@ Productions: [ProductionName]Production = {
 		Alternative{ProductionName.MEMBER_ACCESS_EXPRESSION},
 		Alternative{ProductionName.MEMBER_ACCESS_PTR_EXPRESSION},
 	},
-	.MEMBER_ACCESS_EXPRESSION     = {
+	.MEMBER_ACCESS_EXPRESSION               = {
 		Alternative {
 			Token{type = .IDENTIFIER},
 			Token{type = .OPERATOR, kind = Operator.DOT},
 			Token{type = .IDENTIFIER},
 		},
 	},
-	.MEMBER_ACCESS_PTR_EXPRESSION = {
+	.MEMBER_ACCESS_PTR_EXPRESSION           = {
 		Alternative {
 			Token{type = .IDENTIFIER},
 			Token{type = .OPERATOR, kind = Operator.RIGHT_ARROW},
 			Token{type = .IDENTIFIER},
 		},
 	},
-	.COMP_OPERATORS               = {
+	.COMP_OPERATORS                         = {
 		Alternative{Token{type = .OPERATOR, kind = Operator.EQUAL_EQUAL}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.NOT_EQUAL}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.LESS}},
@@ -210,20 +223,20 @@ Productions: [ProductionName]Production = {
 		Alternative{Token{type = .OPERATOR, kind = Operator.MORE}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.MORE_EQUAL}},
 	},
-	.ADD_OPERATORS                = {
+	.ADD_OPERATORS                          = {
 		Alternative{Token{type = .OPERATOR, kind = Operator.PLUS}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.MINUS}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.BITWISE_OR}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.BITWISE_NOT}},
 	},
-	.MUL_OPERATORS                = {
+	.MUL_OPERATORS                          = {
 		Alternative{Token{type = .OPERATOR, kind = Operator.MUL}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.DIV}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.PERCENT}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.SHIFT_LEFT}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.SHIFT_RIGHT}},
 	},
-	.PREFIX_OPERATORS             = {
+	.PREFIX_OPERATORS                       = {
 		Alternative{Token{type = .OPERATOR, kind = Operator.PLUS_PLUS}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.MINUS_MINUS}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.MUL}},
@@ -232,30 +245,30 @@ Productions: [ProductionName]Production = {
 		Alternative{Token{type = .OPERATOR, kind = Operator.BITWISE_NOT}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.MINUS}},
 	},
-	.POSTFIX_OPERATORS            = {
+	.POSTFIX_OPERATORS                      = {
 		Alternative{Token{type = .OPERATOR, kind = Operator.PLUS_PLUS}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.MINUS_MINUS}},
 		Alternative{Token{type = .OPERATOR, kind = Operator.MUL}},
 	},
-	.COMP_EXPRESSIONS             = {
+	.COMP_EXPRESSIONS                       = {
 		Alternative {
 			.ADD_EXPRESSIONS,
 			Repetition{Expression{Alternative{.COMP_OPERATORS, .ADD_EXPRESSIONS}}},
 		},
 	},
-	.ADD_EXPRESSIONS              = {
+	.ADD_EXPRESSIONS                        = {
 		Alternative {
 			.MUL_EXPRESSIONS,
 			Repetition{Expression{Alternative{.ADD_OPERATORS, .MUL_EXPRESSIONS}}},
 		},
 	},
-	.MUL_EXPRESSIONS              = {
+	.MUL_EXPRESSIONS                        = {
 		Alternative {
 			.UNARY_EXPRESSIONS,
 			Repetition{Expression{Alternative{.MUL_OPERATORS, .UNARY_EXPRESSIONS}}},
 		},
 	},
-	.UNARY_EXPRESSIONS            = {
+	.UNARY_EXPRESSIONS                      = {
 		Alternative {
 			.PREFIX_OPERATORS,
 			Group {
@@ -277,5 +290,8 @@ Productions: [ProductionName]Production = {
 			},
 		},
 	},
-	.OPERATOR_EXPRESSION          = {Alternative{.COMP_EXPRESSIONS}},
+	.OPERATOR_EXPRESSION                    = {Alternative{.COMP_EXPRESSIONS}},
+	.FUNCTION_CALL_WITHOUT_RETURNING_VALUES = {
+		Alternative{.FUNCTION_CALL, Token{type = .DELIMITER, kind = Delimiter.SEMICOLUMN}},
+	},
 }

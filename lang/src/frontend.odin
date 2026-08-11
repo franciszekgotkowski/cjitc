@@ -109,8 +109,7 @@ main :: proc() {
 	// code: []rune = utf8.string_to_runes("  x=	a+b;ifa<=b{x=a;}")
 	// code: []rune = utf8.string_to_runes(
 	// 	`
-	// 	int x;
-	// 	int xxx = 2;
+
 	// 	float f = 3.4;
 	// 	func(4, 5, 1.2);
 	// 	float fl = 3;
@@ -129,8 +128,11 @@ main :: proc() {
 	code: []rune = utf8.string_to_runes(
 		`
 	int ii(int x, float fl) {
-		float ff = f(fl)
-		return ff * x;
+		int i = func(8);
+		fff(3.4, 'r', "asd");
+		int i = b%a;
+		int i = b++;
+		int i = --b;
 	}
 	`,
 	)
