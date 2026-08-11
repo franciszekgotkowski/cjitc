@@ -59,4 +59,4 @@ Mimo, iż kompilator nie został ukończony, napisanie jego połowy pozwoliło m
 -	Naukę o architekturze kompilatorów oraz ich zastosowaniu
 -	Doświadczenie w poszukiwaniu przydanych informacji w książkach, filmach w internecie oraz książkach
 -	Dogłębne testowanie pisanego przez mnie programu
--	Doświadczenie pisania dużego programu (w sumie ~6300 lińji kodu)
+-	Doświadczenie pisania dużego programu (łącznie ~6300 lińji kodu)
