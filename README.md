@@ -62,4 +62,4 @@ Mimo, iż kompilator nie został ukończony, napisanie jego połowy pozwoliło m
 -	Doświadczenie pisania dużego programu (łącznie ~6300 lińji kodu)
 
 ## Dokumentacja moich czynności:
-W pliku czynności.ods są rozpisane czynności które wykonywałem w trakcie realizowania praktyk. Każda z czynności ma swoją godzinę rozpoczęcia, zakończenia oraz umiejętność, którą miałem zdobyć w trakcie wykonywania praktyk
+W pliku czynności.ods są rozpisane czynności które wykonywałem w trakcie realizowania praktyk. Każda z czynności ma swoją godzinę rozpoczęcia, zakończenia oraz umiejętność, którą zdobywałem w trakcie wykonywania praktyk
