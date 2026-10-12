@@ -57,6 +57,9 @@ odin run .
 Mimo, iż kompilator nie został ukończony, napisanie jego połowy pozwoliło mi na:
 -	Eksperymentację z wieloma językami programowania oraz wybór najlepszego do wymaganego zadania
 -	Naukę o architekturze kompilatorów oraz ich zastosowaniu
--	Doświadczenie w poszukiwaniu przydanych informacji w książkach, filmach w internecie oraz książkach
+-	Doświadczenie w poszukiwaniu przydanych informacji w książkach, filmach oraz na stronach internetowych
 -	Dogłębne testowanie pisanego przez mnie programu
 -	Doświadczenie pisania dużego programu (łącznie ~6300 lińji kodu)
+
+## Dokumentacja moich czynności:
+W pliku czynności.ods są rozpisane czynności które wykonywałem w trakcie realizowania praktyk. Każda z czynności ma swoją godzinę rozpoczęcia, zakończenia oraz umiejętność, którą miałem zdobyć w trakcie wykonywania praktyk

@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cp frontend.odin /tmp/frontend.odin.bak)",
+      "Bash(timeout 30 odin run . -out:/tmp/cjitc_debug2)",
+      "Bash(timeout 60 odin run . -out:/tmp/cjitc_debug3)",
+      "Bash(timeout 60 odin run . -out:/tmp/cjitc_debug4)",
+      "Bash(timeout 60 odin run . -out:/tmp/cjitc_debug5)",
+      "Bash(timeout 30 odin run . -out:/tmp/cjitc_final)",
+      "Bash(odin test *)",
+      "Bash(timeout 30 odin run . -out:/tmp/cjitc_final4)",
+      "Bash(timeout 30 odin run . -out:/tmp/cjitc_final5)",
+      "Bash(python3 -c ' *)",
+      "Bash(odin build *)"
+    ]
+  }
+}
